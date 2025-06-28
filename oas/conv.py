@@ -11,7 +11,11 @@ from api.mcp import Cors, HttpServer, Mcp, Router, Tool
 
 
 class OpenAPIConverter:
-    def __init__(self, oas_path: Optional[str] = None, oas_content: Optional[bytes] = None):
+    def __init__(
+        self,
+        oas_path: Optional[str] = None,
+        oas_content: Optional[bytes] = None,
+    ):
         if oas_path:
             oas = self._load_from_file(oas_path)
         elif oas_content:
@@ -47,6 +51,7 @@ class OpenAPIConverter:
         random.seed(datetime.datetime.now().timestamp())
         mcp_config = Mcp(
             name=self.spec["info"]["title"] + self._get_random_name(),
+            tenant_name="default",
             updated_at=datetime.datetime.now(),
             created_at=datetime.datetime.now(),
         )
@@ -79,7 +84,7 @@ class OpenAPIConverter:
         self._get_tools(mcp_config, server_config)
         mcp_config.servers.append(server_config)
         mcp_config.routers.append(router_config)
-        return mcp_config, server_config
+        return mcp_config
 
     def _get_random_name(self, length: int = 10) -> str:
         return "".join(

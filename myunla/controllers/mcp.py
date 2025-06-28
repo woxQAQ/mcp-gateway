@@ -9,7 +9,6 @@ from myunla.repos import async_db_ops
 from myunla.schema.mcp import (
     McpConfigModel,
     McpConfigName,
-    McpConfigUpdate,
 )
 from myunla.utils.auth import current_user
 from myunla.utils.mcp import check_mcp_tenant_permission
@@ -38,19 +37,24 @@ async def list_mcp_config_names(
     }
 
 
-@router.post("/{tenant_id}/{name}/active")
+@router.post("/{tenant_name}/{name}/active")
 async def active_mcp_config(
-    tenant_id: str,
+    tenant_name: str,
     name: str,
     request: Request,
     user: User = Depends(current_user),
 ):
     """激活MCP配置"""
+    tenant = await async_db_ops.query_tenant_by_name(tenant_name)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    tenant_id = tenant.id
     config = await async_db_ops.query_config_by_name_and_tenant(name, tenant_id)
     if not config:
         raise HTTPException(status_code=404, detail="MCP config not found")
-
-    # TODO: 实现激活逻辑
+    check_mcp_tenant_permission(config, tenant_id, user)
+    await async_db_ops.set_active(config.id)
+    # TODO: notify logic
     return {"message": f"MCP config {name} activated successfully"}
 
 
@@ -61,10 +65,6 @@ async def create_mcp_config(
     user: User = Depends(current_user),
 ):
     """创建MCP配置"""
-    if data.name is None:
-        raise HTTPException(
-            status_code=400, detail="MCP config name is required"
-        )
     # 检查是否已存在同名配置
     existing = await async_db_ops.query_config_by_name_and_tenant(
         data.name, data.tenant_id
@@ -73,11 +73,15 @@ async def create_mcp_config(
         raise HTTPException(
             status_code=400, detail="MCP config with this name already exists"
         )
-    check_mcp_tenant_permission(data, data.tenant_id, user)
+    tenant = await async_db_ops.query_tenant_by_name(data.tenant_name)
+    if not tenant:
+        raise HTTPException(status_code=400, detail="Tenant not found")
+
+    check_mcp_tenant_permission(data, tenant.id, user)
 
     config = McpConfig(
         name=data.name,
-        tenant_id=data.tenant_id,
+        tenant_id=tenant.id,
         routers=data.routers,
         servers=data.servers,
         tools=data.tools,
@@ -110,32 +114,29 @@ async def list_mcp_configs(
     return [McpConfigModel.from_orm(config) for config in configs]
 
 
-@router.put("/configs/{config_id}", response_model=McpConfigModel)
+@router.put("/configs", response_model=McpConfigModel)
 async def update_mcp_config(
-    config_id: str,
-    data: McpConfigUpdate,
+    data: Mcp,
     session: AsyncSessionDependency,
     user: User = Depends(current_user),
 ):
     """更新MCP配置"""
-    config = await async_db_ops.query_config_by_id(config_id)
-    if not config:
+    old = async_db_ops.query_config_by_name_and_tenant(
+        data.name, data.tenant_name
+    )
+    if not old:
         raise HTTPException(status_code=404, detail="MCP config not found")
-
-    # 更新字段
-    if data.name is not None:
-        config.name = data.name
-    if data.routers is not None:
-        config.routers = data.routers
-    if data.servers is not None:
-        config.servers = data.servers
-    if data.tools is not None:
-        config.tools = data.tools
-    if data.http_servers is not None:
-        config.http_servers = data.http_servers
-
-    result = await async_db_ops.update_config(config)
-    return McpConfigModel.from_orm(result)
+    if old.name != data.name:
+        raise HTTPException(
+            status_code=400, detail="MCP config name cannot be changed"
+        )
+    check_mcp_tenant_permission(data, data.tenant_name, user)
+    # TODO validate data
+    await async_db_ops.update_config(data)
+    # TODO notify logic
+    return {
+        "status": "success",
+    }
 
 
 @router.delete("/configs/{tenant_id}/{name}")

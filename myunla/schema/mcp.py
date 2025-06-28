@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Optional
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -11,11 +11,7 @@ class McpConfigCreate(Mcp):
 
 
 class McpConfigUpdate(BaseModel):
-    name: Optional[str] = None
-    routers: Optional[list[dict[str, Any]]] = None
-    servers: Optional[list[dict[str, Any]]] = None
-    tools: Optional[list[dict[str, Any]]] = None
-    http_servers: Optional[list[dict[str, Any]]] = None
+    mcp: Mcp
 
 
 class McpConfigModel(Mcp):

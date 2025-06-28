@@ -56,6 +56,7 @@ class Router:
 @dataclass
 class Mcp:
     name: str
+    tenant_name: str
     updated_at: datetime
     created_at: datetime
     deleted_at: datetime

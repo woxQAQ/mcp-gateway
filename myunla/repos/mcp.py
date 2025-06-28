@@ -110,3 +110,15 @@ class AsyncMcpConfigRepository(AsyncRepository):
             return result.scalar_one_or_none() is not None
 
         return await self._execute_query(query)
+
+    async def set_active(self, config_id: str):
+        """设置MCP配置为激活状态"""
+
+        async def operation(session):
+            config = await self.query_config_by_id(config_id)
+            if not config:
+                raise ValueError("MCP config not found")
+            config.is_active = True
+            session.add(config)
+
+        return await self.execute_with_transaction(operation)
