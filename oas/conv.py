@@ -2,7 +2,7 @@ import datetime
 import json
 import random
 import string
-from typing import Any
+from typing import Any, Optional
 
 import yaml
 from openapi_core import OpenAPI
@@ -11,17 +11,37 @@ from api.mcp import Cors, HttpServer, Mcp, Router, Tool
 
 
 class OpenAPIConverter:
-    def __init__(self, oas_path: str):
-        with open(oas_path, "r") as f:
-            if f.name.endswith(".json"):
-                oas = json.load(f)
-            elif f.name.endswith(".yaml") or f.name.endswith(".yml"):
-                oas = yaml.safe_load(f)
-            try:
-                self.spec = OpenAPI.from_dict(oas).spec
-            except Exception as e:
-                print(e)
-                raise e
+    def __init__(self, oas_path: Optional[str] = None, oas_content: Optional[bytes] = None):
+        if oas_path:
+            oas = self._load_from_file(oas_path)
+        elif oas_content:
+            oas = self._load_from_content(oas_content)
+        else:
+            raise ValueError("必须提供 oas_path 或 oas_content 参数")
+
+        try:
+            self.spec = OpenAPI.from_dict(oas).spec
+        except Exception as e:
+            print(e)
+            raise e
+
+    def _load_from_file(self, file_path: str) -> dict:
+        """从文件加载OpenAPI规范"""
+        with open(file_path, "r", encoding="utf-8") as f:
+            if file_path.endswith(".json"):
+                return json.load(f)
+            else:  # 默认按YAML处理
+                return yaml.safe_load(f)
+
+    def _load_from_content(self, content: bytes) -> dict:
+        """从内容加载OpenAPI规范"""
+        text = content.decode("utf-8")
+        try:
+            # 尝试解析为JSON
+            return json.loads(text)
+        except json.JSONDecodeError:
+            # JSON解析失败，尝试YAML
+            return yaml.safe_load(text)
 
     def convert(self):
         random.seed(datetime.datetime.now().timestamp())
