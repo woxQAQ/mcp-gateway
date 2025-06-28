@@ -24,8 +24,13 @@ class McpConfigModel(Mcp):
     gmt_updated: datetime
     gmt_deleted: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    @classmethod
+    def from_orm(cls, obj: Mcp):
+        return cls(
+            id=obj.id,
+            name=obj.name,
+            routers=obj.routers,
+        )
 
 
 class McpConfigName(BaseModel):

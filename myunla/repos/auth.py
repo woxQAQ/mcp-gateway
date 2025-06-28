@@ -1,6 +1,6 @@
 from sqlalchemy import func, or_, select
 
-from myunla.models.user import User
+from myunla.models.user import Tenant, User
 from myunla.repos.base import AsyncRepository
 from myunla.utils.utils import utc_now
 
@@ -82,7 +82,9 @@ class AsyncUserRepository(AsyncRepository):
         """获取用户所属的租户"""
 
         async def query(session):
-            stmt = select(User.tenant_id).where(User.id == user_id, User.gmt_deleted.is_(None))
+            stmt = select(User.tenant_id).where(
+                User.id == user_id, User.gmt_deleted.is_(None)
+            )
             result = await session.execute(stmt)
             return result.all()
 
@@ -97,5 +99,17 @@ class AsyncUserRepository(AsyncRepository):
             )
             result = await session.execute(stmt)
             return result.scalar_one()
+
+        return await self._execute_query(query)
+
+    async def query_tenant_by_name(self, tenant_name: str):
+        """根据租户名称查询租户"""
+
+        async def query(session):
+            stmt = select(Tenant).where(
+                Tenant.name == tenant_name, Tenant.gmt_deleted.is_(None)
+            )
+            result = await session.execute(stmt)
+            return result.scalar_one_or_none()
 
         return await self._execute_query(query)

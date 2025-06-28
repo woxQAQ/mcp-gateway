@@ -18,9 +18,8 @@ from myunla.utils.auth import (
 
 router = APIRouter()
 
-router.post("/login")
 
-
+@router.post("/login")
 async def login(
     request: Request,
     response: Response,

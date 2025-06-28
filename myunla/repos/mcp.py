@@ -34,13 +34,17 @@ class AsyncMcpConfigRepository(AsyncRepository):
 
         return await self._execute_query(query)
 
-    async def list_config_names(self, tenant_id: Optional[str], include_deleted: bool = False):
+    async def list_config_names(
+        self, tenant_id: Optional[str], include_deleted: bool = False
+    ):
         """获取配置名称列表"""
 
         async def query(session):
             stmt = select(
                 McpConfig.id, McpConfig.name, McpConfig.tenant_id
-            ).where(McpConfig.gmt_deleted.is_(None) if not include_deleted else True)
+            ).where(
+                McpConfig.gmt_deleted.is_(None) if not include_deleted else True
+            )
             if tenant_id:
                 stmt = stmt.where(McpConfig.tenant_id == tenant_id)
             result = await session.execute(stmt)
@@ -92,3 +96,17 @@ class AsyncMcpConfigRepository(AsyncRepository):
             return config
 
         return await self.execute_with_transaction(operation)
+
+    async def query_config_exists(self, tenant_id: str, name: str):
+        """查询MCP配置是否存在"""
+
+        async def query(session):
+            stmt = select(McpConfig).where(
+                McpConfig.name == name,
+                McpConfig.tenant_id == tenant_id,
+                McpConfig.gmt_deleted.is_(None),
+            )
+            result = await session.execute(stmt)
+            return result.scalar_one_or_none() is not None
+
+        return await self._execute_query(query)
