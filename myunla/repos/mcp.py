@@ -1,0 +1,94 @@
+from typing import Optional
+
+from sqlalchemy import select
+
+from myunla.models.user import McpConfig
+from myunla.repos.base import AsyncRepository
+from myunla.utils.utils import utc_now
+
+
+class AsyncMcpConfigRepository(AsyncRepository):
+    async def query_config_by_id(self, config_id: str):
+        """根据ID查询MCP配置"""
+
+        async def query(session):
+            stmt = select(McpConfig).where(
+                McpConfig.id == config_id, McpConfig.gmt_deleted.is_(None)
+            )
+            result = await session.execute(stmt)
+            return result.scalar_one_or_none()
+
+        return await self._execute_query(query)
+
+    async def query_config_by_name_and_tenant(self, name: str, tenant_id: str):
+        """根据名称和租户ID查询MCP配置"""
+
+        async def query(session):
+            stmt = select(McpConfig).where(
+                McpConfig.name == name,
+                McpConfig.tenant_id == tenant_id,
+                McpConfig.gmt_deleted.is_(None),
+            )
+            result = await session.execute(stmt)
+            return result.scalar_one_or_none()
+
+        return await self._execute_query(query)
+
+    async def list_config_names(self, tenant_id: Optional[str], include_deleted: bool = False):
+        """获取配置名称列表"""
+
+        async def query(session):
+            stmt = select(
+                McpConfig.id, McpConfig.name, McpConfig.tenant_id
+            ).where(McpConfig.gmt_deleted.is_(None) if not include_deleted else True)
+            if tenant_id:
+                stmt = stmt.where(McpConfig.tenant_id == tenant_id)
+            result = await session.execute(stmt)
+            return result.all()
+
+        return await self._execute_query(query)
+
+    async def list_configs(self, tenant_id: str | None = None):
+        """获取配置列表"""
+
+        async def query(session):
+            stmt = select(McpConfig).where(McpConfig.gmt_deleted.is_(None))
+            if tenant_id:
+                stmt = stmt.where(McpConfig.tenant_id == tenant_id)
+            result = await session.execute(stmt)
+            return result.scalars().all()
+
+        return await self._execute_query(query)
+
+    async def create_config(self, config: McpConfig):
+        """创建MCP配置"""
+
+        async def operation(session):
+            session.add(config)
+            await session.flush()
+            await session.refresh(config)
+            return config
+
+        return await self.execute_with_transaction(operation)
+
+    async def update_config(self, config: McpConfig):
+        """更新MCP配置"""
+
+        async def operation(session):
+            config.gmt_updated = utc_now()
+            session.add(config)
+            await session.flush()
+            return config
+
+        return await self.execute_with_transaction(operation)
+
+    async def delete_config(self, config: McpConfig):
+        """软删除MCP配置"""
+
+        async def operation(session):
+            config.gmt_deleted = utc_now()
+            session.add(config)
+            await session.flush()
+            return config
+
+        return await self.execute_with_transaction(operation)
