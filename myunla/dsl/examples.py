@@ -79,9 +79,7 @@ def data_transformation_examples():
     print(f"Active users (filterBy): {result.value}")
 
     # Get only the names of active users
-    active_names_expr = (
-        'users | filterActive() | getNames() | join(", ")'
-    )
+    active_names_expr = 'users | filterActive() | getNames() | join(", ")'
     result = parse_and_execute(active_names_expr, context)
     print(f"Active user names: {result.value}")
 

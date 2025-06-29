@@ -405,7 +405,7 @@ def _includes(array: DSLValue, value: DSLValue) -> DSLValue:
     """Check if array includes a value."""
     if array.type != DSLValueType.ARRAY:
         return DSLValue.from_python(False)
-    
+
     search_value = value.to_python()
     return DSLValue.from_python(search_value in array.value)
 

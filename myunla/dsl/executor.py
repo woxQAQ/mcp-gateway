@@ -309,7 +309,7 @@ class DSLExecutor(ASTVisitor):
         # If right side is a function call, inject the piped value as first argument
         if isinstance(node.right, FunctionCallNode):
             return self._execute_pipe_function_call(left_value, node.right)
-        
+
         # Fallback: Create a temporary context with the piped value as 'data'
         pipe_context = self.context.create_child_context(
             {'data': left_value.to_python()}
@@ -322,7 +322,9 @@ class DSLExecutor(ASTVisitor):
         finally:
             self.context = old_context
 
-    def _execute_pipe_function_call(self, piped_value: DSLValue, func_call: FunctionCallNode) -> DSLValue:
+    def _execute_pipe_function_call(
+        self, piped_value: DSLValue, func_call: FunctionCallNode
+    ) -> DSLValue:
         """Execute function call with piped value as first argument."""
         # Get function name
         if isinstance(func_call.function, IdentifierNode):
