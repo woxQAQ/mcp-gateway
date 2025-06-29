@@ -54,6 +54,11 @@ class OpenAPIConverter:
             tenant_name="default",
             updated_at=datetime.datetime.now(),
             created_at=datetime.datetime.now(),
+            deleted_at=None,
+            servers=[],
+            routers=[],
+            tools=[],
+            http_servers=[],
         )
 
         server_config = HttpServer(
@@ -62,6 +67,7 @@ class OpenAPIConverter:
             url=len(self.spec["servers"]) > 0
             and self.spec["servers"][0]["url"]
             or "",
+            tools=[],
         )
 
         router_config = Router(
@@ -82,7 +88,7 @@ class OpenAPIConverter:
             ),
         )
         self._get_tools(mcp_config, server_config)
-        mcp_config.servers.append(server_config)
+        mcp_config.http_servers.append(server_config)
         mcp_config.routers.append(router_config)
         return mcp_config
 
@@ -96,10 +102,13 @@ class OpenAPIConverter:
             for method, operation in path_item.items():
                 if method == "options":
                     continue
-                if operation["operationId"] == "":
+                if (
+                    "operationId" not in operation
+                    or operation["operationId"] == ""
+                ):
                     pathparts = path.split("/")[1:]
                     operation["operationId"] = (
-                        pathparts[0].join("_") + "_" + method
+                        "_".join(pathparts) + "_" + method
                     )
                 tool = Tool(
                     name=operation["operationId"],
@@ -113,12 +122,16 @@ class OpenAPIConverter:
                         # TODO: jinja template system placeholder
                         "Authorization": "Bearer {token}",
                     },
+                    args=[],
+                    request_body="",
+                    response_body="",
+                    input_schema={},
                 )
                 query_params, header_params, path_params = (
                     self._get_path_params(operation, tool)
                 )
                 body_params = self._get_request_body(
-                    self.spec["components"], operation, tool
+                    self.spec.get("components", {}), operation, tool
                 )
                 tool.args = (
                     query_params + header_params + path_params + body_params
@@ -132,7 +145,7 @@ class OpenAPIConverter:
 
     def _get_request_body(self, components, operation: Any, tool: Tool) -> Any:
         body = []
-        if operation["requestBody"]:
+        if operation.get("requestBody"):
             body_required = operation["requestBody"]["required"]
             for content_type, media_type in operation["requestBody"][
                 "content"
@@ -140,13 +153,20 @@ class OpenAPIConverter:
                 if content_type != "application/json":
                     continue
                 tool.request_body = content_type
-                schema = media_type["schema"]
+                schema = media_type.get("schema")
                 if not schema:
                     continue
-                refname = schema["ref"].removeprefix("#/components/schemas/")
-                if refname and refname in components["schemas"]:
-                    schema = components["schemas"][refname]
-                props = schema["properties"]
+                if "$ref" in schema:
+                    refname = schema["$ref"].removeprefix(
+                        "#/components/schemas/"
+                    )
+                    if (
+                        refname
+                        and "schemas" in components
+                        and refname in components["schemas"]
+                    ):
+                        schema = components["schemas"][refname]
+                props = schema.get("properties")
                 if not props:
                     continue
                 for name, prop in props.items():
@@ -160,15 +180,19 @@ class OpenAPIConverter:
                         "name": name,
                         "position": "body",
                         "type": 'string',
-                        "required": body_required or name in schema["required"],
-                        "description": prop["description"],
+                        "required": body_required
+                        or name in schema.get("required", []),
+                        "description": prop.get("description", ""),
                     }
-                    _type = prop["type"]
-                    if type(_type) is list and len(_type) > 1:
-                        arg.type = _type[0]
-                        if arg.type == "array" and 'items' in prop:
-                            arg.items = prop["items"]
-                    default = prop["default"]
+                    _type = prop.get("type")
+                    if _type:
+                        if type(_type) is list and len(_type) > 1:
+                            arg["type"] = _type[0]
+                            if arg["type"] == "array" and 'items' in prop:
+                                arg["items"] = prop["items"]
+                        else:
+                            arg["type"] = _type
+                    default = prop.get("default")
                     if default:
                         arg["default"] = default
                     body.append(arg)
@@ -178,20 +202,23 @@ class OpenAPIConverter:
         query_params = []
         header_params = []
         path_params = []
+        if "parameters" not in operatons:
+            return query_params, header_params, path_params
         for param in operatons["parameters"]:
             arg = {
                 "name": param["name"],
                 "position": param["in"],
                 "type": "string",
-                "required": param["required"],
-                "description": param["description"],
+                "required": param.get("required", False),
+                "description": param.get("description", ""),
             }
-            if param["schema"]:
-                type = param["schema"]["type"]
-                default = param["schema"]["default"]
-                _in = param["schema"]["in"]
-                arg["default"] = default
-                arg["type"] = type
+            if param.get("schema"):
+                schema_type = param["schema"].get("type", "string")
+                default = param["schema"].get("default")
+                _in = param["in"]
+                if default:
+                    arg["default"] = default
+                arg["type"] = schema_type
                 match _in:
                     case "query":
                         query_params.append(arg)
@@ -208,4 +235,5 @@ class OpenAPIConverter:
 
 if __name__ == "__main__":
     conv = OpenAPIConverter("oas/petstore.v3.yaml")
-    print(conv.spec["paths"])
+    cfg = conv.convert()
+    print(cfg)
