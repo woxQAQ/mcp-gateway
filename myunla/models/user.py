@@ -72,7 +72,7 @@ class User(Base):
     )
     gmt_deleted = Column(DateTime(timezone=True), nullable=True)
 
-    __table_args__ = {UniqueConstraint(name="uidx_user_email", columns=[email])}
+    __table_args__ = (UniqueConstraint(email, name="uidx_user_email"),)
 
     @property
     def password(self):
@@ -99,10 +99,10 @@ class Tenant(Base):
         DateTime(timezone=True), default=utc_now, nullable=False
     )
 
-    __table_args__ = {
-        UniqueConstraint(name="uidx_tenant_name", columns=[name]),
-        UniqueConstraint(name="uidx_tenant_prefix", columns=[prefix]),
-    }
+    __table_args__ = (
+        UniqueConstraint(name, name="uidx_tenant_name"),
+        UniqueConstraint(prefix, name="uidx_tenant_prefix"),
+    )
 
 
 class UserTenant(Base):
@@ -121,12 +121,13 @@ class UserTenant(Base):
         DateTime(timezone=True), default=utc_now, nullable=False
     )
 
-    __table_args__ = {
+    __table_args__ = (
         UniqueConstraint(
+            user_id,
+            tenant_id,
             name="uidx_user_tenant_user_id_tenant_id",
-            columns=[user_id, tenant_id],
-        )
-    }
+        ),
+    )
 
 
 class McpConfig(Base):
@@ -148,15 +149,16 @@ class McpConfig(Base):
     )
     gmt_deleted = Column(DateTime(timezone=True), nullable=True)
 
-    __table_args__ = {
+    __table_args__ = (
         UniqueConstraint(
-            name="uidx_mcp_config_name_tenant_id", columns=[name, tenant_id]
+            name, tenant_id, name="uidx_mcp_config_name_tenant_id"
         ),
-        Index(name="idx_mcp_config_deleted_at", columns=[gmt_deleted]),
-    }
+        Index("idx_mcp_config_deleted_at", gmt_deleted),
+    )
 
 
 class AuditLog(Base):
+    __tablename__ = "audit_log"
 
     id = Column(String(36), primary_key=True, default=lambda: random_id())
     user_id = Column(String(36), nullable=True, comment="User ID")
