@@ -3,7 +3,6 @@
 from typing import Any, Optional
 from unittest.mock import AsyncMock, MagicMock
 
-from myunla.dsl.types import DSLValue
 from myunla.models.user import Role, User
 
 
@@ -147,17 +146,6 @@ class DSLTestHelper:
         else:
             assert not result.success, "DSL execution should have failed"
             assert result.error is not None
-
-    @staticmethod
-    def create_dsl_value(python_value):
-        """创建DSL值对象"""
-        return DSLValue.from_python(python_value)
-
-    @staticmethod
-    def assert_dsl_value_equals(dsl_value: DSLValue, expected_python_value):
-        """断言DSL值等于预期的Python值"""
-        assert dsl_value.to_python() == expected_python_value
-
 
 class DatabaseTestHelper:
     """数据库测试辅助类"""
