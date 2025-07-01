@@ -50,7 +50,9 @@ class OpenAPIConverter:
     def convert(self):
         random.seed(datetime.datetime.now().timestamp())
         mcp_config = Mcp(
-            name=self.spec["info"]["title"] + self._get_random_name(),
+            name=self.spec["info"]["title"].replace(" ", "_")
+            + "_"
+            + self._get_random_name(),
             tenant_name="default",
             updated_at=datetime.datetime.now(),
             created_at=datetime.datetime.now(),
@@ -115,11 +117,9 @@ class OpenAPIConverter:
                     description=operation["summary"]
                     or operation["description"],
                     method=method,
-                    # TODO: jinja template system placeholder
-                    path="{{common.url}}" + path,
+                    path="{{config.url}}" + path,
                     headers={
                         "Content-Type": "application/json",
-                        # TODO: jinja template system placeholder
                         "Authorization": "Bearer {{request.headers.Authorization}}",
                     },
                     args=[],
@@ -138,8 +138,15 @@ class OpenAPIConverter:
                 )
 
                 if len(body_params) > 0:
-                    # TODO: jinja template system placeholder
-                    pass
+                    s = "{\n"
+                    for i, _body in enumerate(body_params):
+                        s += '     {name}: {{{{ args.{name} | tojson }}}}'.format(
+                            name=_body["name"]
+                        )
+                        if i < len(body_params) - 1:
+                            s += ",\n"
+                    s += "\n}"
+                    tool.request_body = s
                 mcp_config.tools.append(tool)
                 server_config.tools.append(tool.name)
 
@@ -240,4 +247,7 @@ class OpenAPIConverter:
 if __name__ == "__main__":
     conv = OpenAPIConverter("oas/petstore.v3.yaml")
     cfg = conv.convert()
-    print(cfg)
+
+    # 默认字符串输出 (YAML)
+    print("=== YAML FORMAT (Default) ===")
+    print(cfg)  # 明确调用 str()

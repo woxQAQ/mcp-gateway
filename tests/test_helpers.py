@@ -147,6 +147,7 @@ class DSLTestHelper:
             assert not result.success, "DSL execution should have failed"
             assert result.error is not None
 
+
 class DatabaseTestHelper:
     """数据库测试辅助类"""
 
