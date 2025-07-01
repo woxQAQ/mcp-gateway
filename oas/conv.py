@@ -116,19 +116,19 @@ class OpenAPIConverter:
                     or operation["description"],
                     method=method,
                     # TODO: jinja template system placeholder
-                    path="{url}" + path,
+                    path="{{common.url}}" + path,
                     headers={
                         "Content-Type": "application/json",
                         # TODO: jinja template system placeholder
-                        "Authorization": "Bearer {token}",
+                        "Authorization": "Bearer {{request.headers.Authorization}}",
                     },
                     args=[],
                     request_body="",
-                    response_body="",
+                    response_body="{{response.body}}",
                     input_schema={},
                 )
-                query_params, header_params, path_params = (
-                    self._get_path_params(operation, tool)
+                query_params, header_params, path_params = self._get_params(
+                    operation, tool
                 )
                 body_params = self._get_request_body(
                     self.spec.get("components", {}), operation, tool
@@ -198,7 +198,7 @@ class OpenAPIConverter:
                     body.append(arg)
         return body
 
-    def _get_path_params(self, operatons: Any, tool: Tool) -> Any:
+    def _get_params(self, operatons: Any, tool: Tool) -> Any:
         query_params = []
         header_params = []
         path_params = []
@@ -229,6 +229,10 @@ class OpenAPIConverter:
                     case "path":
                         arg["required"] = True
                         path_params.append(arg)
+                        tool.path = tool.path.replace(
+                            "{" + arg["name"] + "}",
+                            "{{args." + arg["name"] + "}}",
+                        )
 
         return query_params, header_params, path_params
 

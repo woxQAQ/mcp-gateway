@@ -34,6 +34,7 @@ class Tool:
 
         return f"""  Tool: {self.name}
     Description: {self.description}
+    Headers: {self.headers}
     Method: {self.method.upper()}
     Path: {self.path}{args_str}"""
 
@@ -49,7 +50,7 @@ class HttpServer:
         tools_str = ""
         if self.tools:
             tools_str = f"\n    Tools: {', '.join(self.tools)}"
-        
+
         return f"""  HTTP Server: {self.name}
     Description: {self.description}
     URL: {self.url}{tools_str}"""
