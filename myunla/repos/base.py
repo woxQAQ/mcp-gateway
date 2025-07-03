@@ -4,8 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session, sessionmaker
 
 from myunla.config import get_async_session, get_sync_session, sync_engine
-from myunla.repos.auth import AsyncUserRepository
-from myunla.repos.mcp import AsyncMcpConfigRepository
 
 
 class AsyncRepositoryProtocol(Protocol):
@@ -81,11 +79,4 @@ class AsyncRepository(AsyncRepositoryProtocol):
                     raise
 
 
-class AsyncDBOps(
-    AsyncUserRepository,
-    AsyncMcpConfigRepository,
-):
-    pass
-
-
-async_db_ops = AsyncDBOps()
+# AsyncDBOps 类移到 __init__.py 中以避免循环导入

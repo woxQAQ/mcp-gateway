@@ -1,7 +1,9 @@
 from datetime import datetime
+from os import name
 from typing import Any, Optional
 
 import yaml
+from mcp.types import Tool as ToolType
 from pydantic import BaseModel
 
 from api.enums import McpServerType, Policy
@@ -29,6 +31,34 @@ class Tool(YamlMixin, BaseModel):
     request_body: str
     response_body: str
     input_schema: dict[str, Any]
+
+    def to_tool_type(self) -> ToolType:
+        inputSchema = []
+        for arg in self.args:
+            property = {
+                "name": arg["name"],
+                "description": arg["description"],
+            }
+            if arg["type"] == "array":
+                items = {}
+                if arg["items"]["enum"]:
+                    items["enum"] = arg["items"]["enum"]
+                else:
+                    items["type"] = arg["items"]["type"]
+                    if arg["items"]["properties"]:
+                        items["properties"] = arg["items"]["properties"]
+                property["items"] = items
+            inputSchema[arg[name]] = property
+        if self.input_schema:
+            inputSchema.append(self.input_schema)
+
+        return ToolType(
+            name=self.name,
+            description=self.description,
+            method=self.method,
+            path=self.path,
+            inputSchema=inputSchema,
+        )
 
 
 class HttpServer(YamlMixin, BaseModel):

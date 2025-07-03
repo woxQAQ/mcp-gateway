@@ -1,0 +1,7 @@
+---
+description: 
+globs: *.py
+alwaysApply: false
+---
+do not use `Dict` and `List` in `typing` module, they are deprecated, use `dict` and `list` instead.
+do not generate the usage example/tests/demos for the task I give you. 
