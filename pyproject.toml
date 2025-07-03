@@ -7,6 +7,7 @@ requires-python = ">=3.13"
 dependencies = [
     "aiomysql>=0.2.0",
     "aiosqlite>=0.21.0",
+    "alembic>=1.16.2",
     "asyncpg>=0.30.0",
     "black>=25.1.0",
     "fastapi>=0.115.14",
@@ -165,6 +166,7 @@ ignore = [
     # It not met the "Explicit is better than implicit" rule
     "UP015",
     "UP045",
+    "UP007",
     # It will cause the performance regression on python3.10
     "UP038",
     # collections.namedtuple can be quickly created a inlined class
