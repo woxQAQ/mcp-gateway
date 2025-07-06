@@ -7,6 +7,7 @@ from .apiserver_config import (
     settings,
     sync_engine,
 )
+from .session_config import SessionConfig
 
 app_settings = settings
 
@@ -18,4 +19,5 @@ __all__ = [
     "SyncSessionDependency",
     "get_sync_session",
     "get_async_session",
+    "SessionConfig",
 ]
