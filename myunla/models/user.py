@@ -14,7 +14,7 @@ from sqlalchemy import (
 )
 
 from myunla.models.base import Base, EnumColumn, random_id
-from myunla.utils.utils import utc_now
+from myunla.utils import utc_now
 
 
 class Role(StrEnum):

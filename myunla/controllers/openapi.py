@@ -1,3 +1,5 @@
+"""OpenAPI相关控制器模块。"""
+
 import json
 
 import yaml
@@ -5,7 +7,7 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 
 from myunla.models.user import McpConfig
 from myunla.repos import async_db_ops
-from myunla.utils.logger import get_logger
+from myunla.utils import get_logger
 from oas.conv import OpenAPIConverter
 
 router = APIRouter()

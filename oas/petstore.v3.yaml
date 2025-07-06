@@ -49,4 +49,4 @@ paths:
             type: string
       responses:
         '200':
-          description: CORS headers 
+          description: CORS headers

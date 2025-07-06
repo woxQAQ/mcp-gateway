@@ -88,14 +88,13 @@ class SessionNotFoundError(Exception):
 
 
 def create_store(config: SessionConfig) -> Store:
-    match config.store:
-        case "memory":
-            from myunla.gateway.session.memory import MemoryStore
+    if config.store == "memory":
+        from myunla.gateway.session.memory import MemoryStore
 
-            return MemoryStore()
-        case "redis":
-            from myunla.gateway.session.redis import RedisStore
+        return MemoryStore()
+    elif config.store == "redis":
+        from myunla.gateway.session.redis import RedisStore
 
-            return RedisStore(config.redis_config)
-        case _:
-            raise ValueError(f"invalid store type: {config.store}")
+        return RedisStore(config.redis_config)
+    else:
+        raise ValueError(f"invalid store type: {config.store}")

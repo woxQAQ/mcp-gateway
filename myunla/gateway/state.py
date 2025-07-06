@@ -8,7 +8,7 @@ from api.enums import Policy
 from api.mcp import HttpServer, Mcp, McpServer, Router, Tool
 from myunla.gateway.transports import TransportManager
 from myunla.gateway.transports.base import Transport
-from myunla.utils.logger import get_logger
+from myunla.utils import get_logger
 
 logger = get_logger(__name__)
 
@@ -111,7 +111,7 @@ class State(BaseModel):
             # 创建一个带有默认值的Runtime
             runtime = Runtime(
                 backend_proto=BackendProto.HTTP,
-                router=Router(prefix=prefix, server="", http_server_ref=""),
+                router=Router(prefix=prefix, server=""),
                 tools={},
                 tools_schema={},
             )
@@ -292,15 +292,14 @@ class State(BaseModel):
         self, mcp_server: McpServer
     ) -> BackendProto:
         """设置后端协议类型"""
-        match mcp_server.type:
-            case "sse":
-                return BackendProto.SSE
-            case "stdio":
-                return BackendProto.STDIO
-            case "streamable":
-                return BackendProto.STREAMABLE
-            case _:
-                return BackendProto.HTTP
+        if mcp_server.type == "sse":
+            return BackendProto.SSE
+        elif mcp_server.type == "stdio":
+            return BackendProto.STDIO
+        elif mcp_server.type == "streamable":
+            return BackendProto.STREAMABLE
+        else:
+            return BackendProto.HTTP
 
     async def _handle_mcp_server_startup(
         self, mcp_server: McpServer, prefix: str, transport: Transport

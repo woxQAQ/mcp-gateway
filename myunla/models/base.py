@@ -1,4 +1,3 @@
-import random
 import uuid
 from enum import Enum
 
@@ -11,7 +10,8 @@ class Base(DeclarativeBase):
 
 
 def random_id():
-    return "".join(random.sample(uuid.uuid4().hex, 16))
+    """Generate a secure random ID using UUID4."""
+    return uuid.uuid4().hex[:16]
 
 
 def EnumColumn(enum_class: Enum, **kwargs):

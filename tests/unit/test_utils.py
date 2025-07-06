@@ -6,9 +6,13 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from myunla.models.user import Role, User
-from myunla.utils.auth import COOKIE_MAX_AGE, UserManager, get_jwt_strategy
-from myunla.utils.logger import get_logger
-from myunla.utils.utils import utc_now
+from myunla.utils import (
+    COOKIE_MAX_AGE,
+    UserManager,
+    get_jwt_strategy,
+    get_logger,
+    utc_now,
+)
 
 
 @pytest.mark.unit
@@ -120,7 +124,7 @@ class TestAuthDependencies:
     @pytest.mark.asyncio
     async def test_current_user_authorized(self):
         """测试当前用户已授权"""
-        from myunla.utils.auth import current_user
+        from myunla.utils import current_user
 
         # 模拟请求和用户
         mock_request = MagicMock()
@@ -144,7 +148,7 @@ class TestAuthDependencies:
         """测试当前用户未授权"""
         from fastapi import HTTPException
 
-        from myunla.utils.auth import current_user
+        from myunla.utils import current_user
 
         mock_request = MagicMock()
         mock_session = MagicMock()

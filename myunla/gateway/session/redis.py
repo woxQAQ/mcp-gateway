@@ -18,8 +18,7 @@ from myunla.gateway.session.session import (
     SessionNotFoundError,
     Store,
 )
-from myunla.utils.logger import get_logger
-from myunla.utils.redis_utils import split_by_multiple_delimiters
+from myunla.utils import get_logger, split_by_multiple_delimiters
 
 if TYPE_CHECKING:
     from redis.asyncio.client import Redis

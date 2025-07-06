@@ -1,7 +1,9 @@
 ---
-description: 
+description:
 globs: *.py
 alwaysApply: false
 ---
-do not use `Dict` and `List` in `typing` module, they are deprecated, use `dict` and `list` instead.
-do not generate the usage example/tests/demos for the task I give you. 
+1. do not use `Dict` and `List` in `typing` module, they are deprecated, use `dict` and `list` instead.
+2. DO NOT generate any usage example/tests/demos code files unless I told you to do so.
+3. DO NOT generate any usage docs unless I told you to do so.
+4. remove the unnessary tailing spaces

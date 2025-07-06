@@ -7,7 +7,7 @@ from myunla.gateway.session.session import (
     SessionNotFoundError,
     Store,
 )
-from myunla.utils.logger import get_logger
+from myunla.utils import get_logger
 
 try:
     from aiorwlock import RWLock

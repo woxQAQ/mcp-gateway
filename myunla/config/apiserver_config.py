@@ -28,28 +28,26 @@ settings = ApiServerConfig()
 
 def get_async_database_url(url: str):
     urlparts = url.split(":")
-    match urlparts[0]:
-        case "sqlite":
-            return f"sqlite+aiosqlite:{urlparts[1]}"
-        case "postgresql":
-            return f"postgresql+asyncpg:{urlparts[1]}"
-        case "mysql":
-            return f"mysql+aiomysql:{urlparts[1]}"
-        case _:
-            raise ValueError(f"Unsupported database URL: {url}")
+    if urlparts[0] == "sqlite":
+        return f"sqlite+aiosqlite:{urlparts[1]}"
+    elif urlparts[0] == "postgresql":
+        return f"postgresql+asyncpg:{urlparts[1]}"
+    elif urlparts[0] == "mysql":
+        return f"mysql+aiomysql:{urlparts[1]}"
+    else:
+        raise ValueError(f"Unsupported database URL: {url}")
 
 
 def get_sync_database_url(url: str):
     urlparts = url.split(":")
-    match urlparts[0]:
-        case "sqlite":
-            return f"sqlite:{urlparts[1]}"
-        case "postgresql":
-            return f"postgresql:{urlparts[1]}"
-        case "mysql":
-            return f"mysql:{urlparts[1]}"
-        case _:
-            raise ValueError(f"Unsupported database URL: {url}")
+    if urlparts[0] == "sqlite":
+        return f"sqlite:{urlparts[1]}"
+    elif urlparts[0] == "postgresql":
+        return f"postgresql:{urlparts[1]}"
+    elif urlparts[0] == "mysql":
+        return f"mysql:{urlparts[1]}"
+    else:
+        raise ValueError(f"Unsupported database URL: {url}")
 
 
 async_engine = create_async_engine(

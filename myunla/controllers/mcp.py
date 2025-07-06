@@ -10,9 +10,7 @@ from myunla.schema.mcp import (
     McpConfigModel,
     McpConfigName,
 )
-from myunla.utils.auth import current_user
-from myunla.utils.logger import get_logger
-from myunla.utils.mcp import check_mcp_tenant_permission
+from myunla.utils import check_mcp_tenant_permission, current_user, get_logger
 
 router = APIRouter()
 logger = get_logger(__name__)

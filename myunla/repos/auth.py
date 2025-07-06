@@ -2,7 +2,7 @@ from sqlalchemy import func, or_, select
 
 from myunla.models.user import Tenant, User
 from myunla.repos.base import AsyncRepository
-from myunla.utils.utils import utc_now
+from myunla.utils import utc_now
 
 
 class AsyncUserRepository(AsyncRepository):

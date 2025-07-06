@@ -69,7 +69,7 @@ python tests/scripts/run_tests.py integration
 # 运行DSL相关测试
 python tests/scripts/run_tests.py dsl
 
-# 运行认证相关测试  
+# 运行认证相关测试
 python tests/scripts/run_tests.py auth
 
 # 运行所有测试
@@ -154,10 +154,10 @@ python tests/run_specific_test.py unit/test_dsl_lexer.py test_tokenize_numbers
 def test_feature_behavior(self):
     # Arrange (准备)
     setup_test_data()
-    
+
     # Act (执行)
     result = execute_function()
-    
+
     # Assert (断言)
     assert result == expected_value
 ```
@@ -228,4 +228,4 @@ pytest --tb=long
 
 - [pytest文档](https://docs.pytest.org/)
 - [FastAPI测试](https://fastapi.tiangolo.com/tutorial/testing/)
-- [SQLAlchemy测试](https://docs.sqlalchemy.org/en/14/orm/session_transaction.html#joining-a-session-into-an-external-transaction-such-as-for-test-suites) 
+- [SQLAlchemy测试](https://docs.sqlalchemy.org/en/14/orm/session_transaction.html#joining-a-session-into-an-external-transaction-such-as-for-test-suites)

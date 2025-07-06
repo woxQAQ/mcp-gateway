@@ -196,11 +196,11 @@ class gRPCTransport(Transport):
     def __init__(self, server: McpServer):
         super().__init__(server)
         # gRPC 特定的初始化
-    
+
     async def fetch_tools(self) -> list[Tool]:
         # gRPC 特定的工具获取逻辑
         pass
-    
+
     async def call_tools(self, params, req):
         # gRPC 特定的工具调用逻辑
         pass
@@ -252,4 +252,4 @@ myunla/gateway/transports/
 - [ ] 添加监控和健康检查
 - [ ] 性能优化和连接池管理
 - [ ] 实现流式传输的断点续传
-- [ ] 添加流式传输的压缩支持 
+- [ ] 添加流式传输的压缩支持

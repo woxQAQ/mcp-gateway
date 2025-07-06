@@ -70,7 +70,7 @@ class TestUserModel:
 
     def test_timestamps(self):
         """测试时间戳字段"""
-        from myunla.utils.utils import utc_now
+        from myunla.utils import utc_now
 
         now = utc_now()
         user = User(

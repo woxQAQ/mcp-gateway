@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request, Response, status
 from fastapi.responses import JSONResponse
 
 from myunla.gateway.state import BackendProto, State
-from myunla.utils.logger import get_logger
+from myunla.utils import get_logger
 
 logger = get_logger(__name__)
 
@@ -134,29 +134,28 @@ class GatewayServer:
         """根据端点路由到不同的处理器"""
         logger.debug(f"handling {endpoint} endpoint", extra={"prefix": prefix})
 
-        match endpoint:
-            case "sse":
-                return await self.handle_sse(request, prefix)
-            case "message":
-                return await self.handle_message(request, prefix)
-            case "mcp":
-                return await self.handle_mcp(request, prefix)
-            case _:
-                logger.warning(
-                    "invalid endpoint",
-                    extra={
-                        "endpoint": endpoint,
-                        "prefix": prefix,
-                        "remote_addr": (
-                            request.client.host if request.client else "unknown"
-                        ),
-                    },
-                )
-                return await self.send_protocol_error(
-                    "Invalid endpoint",
-                    status.HTTP_404_NOT_FOUND,
-                    "InvalidRequest",
-                )
+        if endpoint == "sse":
+            return await self.handle_sse(request, prefix)
+        elif endpoint == "message":
+            return await self.handle_message(request, prefix)
+        elif endpoint == "mcp":
+            return await self.handle_mcp(request, prefix)
+        else:
+            logger.warning(
+                "invalid endpoint",
+                extra={
+                    "endpoint": endpoint,
+                    "prefix": prefix,
+                    "remote_addr": (
+                        request.client.host if request.client else "unknown"
+                    ),
+                },
+            )
+            return await self.send_protocol_error(
+                "Invalid endpoint",
+                status.HTTP_404_NOT_FOUND,
+                "InvalidRequest",
+            )
 
     async def handle_sse(self, request: Request, prefix: str) -> Response:
         """处理SSE端点"""

@@ -7,15 +7,15 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from myunla.config.apiserver_config import AsyncSessionDependency
 from myunla.models.user import User
 from myunla.repos import async_db_ops
-from myunla.schema.auth import ChangePassword, Login, UserModel
-from myunla.utils.auth import (
+from myunla.schema.auth_schema import ChangePassword, Login, UserModel
+from myunla.utils import (
     COOKIE_MAX_AGE,
     UserManager,
     current_user,
     get_jwt_strategy,
+    get_logger,
     get_user_manager,
 )
-from myunla.utils.logger import get_logger
 
 router = APIRouter()
 logger = get_logger(__name__)

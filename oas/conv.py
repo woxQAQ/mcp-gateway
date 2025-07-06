@@ -1,7 +1,6 @@
 import datetime
 import json
-import random
-import string
+import uuid
 from typing import Any, Optional
 
 import yaml
@@ -48,7 +47,6 @@ class OpenAPIConverter:
             return yaml.safe_load(text)
 
     def convert(self):
-        random.seed(datetime.datetime.now().timestamp())
         mcp_config = Mcp(
             name=self.spec["info"]["title"].replace(" ", "_")
             + "_"
@@ -95,9 +93,8 @@ class OpenAPIConverter:
         return mcp_config
 
     def _get_random_name(self, length: int = 10) -> str:
-        return "".join(
-            random.choices(string.ascii_letters + string.digits, k=length)
-        )
+        """Generate a random name using UUID."""
+        return uuid.uuid4().hex[:length]
 
     def _get_tools(self, mcp_config: Mcp, server_config: HttpServer):
         for path, path_item in self.spec["paths"].items():
@@ -226,20 +223,19 @@ class OpenAPIConverter:
                 if default:
                     arg["default"] = default
                 arg["type"] = schema_type
-                match _in:
-                    case "query":
-                        query_params.append(arg)
-                    case "header":
-                        header_params.append(arg)
-                        # TODO: jinja template system placeholder
-                        tool.headers[arg["name"]] = "{" + arg["name"] + "}"
-                    case "path":
-                        arg["required"] = True
-                        path_params.append(arg)
-                        tool.path = tool.path.replace(
-                            "{" + arg["name"] + "}",
-                            "{{args." + arg["name"] + "}}",
-                        )
+                if _in == "query":
+                    query_params.append(arg)
+                elif _in == "header":
+                    header_params.append(arg)
+                    # TODO: jinja template system placeholder
+                    tool.headers[arg["name"]] = "{" + arg["name"] + "}"
+                elif _in == "path":
+                    arg["required"] = True
+                    path_params.append(arg)
+                    tool.path = tool.path.replace(
+                        "{" + arg["name"] + "}",
+                        "{{args." + arg["name"] + "}}",
+                    )
 
         return query_params, header_params, path_params
 

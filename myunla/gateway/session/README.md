@@ -164,4 +164,4 @@ python myunla/gateway/session/example.py
 2. 内存存储数据不持久化，重启后丢失
 3. Redis存储支持分布式部署和事件分发
 4. 所有操作都是异步的，需要使用await
-5. 记得在应用关闭时调用`store.close()`清理资源 
+5. 记得在应用关闭时调用`store.close()`清理资源

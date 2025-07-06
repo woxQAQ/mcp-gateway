@@ -118,9 +118,6 @@ class Router(YamlMixin, BaseModel):
     sse_prefix: str
     cors: Cors
 
-    # 为了向后兼容，保留http_server_ref但标记为可选
-    http_server_ref: Optional[HttpServer] = None
-
 
 class Mcp(YamlMixin, BaseModel):
     name: str

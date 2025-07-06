@@ -18,10 +18,10 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.pool import StaticPool
 
 from myunla.app import app
-from myunla.config.apiserver_config import app_settings
+from myunla.config import app_settings
 from myunla.models.base import Base
 from myunla.models.user import Role, User
-from myunla.utils.auth import UserManager
+from myunla.utils import UserManager
 
 
 @pytest.fixture(scope="session")

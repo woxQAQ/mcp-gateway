@@ -7,7 +7,7 @@ from mcp.types import CallToolRequestParams, CallToolResult, TextContent
 from api.mcp import McpServer
 from myunla.gateway.transports.base import Transport, transport_has_started
 from myunla.templates.context import Context, RequestWrapper
-from myunla.utils.logger import get_logger
+from myunla.utils import get_logger
 
 if TYPE_CHECKING:
     from contextlib import AbstractAsyncContextManager

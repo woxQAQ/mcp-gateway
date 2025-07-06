@@ -2,11 +2,11 @@ import json
 from typing import Any, Optional
 from urllib.parse import urljoin
 
-from jinja2 import Environment
+from jinja2 import Environment, select_autoescape
 
 from api.mcp import HttpServer, Mcp, Tool
 from myunla.templates.context import Context, RequestWrapper, ResponseWrapper
-from myunla.utils.logger import get_logger
+from myunla.utils import get_logger
 
 logger = get_logger(__name__)
 
@@ -22,7 +22,9 @@ class McpRequestMapper:
             mcp_config: MCP配置信息
         """
         self.mcp_config = mcp_config
-        self.jinja_env = Environment()
+        self.jinja_env = Environment(
+            autoescape=select_autoescape(['html', 'xml'])
+        )
 
     def find_tool_by_name(self, tool_name: str) -> Optional[Tool]:
         """

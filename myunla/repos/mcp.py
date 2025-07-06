@@ -1,15 +1,19 @@
+"""MCP配置数据访问层模块。"""
+
 from typing import Optional
 
 from sqlalchemy import select
 
 from myunla.models.user import McpConfig
 from myunla.repos.base import AsyncRepository
-from myunla.utils.utils import utc_now
+from myunla.utils import utc_now
 
 
 class AsyncMcpConfigRepository(AsyncRepository):
+    """异步MCP配置数据仓库类。"""
+
     async def query_config_by_id(self, config_id: str):
-        """根据ID查询MCP配置"""
+        """根据ID查询MCP配置。"""
 
         async def query(session):
             stmt = select(McpConfig).where(
