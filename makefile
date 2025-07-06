@@ -9,3 +9,9 @@ makemigration:
 
 migrate:
 	@alembic -c myunla/alembic.ini upgrade head
+
+.PHONY: fmt
+fmt:
+	@echo "Formatting code..."
+	@ruff check . --fix
+	@black .

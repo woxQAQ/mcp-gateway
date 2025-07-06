@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 logger = get_logger(__name__)
 
 
-class STDIOTransport(Transport):
+class StdIOTransport(Transport):
     """基于 MCP 官方 STDIO 客户端的传输实现，处理单个 McpServer"""
 
     def __init__(self, server: McpServer):

@@ -41,10 +41,11 @@ async def login(
         logger.warning(f"登录失败 - 用户不存在: {data.username}")
         raise HTTPException(status_code=400, detail="Invalid credentials")
 
-    verified, password_hash = (
-        await user_manager.password_helper.verify_and_update(
-            data.password, user.hashed_password
-        )
+    (
+        verified,
+        password_hash,
+    ) = await user_manager.password_helper.verify_and_update(
+        data.password, user.hashed_password
     )
     if not verified:
         logger.warning(f"登录失败 - 密码错误: {data.username}")

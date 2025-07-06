@@ -6,7 +6,7 @@ from mcp.types import CallToolRequestParams
 from api.mcp import Mcp, McpServer
 from myunla.gateway.transports.base import Transport
 from myunla.gateway.transports.sse import SSETransport
-from myunla.gateway.transports.stdio import STDIOTransport
+from myunla.gateway.transports.stdio import StdIOTransport
 from myunla.gateway.transports.streamable import (
     StreamableTransport,
 )
@@ -127,12 +127,13 @@ class TransportManager:
                 )
                 raise
 
-    def _create_transport_for_server(self, server: McpServer) -> Transport:
+    @staticmethod
+    def create_transport_for_server(server: McpServer) -> Transport:
         """根据服务器类型创建对应的 Transport"""
         if server.type.value == "sse":
             return SSETransport(server)
         elif server.type.value == "stdio":
-            return STDIOTransport(server)
+            return StdIOTransport(server)
         else:
             raise ValueError(f"Unsupported server type: {server.type.value}")
 
@@ -164,3 +165,6 @@ class TransportManager:
                 continue
 
         return None
+
+
+__all__ = ["TransportManager"]

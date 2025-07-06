@@ -1,5 +1,4 @@
 from datetime import datetime
-from os import name
 from typing import Any, Optional
 
 import yaml
@@ -33,31 +32,57 @@ class Tool(YamlMixin, BaseModel):
     input_schema: dict[str, Any]
 
     def to_tool_type(self) -> ToolType:
-        inputSchema = []
+        """转换为MCP Tool类型"""
+        properties = {}
+
+        # 构建参数的properties
         for arg in self.args:
-            property = {
-                "name": arg["name"],
+            prop = {
                 "description": arg["description"],
             }
-            if arg["type"] == "array":
+
+            # 添加类型信息
+            if "type" in arg:
+                prop["type"] = arg["type"]
+
+            # 处理数组类型
+            if arg.get("type") == "array" and "items" in arg:
                 items = {}
-                if arg["items"]["enum"]:
-                    items["enum"] = arg["items"]["enum"]
+                items_config = arg["items"]
+
+                if items_config.get("enum"):
+                    items["enum"] = items_config["enum"]
                 else:
-                    items["type"] = arg["items"]["type"]
-                    if arg["items"]["properties"]:
-                        items["properties"] = arg["items"]["properties"]
-                property["items"] = items
-            inputSchema[arg[name]] = property
+                    if "type" in items_config:
+                        items["type"] = items_config["type"]
+                    if items_config.get("properties"):
+                        items["properties"] = items_config["properties"]
+
+                prop["items"] = items
+
+            properties[arg["name"]] = prop
+
+        # 构建inputSchema
+        input_schema = {
+            "type": "object",
+            "properties": properties,
+        }
+
+        # 添加required字段（如果存在）
+        required_fields = [
+            arg["name"] for arg in self.args if arg.get("required", False)
+        ]
+        if required_fields:
+            input_schema["required"] = required_fields
+
+        # 合并自定义的input_schema
         if self.input_schema:
-            inputSchema.append(self.input_schema)
+            input_schema.update(self.input_schema)
 
         return ToolType(
             name=self.name,
             description=self.description,
-            method=self.method,
-            path=self.path,
-            inputSchema=inputSchema,
+            inputSchema=input_schema,
         )
 
 
@@ -76,6 +101,7 @@ class McpServer(YamlMixin, BaseModel):
     command: str
     preinstalled: bool
     url: str
+    args: list[str]
 
 
 class Cors(YamlMixin, BaseModel):
@@ -88,9 +114,12 @@ class Cors(YamlMixin, BaseModel):
 
 class Router(YamlMixin, BaseModel):
     prefix: str
-    http_server_ref: HttpServer
+    server: str  # 服务器名称，可以指向HTTP服务器或MCP服务器
     sse_prefix: str
     cors: Cors
+
+    # 为了向后兼容，保留http_server_ref但标记为可选
+    http_server_ref: Optional[HttpServer] = None
 
 
 class Mcp(YamlMixin, BaseModel):
