@@ -14,7 +14,7 @@ def random_id():
     return uuid.uuid4().hex[:16]
 
 
-def EnumColumn(enum_class: Enum, **kwargs):
+def EnumColumn(enum_class: type[Enum], **kwargs):
     enum_values = [e.value for e in enum_class]
     kwargs.setdefault("name", enum_class.__name__.lower())
     return SQLColumn(*enum_values, **kwargs)

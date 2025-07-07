@@ -1,13 +1,12 @@
-import select
-from collections import UserList
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from sqlalchemy import select
 
 from myunla.config.apiserver_config import AsyncSessionDependency
 from myunla.models.user import User
 from myunla.repos import async_db_ops
-from myunla.schema.auth_schema import ChangePassword, Login, UserModel
+from myunla.schema.auth_schema import ChangePassword, Login, UserList, UserModel
 from myunla.utils import (
     COOKIE_MAX_AGE,
     UserManager,
@@ -31,7 +30,9 @@ async def login(
 ):
     logger.info(f"用户登录尝试: {data.username}")
 
-    from sqlalchemy import select
+    if not data.password:
+        logger.warning(f"登录失败 - 密码为空: {data.username}")
+        raise HTTPException(status_code=400, detail="Invalid credentials")
 
     result = await session.execute(
         select(User).where(User.username == data.username)
@@ -44,7 +45,7 @@ async def login(
     (
         verified,
         password_hash,
-    ) = await user_manager.password_helper.verify_and_update(
+    ) = user_manager.password_helper.verify_and_update(
         data.password, user.hashed_password
     )
     if not verified:
@@ -93,7 +94,7 @@ async def list_users(
     logger.info(f"管理员 {user.username} 获取用户列表")
     result = await session.execute(select(User))
     users = [UserModel.from_orm(_u) for _u in result.scalars()]
-    return UserList(users=users)
+    return UserList(users=users, page_result=None)
 
 
 @router.post("/users/change-password")
@@ -104,22 +105,29 @@ async def change_password(
     user_manager: UserManager = Depends(get_user_manager),
 ):
     logger.info(f"用户修改密码: {data.username}")
+    if not data.old_password:
+        logger.warning(f"修改密码失败 - 旧密码为空: {data.username}")
+        raise HTTPException(status_code=400, detail="Invalid credentials")
+    if not data.new_password:
+        logger.warning(f"修改密码失败 - 新密码为空: {data.username}")
+        raise HTTPException(status_code=400, detail="Invalid credentials")
+    if not data.username:
+        logger.warning(f"修改密码失败 - 用户名为空: {data.username}")
+        raise HTTPException(status_code=400, detail="Invalid credentials")
 
     user = await async_db_ops.query_user_by_username(data.username)
     if not user:
         logger.warning(f"修改密码失败 - 用户不存在: {data.username}")
         raise HTTPException(status_code=400, detail="User not found")
 
-    verified, _ = await user_manager.password_helper.verify_and_update(
+    verified, _ = user_manager.password_helper.verify_and_update(
         data.old_password, user.hashed_password
     )
     if not verified:
         logger.warning(f"修改密码失败 - 旧密码错误: {data.username}")
         raise HTTPException(status_code=400, detail="Invalid credentials")
 
-    user.hashed_password = await user_manager.password_helper.hash(
-        data.new_password
-    )
+    user.hashed_password = user_manager.password_helper.hash(data.new_password)
     session.add(user)
     await session.commit()
 

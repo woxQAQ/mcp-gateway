@@ -19,27 +19,24 @@ logger = get_logger(__name__)
 @router.get("/configs/names", response_model=list[McpConfigName])
 async def list_mcp_config_names(
     request: Request,
-    tenant_id: Optional[str] = Query(None, description="租户ID"),
+    tenant_name: Optional[str] = Query(None, description="租户ID"),
     include_deleted: bool = Query(False, description="是否包含已删除的配置"),
     user: User = Depends(current_user),
 ):
     """获取MCP配置名称列表"""
     logger.info(
-        f"用户 {user.username} 获取MCP配置名称列表 (tenant_id: {tenant_id})"
+        f"用户 {user.username} 获取MCP配置名称列表 (tenant_name: {tenant_name})"
     )
 
     results = await async_db_ops.list_config_names(
-        include_deleted=include_deleted
+        tenant_name=tenant_name, include_deleted=include_deleted
     )
-    if user.role != "admin":
-        user_tenants = await async_db_ops.get_user_tenants(user.id)
-        results = results.filter(lambda x: x.tenant_id in user_tenants)
-    if tenant_id:
-        results = results.filter(lambda x: x.tenant_id == tenant_id)
+    if tenant_name:
+        results = [result for result in results if result[2] == tenant_name]
 
     logger.debug(f"返回 {len(results)} 个配置名称")
     return {
-        'names': [result.name for result in results],
+        'names': [result[1] for result in results],
     }
 
 
@@ -58,13 +55,15 @@ async def active_mcp_config(
         logger.warning(f"激活失败 - 租户不存在: {tenant_name}")
         raise HTTPException(status_code=404, detail="Tenant not found")
 
-    tenant_id = tenant.id
-    config = await async_db_ops.query_config_by_name_and_tenant(name, tenant_id)
+    tenant_name = tenant.id
+    config = await async_db_ops.query_config_by_name_and_tenant(
+        name, tenant_name
+    )
     if not config:
         logger.warning(f"激活失败 - 配置不存在: {tenant_name}/{name}")
         raise HTTPException(status_code=404, detail="MCP config not found")
 
-    check_mcp_tenant_permission(config, tenant_id, user)
+    await check_mcp_tenant_permission(config, tenant_name, user)
     await async_db_ops.set_active(config.id)
 
     logger.info(f"MCP配置激活成功: {tenant_name}/{name}")
@@ -83,7 +82,7 @@ async def create_mcp_config(
     try:
         # 检查是否已存在同名配置
         existing = await async_db_ops.query_config_by_name_and_tenant(
-            data.name, data.tenant_id
+            data.name, data.tenant_name
         )
         if existing:
             logger.warning(f"创建失败 - 配置已存在: {data.name}")
@@ -97,11 +96,11 @@ async def create_mcp_config(
             logger.warning(f"创建失败 - 租户不存在: {data.tenant_name}")
             raise HTTPException(status_code=400, detail="Tenant not found")
 
-        check_mcp_tenant_permission(data, tenant.id, user)
+        await check_mcp_tenant_permission(data, tenant.id, user)
 
         config = McpConfig(
             name=data.name,
-            tenant_id=tenant.id,
+            tenant_name=tenant.id,
             routers=data.routers,
             servers=data.servers,
             tools=data.tools,
@@ -124,28 +123,17 @@ async def create_mcp_config(
 @router.get("/configs", response_model=list[McpConfigModel])
 async def list_mcp_configs(
     request: Request,
-    tenant_id: Optional[str] = Query(None, description="租户ID"),
+    tenant_name: Optional[str] = Query(None, description="租户ID"),
     user: User = Depends(current_user),
 ):
     """获取MCP配置列表"""
     logger.info(
-        f"用户 {user.username} 获取MCP配置列表 (tenant_id: {tenant_id})"
+        f"用户 {user.username} 获取MCP配置列表 (tenant_name: {tenant_name})"
     )
 
-    if user.role != "admin" and tenant_id:
-        user_tenants = await async_db_ops.get_user_tenants(user.id)
-        if tenant_id not in user_tenants:
-            logger.warning(
-                f"权限不足 - 用户 {user.username} 无权访问租户 {tenant_id}"
-            )
-            raise HTTPException(status_code=403, detail="Forbidden")
-
-    configs = await async_db_ops.list_configs(tenant_id)
-    if tenant_id:
-        configs = configs.filter(lambda x: x.tenant_id == tenant_id)
-    elif user.role != "admin":
-        user_tenants = await async_db_ops.get_user_tenants(user.id)
-        configs = configs.filter(lambda x: x.tenant_id in user_tenants)
+    configs = await async_db_ops.list_configs(tenant_name)
+    if tenant_name:
+        configs = configs.filter(lambda x: x.tenant_name == tenant_name)
 
     logger.debug(f"返回 {len(configs)} 个配置")
     return [McpConfigModel.from_orm(config) for config in configs]
@@ -161,7 +149,7 @@ async def update_mcp_config(
     logger.info(f"用户 {user.username} 更新MCP配置: {data.name}")
 
     try:
-        old = async_db_ops.query_config_by_name_and_tenant(
+        old = await async_db_ops.query_config_by_name_and_tenant(
             data.name, data.tenant_name
         )
         if not old:
@@ -174,8 +162,8 @@ async def update_mcp_config(
                 status_code=400, detail="MCP config name cannot be changed"
             )
 
-        check_mcp_tenant_permission(data, data.tenant_name, user)
-        await async_db_ops.update_config(data)
+        await check_mcp_tenant_permission(data, data.tenant_name, user)
+        await async_db_ops.update_config(McpConfig.from_mcp(data))
 
         logger.info(f"MCP配置更新成功: {data.name}")
         return {
@@ -189,34 +177,34 @@ async def update_mcp_config(
         raise HTTPException(status_code=500, detail=f"更新失败: {e}")
 
 
-@router.delete("/configs/{tenant_id}/{name}")
+@router.delete("/configs/{tenant_name}/{name}")
 async def delete_mcp_config(
-    tenant_id: str,
+    tenant_name: str,
     name: str,
     request: Request,
     user: User = Depends(current_user),
 ):
     """删除MCP配置"""
-    logger.info(f"用户 {user.username} 删除MCP配置: {tenant_id}/{name}")
+    logger.info(f"用户 {user.username} 删除MCP配置: {tenant_name}/{name}")
 
     try:
         cfg = await async_db_ops.query_config_by_name_and_tenant(
-            tenant_id, name
+            tenant_name, name
         )
         if not cfg:
-            logger.warning(f"删除失败 - 配置不存在: {tenant_id}/{name}")
+            logger.warning(f"删除失败 - 配置不存在: {tenant_name}/{name}")
             raise HTTPException(status_code=404, detail="MCP config not found")
 
-        check_mcp_tenant_permission(cfg, tenant_id, user)
+        await check_mcp_tenant_permission(cfg, tenant_name, user)
         await async_db_ops.delete_config(cfg)
 
-        logger.info(f"MCP配置删除成功: {tenant_id}/{name}")
+        logger.info(f"MCP配置删除成功: {tenant_name}/{name}")
         return {"message": "MCP config deleted successfully"}
 
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"删除MCP配置失败: {tenant_id}/{name} - {e}")
+        logger.error(f"删除MCP配置失败: {tenant_name}/{name} - {e}")
         raise HTTPException(status_code=500, detail=f"删除失败: {e}")
 
 

@@ -106,12 +106,12 @@ class TestTenantModel:
         assert tenant.description == "Test tenant"
         assert tenant.is_active is True
 
-    def test_tenant_id_generation(self):
+    def test_tenant_name_generation(self):
         """测试租户ID生成"""
         from myunla.models.base import random_id
 
-        tenant_id = "tenant" + random_id()
-        assert tenant_id.startswith("tenant")
+        tenant_name = "tenant" + random_id()
+        assert tenant_name.startswith("tenant")
 
 
 @pytest.mark.unit
@@ -123,11 +123,11 @@ class TestUserTenantModel:
         """测试用户租户关联创建"""
         user_tenant = UserTenant(
             user_id="user123",
-            tenant_id="tenant456",
+            tenant_name="tenant456",
         )
 
         assert user_tenant.user_id == "user123"
-        assert user_tenant.tenant_id == "tenant456"
+        assert user_tenant.tenant_name == "tenant456"
 
 
 @pytest.mark.unit
@@ -140,7 +140,7 @@ class TestMcpConfigModel:
         """测试MCP配置创建"""
         config = McpConfig(
             name=sample_mcp_config["name"],
-            tenant_id="tenant123",
+            tenant_name="tenant123",
             routers=sample_mcp_config["routers"],
             servers=sample_mcp_config["servers"],
             tools=sample_mcp_config["tools"],
@@ -148,7 +148,7 @@ class TestMcpConfigModel:
         )
 
         assert config.name == "test_config"
-        assert config.tenant_id == "tenant123"
+        assert config.tenant_name == "tenant123"
         assert len(config.routers) == 1
         assert len(config.servers) == 1
         assert len(config.tools) == 1
@@ -168,7 +168,7 @@ class TestMcpConfigModel:
 
         config = McpConfig(
             name="test",
-            tenant_id="tenant123",
+            tenant_name="tenant123",
             routers=routers,
             servers=servers,
             tools=[],

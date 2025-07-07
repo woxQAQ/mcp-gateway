@@ -6,7 +6,11 @@ from fastapi import Depends
 from pydantic import Field
 from pydantic_settings import BaseSettings
 from sqlalchemy import create_engine
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlalchemy.orm import Session, sessionmaker
 
 BASE_PATH = Path(__file__).parent
@@ -59,14 +63,18 @@ sync_engine = create_engine(
 
 
 async def get_async_session() -> AsyncGenerator[AsyncSession]:
-    async_session = sessionmaker(async_engine, class_=AsyncSession)
+    async_session = async_sessionmaker(async_engine)
     async with async_session() as session:
         yield session
 
 
 def get_sync_session() -> Generator[Session]:
-    sync_session = sessionmaker(sync_engine, class_=Session)
-    return sync_session()
+    sync_session = sessionmaker(sync_engine)
+    session = sync_session()
+    try:
+        yield session
+    finally:
+        session.close()
 
 
 AsyncSessionDependency = Annotated[AsyncSession, Depends(get_async_session)]

@@ -40,7 +40,7 @@ async def import_openapi(file: UploadFile = File(...)):
         logger.debug("转换为数据库模型")
         db_config = McpConfig(
             name=cfg.name,
-            tenant_id=cfg.tenant_name,  # TODO: 从用户上下文获取tenant_id
+            tenant_name=cfg.tenant_name,  # TODO: 从用户上下文获取tenant_name
             routers=cfg.routers,
             servers=cfg.servers,
             tools=cfg.tools,

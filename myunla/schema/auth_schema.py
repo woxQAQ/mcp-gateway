@@ -40,7 +40,7 @@ class UserModel(BaseModel):
             id=user.id,
             username=user.username,
             email=user.email,
-            role=user.role,
+            role=user.role.value,
             is_active=user.is_active,
             date_joined=user.date_joined.isoformat(),
         )

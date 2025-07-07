@@ -122,13 +122,13 @@ class TestDatabaseIntegration:
         await test_session.refresh(user)
 
         # 创建用户租户关系
-        user_tenant = UserTenant(user_id=user.id, tenant_id=tenant.id)
+        user_tenant = UserTenant(user_id=user.id, tenant_name=tenant.id)
         test_session.add(user_tenant)
         await test_session.commit()
 
         # 验证关系
         assert user_tenant.user_id == user.id
-        assert user_tenant.tenant_id == tenant.id
+        assert user_tenant.tenant_name == tenant.id
 
 
 @pytest.mark.integration
