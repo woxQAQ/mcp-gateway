@@ -2,14 +2,12 @@
 
 import asyncio
 import json
-import logging
 from datetime import datetime
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
-import redis.asyncio as redis
-from redis.asyncio.sentinel import Sentinel
+from redis.asyncio.client import PubSub, Redis
 
-from myunla.config.session_config import RedisClusterType, SessionRedisConfig
+from myunla.config.session_config import SessionRedisConfig
 from myunla.gateway.session.session import (
     Connection,
     Message,
@@ -18,10 +16,7 @@ from myunla.gateway.session.session import (
     SessionNotFoundError,
     Store,
 )
-from myunla.utils import get_logger, split_by_multiple_delimiters
-
-if TYPE_CHECKING:
-    from redis.asyncio.client import Redis
+from myunla.utils import get_logger
 
 logger = get_logger(__name__)
 
@@ -62,6 +57,9 @@ class RedisConnection(Connection):
 
     async def _renew_ttl(self):
         """续期会话TTL"""
+        if not self.store.client:
+            return
+
         key = self.store._get_session_key(self._meta.id)
         ids_key = self.store._get_ids_key()
 
@@ -86,8 +84,14 @@ class RedisStore(Store):
     ):
         super().__init__()
         self.config = config
-        self.client: Optional[Redis] = None
-        self.pubsub: Optional[redis.client.PubSub] = None
+        self.client: Redis = Redis(
+            host=config.host,
+            port=config.port,
+            username=config.username,
+            password=config.password,
+            db=config.db,
+        )
+        self.pubsub: Optional[PubSub] = None
         self.connections: dict[str, RedisConnection] = {}
         self._lock = asyncio.Lock()
         self._listen_task: Optional[asyncio.Task] = None
@@ -99,49 +103,16 @@ class RedisStore(Store):
 
     async def initialize(self):
         """初始化Redis连接"""
-        addrs = split_by_multiple_delimiters(self.config.addr, ";", ",")
-
         try:
-            if self.config.cluster_type == RedisClusterType.SENTINEL:
-                # 哨兵模式
-                sentinel = Sentinel(
-                    [
-                        (addr.split(":")[0], int(addr.split(":")[1]))
-                        for addr in addrs
-                    ]
-                )
-                self.client = sentinel.master_for(
-                    self.config.master_name,
-                    username=self.config.username,
-                    password=self.config.password,
-                    db=self.config.db,
-                )
-            elif self.config.cluster_type == RedisClusterType.CLUSTER:
-                # 集群模式
-                self.client = redis.RedisCluster(
-                    startup_nodes=[
-                        {
-                            "host": addr.split(":")[0],
-                            "port": int(addr.split(":")[1]),
-                        }
-                        for addr in addrs
-                    ],
-                    username=self.config.username,
-                    password=self.config.password,
-                    decode_responses=False,
-                )
-            else:
-                # 单机模式
-                addr = addrs[0]
-                host, port = addr.split(":")
-                self.client = redis.Redis(
-                    host=host,
-                    port=int(port),
-                    username=self.config.username,
-                    password=self.config.password,
-                    db=self.config.db,
-                    decode_responses=False,
-                )
+            # 单机模式
+            self.client = Redis(
+                host=self.config.host,
+                port=self.config.port,
+                username=self.config.username,
+                password=self.config.password,
+                db=self.config.db,
+                decode_responses=False,
+            )
 
             # 测试连接
             await self.client.ping()
@@ -175,6 +146,8 @@ class RedisStore(Store):
 
     async def _handle_updates(self):
         """处理会话更新通知"""
+        if not self.pubsub:
+            return
         try:
             async for message in self.pubsub.listen():
                 if message["type"] != "message":
@@ -245,6 +218,8 @@ class RedisStore(Store):
     async def _publish_update(
         self, action: str, meta: Meta, message: Optional[Message] = None
     ):
+        if not self.client:
+            return
         """发布会话更新"""
         update = {
             "action": action,
@@ -270,6 +245,8 @@ class RedisStore(Store):
     async def register(self, meta: Meta) -> Connection:
         """注册新连接"""
         # 序列化元数据
+        if not self.client:
+            raise ValueError("Redis client not initialized")
         data = json.dumps(meta.model_dump(), default=str)
 
         # 存储会话元数据
@@ -296,6 +273,8 @@ class RedisStore(Store):
     async def get(self, id: str) -> Connection:
         """获取连接"""
         # 检查会话ID是否有效
+        if not self.client:
+            raise ValueError("Redis client not initialized")
         ids_key = self._get_ids_key()
         exists = await self.client.sismember(ids_key, id)
         if not exists:
@@ -327,6 +306,8 @@ class RedisStore(Store):
         # 从活动连接中移除
         async with self._lock:
             self.connections.pop(id, None)
+        if not self.client:
+            raise ValueError("Redis client not initialized")
 
         # 检查会话是否存在
         ids_key = self._get_ids_key()
@@ -354,6 +335,8 @@ class RedisStore(Store):
     async def list(self) -> list[Connection]:
         """列出所有连接"""
         # 获取所有会话ID
+        if not self.client:
+            raise ValueError("Redis client not initialized")
         ids_key = self._get_ids_key()
         session_ids = await self.client.smembers(ids_key)
 
@@ -384,10 +367,8 @@ class RedisStore(Store):
         return connections
 
 
-async def create_redis_store(
-    config: SessionRedisConfig, logger: Optional[logging.Logger] = None
-) -> RedisStore:
+async def create_redis_store(config: SessionRedisConfig) -> RedisStore:
     """创建Redis存储实例"""
-    store = RedisStore(config, logger)
+    store = RedisStore(config)
     await store.initialize()
     return store

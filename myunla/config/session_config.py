@@ -8,9 +8,8 @@ from pydantic import BaseModel, Field
 class SessionRedisConfig(BaseModel):
     """Redis会话配置"""
 
-    addr: str = Field(
-        default="localhost:6379", description="Redis地址，支持多地址用;或,分隔"
-    )
+    host: str = Field(default="localhost", description="Redis地址")
+    port: int = Field(default=6379, description="Redis端口")
     username: str = Field(default="", description="Redis用户名")
     password: str = Field(default="", description="Redis密码")
     db: int = Field(default=0, description="Redis数据库编号")

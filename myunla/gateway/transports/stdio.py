@@ -86,6 +86,8 @@ class StdIOTransport(Transport):
     @transport_has_started
     async def fetch_tools(self) -> list[Tool]:
         """从STDIO服务器获取工具列表"""
+        if not self._transport:
+            raise ValueError("Transport not initialized")
 
         try:
             # 通过transport获取工具
@@ -115,6 +117,9 @@ class StdIOTransport(Transport):
     ) -> CallToolResult:
         """调用工具"""
         # 检查工具是否存在于此服务器
+        if not self._transport:
+            raise ValueError("Transport not initialized")
+
         tool_name = call_tool_params.name
         if not self._has_tool(tool_name):
             # 返回错误格式的 MCP tool 结果

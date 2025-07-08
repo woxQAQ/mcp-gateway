@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from api.enums import Policy
 from api.mcp import HttpServer, Mcp, McpServer, Router, Tool
-from myunla.gateway.transports import TransportManager
+from myunla.gateway.transports import create_transport
 from myunla.gateway.transports.base import Transport
 from myunla.utils import get_logger
 
@@ -111,9 +111,9 @@ class State(BaseModel):
             # 创建一个带有默认值的Runtime
             runtime = Runtime(
                 backend_proto=BackendProto.HTTP,
-                router=Router(prefix=prefix, server=""),
+                router=Router(prefix=prefix, server="", sse_prefix=""),
                 tools={},
-                tools_schema={},
+                tools_schema=[],
             )
             self.runtime[prefix] = runtime
         return runtime
@@ -276,9 +276,7 @@ class State(BaseModel):
 
         if transport is None:
             try:
-                transport = TransportManager.create_transport_for_server(
-                    mcp_server
-                )
+                transport = create_transport(mcp_server)
             except Exception as e:
                 raise BuildStateException(
                     f"Failed to create transport for server {mcp_server.name}: {e}",

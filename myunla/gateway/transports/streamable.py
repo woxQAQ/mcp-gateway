@@ -91,8 +91,11 @@ class StreamableTransport(Transport):
     @transport_has_started
     async def fetch_tools(self) -> list[Tool]:
         """获取工具列表"""
+        if not self._transport:
+            raise ValueError("Transport not initialized")
+
         try:
-            async with self._transport as session:  # session: ClientSession
+            async with self._transport as session:
                 tools_result = await session.list_tools()
                 tools = tools_result.tools
 
@@ -116,6 +119,9 @@ class StreamableTransport(Transport):
         self, call_tool_params: CallToolRequestParams, req: RequestWrapper
     ) -> CallToolResult:
         """调用工具（非流式）"""
+        if not self._transport:
+            raise ValueError("Transport not initialized")
+
         tool_name = call_tool_params.name
         if not self._has_tool(tool_name):
             return CallToolResult(

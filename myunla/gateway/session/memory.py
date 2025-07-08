@@ -9,13 +9,6 @@ from myunla.gateway.session.session import (
 )
 from myunla.utils import get_logger
 
-try:
-    from aiorwlock import RWLock
-
-    HAS_RWLOCK = True
-except ImportError:
-    HAS_RWLOCK = False
-
 logger = get_logger(__name__)
 
 
@@ -63,46 +56,28 @@ class MemoryStore(Store):
 
     def __init__(self):
         super().__init__()
-        self._lock = RWLock() if HAS_RWLOCK else asyncio.Lock()
+        self._lock = asyncio.Lock()
         self._conns: dict[str, Connection] = {}
 
     async def register(self, meta: Meta) -> Connection:
         """注册新连接"""
-        if HAS_RWLOCK:
-            async with self._lock.writer:
-                # 检查连接是否已存在
-                if meta.id in self._conns:
-                    raise ValueError(f"connection already exists: {meta.id}")
+        async with self._lock:
+            # 检查连接是否已存在
+            if meta.id in self._conns:
+                raise ValueError(f"connection already exists: {meta.id}")
 
-                # 创建新连接
-                conn = MemoryConnection(meta)
+            # 创建新连接
+            conn = MemoryConnection(meta)
 
-                # 存储连接
-                self._conns[meta.id] = conn
+            # 存储连接
+            self._conns[meta.id] = conn
 
-                return conn
-        else:
-            async with self._lock:
-                # 检查连接是否已存在
-                if meta.id in self._conns:
-                    raise ValueError(f"connection already exists: {meta.id}")
-
-                # 创建新连接
-                conn = MemoryConnection(meta)
-
-                # 存储连接
-                self._conns[meta.id] = conn
-
-                return conn
+            return conn
 
     async def get(self, id: str) -> Connection:
         """获取连接"""
-        if HAS_RWLOCK:
-            async with self._lock.reader:
-                conn = self._conns.get(id)
-        else:
-            async with self._lock:
-                conn = self._conns.get(id)
+        async with self._lock:
+            conn = self._conns.get(id)
 
         if conn is None:
             raise SessionNotFoundError(id)
@@ -110,48 +85,26 @@ class MemoryStore(Store):
 
     async def unregister(self, id: str):
         """注销连接"""
-        if HAS_RWLOCK:
-            async with self._lock.writer:
-                conn = self._conns.get(id)
-                if conn is None:
-                    raise SessionNotFoundError(id)
+        async with self._lock:
+            conn = self._conns.get(id)
+            if conn is None:
+                raise SessionNotFoundError(id)
 
-                # 关闭连接
-                try:
-                    await conn.close()
-                except Exception as e:
-                    logger.error(
-                        "failed to close connection",
-                        extra={"id": id, "error": str(e)},
-                    )
+            # 关闭连接
+            try:
+                await conn.close()
+            except Exception as e:
+                logger.error(
+                    "failed to close connection",
+                    extra={"id": id, "error": str(e)},
+                )
 
-                # 删除连接
-                del self._conns[id]
-        else:
-            async with self._lock:
-                conn = self._conns.get(id)
-                if conn is None:
-                    raise SessionNotFoundError(id)
-
-                # 关闭连接
-                try:
-                    await conn.close()
-                except Exception as e:
-                    logger.error(
-                        "failed to close connection",
-                        extra={"id": id, "error": str(e)},
-                    )
-
-                # 删除连接
-                del self._conns[id]
+            # 删除连接
+            del self._conns[id]
 
     async def list(self) -> list[Connection]:
         """列出所有连接"""
-        if HAS_RWLOCK:
-            async with self._lock.reader:
-                conns = list(self._conns.values())
-        else:
-            async with self._lock:
-                conns = list(self._conns.values())
+        async with self._lock:
+            conns = list(self._conns.values())
 
         return conns

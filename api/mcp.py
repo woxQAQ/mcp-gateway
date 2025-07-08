@@ -116,7 +116,7 @@ class Router(YamlMixin, BaseModel):
     prefix: str
     server: str  # 服务器名称，可以指向HTTP服务器或MCP服务器
     sse_prefix: str
-    cors: Cors
+    cors: Optional[Cors] = None
 
 
 class Mcp(YamlMixin, BaseModel):

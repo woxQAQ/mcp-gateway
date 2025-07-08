@@ -85,6 +85,9 @@ class SSETransport(Transport):
     @transport_has_started
     async def fetch_tools(self) -> list[Tool]:
         """从SSE服务器获取工具列表"""
+        if not self._transport:
+            raise ValueError("Transport not initialized")
+
         try:
             # 通过transport获取工具
             async with self._transport as session:  # session: ClientSession
@@ -111,6 +114,8 @@ class SSETransport(Transport):
         self, call_tool_params: CallToolRequestParams, req: RequestWrapper
     ) -> CallToolResult:
         """调用工具"""
+        if not self._transport:
+            raise ValueError("Transport not initialized")
 
         # 检查工具是否存在于此服务器
         tool_name = call_tool_params.name

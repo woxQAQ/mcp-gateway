@@ -72,8 +72,8 @@ class OpenAPIConverter:
 
         router_config = Router(
             prefix="/",
-            http_server_ref=server_config,
             sse_prefix="/sse",
+            server=server_config.name,
             cors=Cors(
                 allow_origins=["*"],
                 allow_credentials=True,

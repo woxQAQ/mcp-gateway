@@ -32,7 +32,7 @@ class Transport(ABC):
         """
         pass
 
-    async def fetch_tools(self) -> list[Tool]:
+    async def fetch_tools(self) -> list[Tool]:  # type: ignore
         """
         Fetch tools from the transport.
         """
@@ -40,7 +40,7 @@ class Transport(ABC):
 
     async def call_tools(
         self, call_tool_params: CallToolRequestParams, req: RequestWrapper
-    ) -> CallToolResult:
+    ) -> CallToolResult:  # type: ignore
         """
         Call a tool.
         """

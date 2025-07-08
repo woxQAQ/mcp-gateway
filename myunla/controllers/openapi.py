@@ -17,6 +17,8 @@ logger = get_logger(__name__)
 @router.post("/openapi/import")
 async def import_openapi(file: UploadFile = File(...)):
     logger.info(f"开始导入OpenAPI文件: {file.filename}")
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="文件名不能为空")
 
     # 文件类型检查
     if not file.filename.endswith(('.json', '.yaml', '.yml')):
@@ -58,11 +60,6 @@ async def import_openapi(file: UploadFile = File(...)):
     except (json.JSONDecodeError, yaml.YAMLError) as e:
         logger.error(f"文件格式错误: {file.filename} - {e}")
         raise HTTPException(status_code=400, detail=f"文件格式错误: {e}")
-    except UnicodeDecodeError as e:
-        logger.error(f"文件编码错误: {file.filename} - {e}")
-        raise HTTPException(
-            status_code=400, detail=f"文件编码错误，请使用UTF-8 {e}"
-        )
     except KeyError as e:
         logger.error(f"OpenAPI规范字段缺失: {file.filename} - {e}")
         raise HTTPException(
