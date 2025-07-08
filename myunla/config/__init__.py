@@ -21,8 +21,14 @@ from .session_config import SessionConfig
 
 app_settings = settings
 
+gateway_settings = {
+    "session_config": SessionConfig(),
+    "notifier_config": NotifierConfig(),
+}
+
 __all__ = [
     "app_settings",
+    "gateway_settings",
     "async_engine",
     "sync_engine",
     "AsyncSessionDependency",

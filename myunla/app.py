@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 
-from myunla.config import settings
+from myunla.config import gateway_settings, settings
 from myunla.controllers import auth, mcp, openapi
+from myunla.gateway.server import GatewayServer
+from myunla.gateway.state import Metrics, State
 
 app = FastAPI(
     title="API Server",
@@ -9,10 +11,13 @@ app = FastAPI(
     debug=settings.debug,
 )
 
-gateway = FastAPI(
-    title="Gateway",
-    version="0.1.0",
-    debug=settings.debug,
+gateway_server = GatewayServer(
+    State(
+        mcps=[],
+        runtime={},
+        metrics=Metrics(),
+    ),
+    gateway_settings["session_config"],
 )
 
 app.include_router(auth.router, prefix="/api/v1/auth")
