@@ -118,6 +118,27 @@ class State(BaseModel):
             self.runtime[prefix] = runtime
         return runtime
 
+    def get_sse_prefix(self, prefix: str) -> str:
+        """获取指定前缀的SSE前缀配置"""
+        runtime = self.runtime.get(prefix)
+        if runtime and runtime.router:
+            return runtime.router.sse_prefix
+        return ""
+
+    def get_proto_type(self, prefix: str) -> Optional[str]:
+        """获取指定前缀的协议类型"""
+        runtime = self.runtime.get(prefix)
+        if runtime:
+            return runtime.backend_proto.value
+        return None
+
+    def get_transport(self, prefix: str) -> Optional[Transport]:
+        """获取指定前缀的传输层"""
+        runtime = self.runtime.get(prefix)
+        if runtime:
+            return runtime.transport
+        return None
+
     def setRouter(self, prefix: str, router: Router) -> None:
         """设置路由器配置"""
         runtime = self.get_runtime(prefix)
