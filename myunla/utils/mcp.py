@@ -19,10 +19,6 @@ async def check_mcp_tenant_permission(
     for router in cfg.routers:
         if router.prefix == tenant_prefix:
             continue
-        if not router.startswith(tenant_prefix + "/"):
-            raise HTTPException(status_code=403, detail="Forbidden")
-    if user.role != "admin":
-        user_tenants = await async_db_ops.get_user_tenants(user.id)
-        if tenant_name not in user_tenants:
+        if not router.prefix.startswith(tenant_prefix + "/"):
             raise HTTPException(status_code=403, detail="Forbidden")
     return tenant

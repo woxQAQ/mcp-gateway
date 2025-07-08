@@ -21,6 +21,10 @@ class ApiServerConfig(BaseSettings):
     database_url: str = Field(
         f"sqlite:///{BASE_PATH}/db.sqlite3", alias="DATABASE_URL"
     )
+    secret_key: str = Field(
+        "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7",
+        alias="SECRET_KEY",
+    )
     model_config: dict[str, Any] = {}
 
     def __init__(self, **kwargs: Any):

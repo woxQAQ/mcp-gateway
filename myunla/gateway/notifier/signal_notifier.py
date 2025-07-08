@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Optional
 
 from api.mcp import Mcp
+from myunla.config.notifier_config import NotifierSignalConfig
 from myunla.gateway.notifier.enums import NotifierRole
 from myunla.gateway.notifier.notifier import Notifier, NotifierError
 from myunla.utils import get_logger
@@ -14,25 +15,18 @@ from myunla.utils import get_logger
 logger = get_logger(__name__)
 
 
-class SignalNotifierConfig:
-    """信号通知器配置"""
-
-    def __init__(
-        self,
-        pid_file: str,
-        role: NotifierRole = NotifierRole.BOTH,
-    ):
-        if not pid_file:
-            raise ValueError("PID file path is required")
-        self.pid_file = pid_file
-        self.role = role
-
-
 class SignalNotifier(Notifier):
     """信号通知器实现"""
 
-    def __init__(self, config: SignalNotifierConfig):
+    def __init__(
+        self,
+        config: NotifierSignalConfig,
+        role: NotifierRole = NotifierRole.BOTH,
+    ):
+        if not config.pid_file:
+            raise ValueError("PID file path is required")
         self.config = config
+        self.role = role
         self.watchers: set[asyncio.Queue[Optional[Mcp]]] = set()
         self._lock = asyncio.Lock()
         self._signal_handler_task: Optional[asyncio.Task] = None
@@ -159,11 +153,11 @@ class SignalNotifier(Notifier):
 
     def can_receive(self) -> bool:
         """返回是否可以接收更新"""
-        return self.config.role in (NotifierRole.RECEIVER, NotifierRole.BOTH)
+        return self.role in (NotifierRole.RECEIVER, NotifierRole.BOTH)
 
     def can_send(self) -> bool:
         """返回是否可以发送更新"""
-        return self.config.role in (NotifierRole.SENDER, NotifierRole.BOTH)
+        return self.role in (NotifierRole.SENDER, NotifierRole.BOTH)
 
     async def close(self):
         """关闭通知器"""
@@ -202,11 +196,10 @@ def create_signal_notifier(
     role: NotifierRole = NotifierRole.BOTH,
 ) -> SignalNotifier:
     """创建信号通知器实例"""
-    config = SignalNotifierConfig(
+    config = NotifierSignalConfig(
         pid_file=pid_file,
-        role=role,
     )
-    return SignalNotifier(config)
+    return SignalNotifier(config, role)
 
 
 def write_pid_file(pid_file: str, pid: Optional[int] = None):
@@ -217,7 +210,7 @@ def write_pid_file(pid_file: str, pid: Optional[int] = None):
     pid_path = Path(pid_file)
     pid_path.parent.mkdir(parents=True, exist_ok=True)
     pid_path.write_text(str(pid))
-    logger.info("写入 PID 文件", extra={"pid": pid, "file": pid_file})
+    logger.info("PID 文件已写入", extra={"pid": pid, "file": pid_file})
 
 
 def remove_pid_file(pid_file: str):
@@ -225,4 +218,4 @@ def remove_pid_file(pid_file: str):
     pid_path = Path(pid_file)
     if pid_path.exists():
         pid_path.unlink()
-        logger.info("删除 PID 文件", extra={"file": pid_file})
+        logger.info("PID 文件已删除", extra={"file": pid_file})

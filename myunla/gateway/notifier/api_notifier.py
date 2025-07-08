@@ -10,6 +10,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 from api.mcp import Mcp
+from myunla.config.notifier_config import NotifierAPIConfig
 from myunla.gateway.notifier.enums import NotifierRole
 from myunla.gateway.notifier.notifier import Notifier, NotifierError
 from myunla.utils import get_logger
@@ -17,25 +18,14 @@ from myunla.utils import get_logger
 logger = get_logger(__name__)
 
 
-class APINotifierConfig:
-    """API 通知器配置"""
-
-    def __init__(
-        self,
-        port: int = 8080,
-        role: NotifierRole = NotifierRole.BOTH,
-        target_url: str = "",
-    ):
-        self.port = port
-        self.role = role
-        self.target_url = target_url
-
-
 class APINotifier(Notifier):
     """API 通知器实现"""
 
-    def __init__(self, config: APINotifierConfig):
+    def __init__(
+        self, config: NotifierAPIConfig, role: NotifierRole = NotifierRole.BOTH
+    ):
         self.config = config
+        self.role = role
         self.watchers: set[asyncio.Queue[Optional[Mcp]]] = set()
         self._lock = asyncio.Lock()
         self.app: Optional[FastAPI] = None
@@ -192,11 +182,11 @@ class APINotifier(Notifier):
 
     def can_receive(self) -> bool:
         """返回是否可以接收更新"""
-        return self.config.role in (NotifierRole.RECEIVER, NotifierRole.BOTH)
+        return self.role in (NotifierRole.RECEIVER, NotifierRole.BOTH)
 
     def can_send(self) -> bool:
         """返回是否可以发送更新"""
-        return self.config.role in (NotifierRole.SENDER, NotifierRole.BOTH)
+        return self.role in (NotifierRole.SENDER, NotifierRole.BOTH)
 
     async def close(self):
         """关闭通知器"""
@@ -212,7 +202,7 @@ class APINotifier(Notifier):
                     pass
             self.watchers.clear()
 
-        # 停止服务器
+        # 停止服务器任务
         if self.server_task and not self.server_task.done():
             self.server_task.cancel()
             try:
@@ -230,7 +220,7 @@ class APINotifier(Notifier):
 
     @property
     def is_running(self) -> bool:
-        """检查服务器是否正在运行"""
+        """检查是否正在运行"""
         return self._running
 
 
@@ -240,9 +230,8 @@ def create_api_notifier(
     target_url: str = "",
 ) -> APINotifier:
     """创建 API 通知器实例"""
-    config = APINotifierConfig(
+    config = NotifierAPIConfig(
         port=port,
-        role=role,
         target_url=target_url,
     )
-    return APINotifier(config)
+    return APINotifier(config, role)

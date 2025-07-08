@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from api.enums import McpServerType, Policy
 
 
-class YamlMixin:
+class YamlMixin(BaseModel):
     """提供 YAML 字符串表示的混入类"""
 
     def __str__(self) -> str:
@@ -20,7 +20,7 @@ class YamlMixin:
         )
 
 
-class Tool(YamlMixin, BaseModel):
+class Tool(YamlMixin):
     name: str
     description: str
     method: str
@@ -86,14 +86,14 @@ class Tool(YamlMixin, BaseModel):
         )
 
 
-class HttpServer(YamlMixin, BaseModel):
+class HttpServer(YamlMixin):
     name: str
     description: str
     url: str
     tools: list[str]
 
 
-class McpServer(YamlMixin, BaseModel):
+class McpServer(YamlMixin):
     name: str
     type: McpServerType
     description: str
@@ -104,7 +104,7 @@ class McpServer(YamlMixin, BaseModel):
     args: list[str]
 
 
-class Cors(YamlMixin, BaseModel):
+class Cors(YamlMixin):
     allow_origins: list[str]
     allow_credentials: bool
     allow_methods: list[str]
@@ -112,14 +112,14 @@ class Cors(YamlMixin, BaseModel):
     expose_headers: list[str]
 
 
-class Router(YamlMixin, BaseModel):
+class Router(YamlMixin):
     prefix: str
     server: str  # 服务器名称，可以指向HTTP服务器或MCP服务器
     sse_prefix: str
     cors: Optional[Cors] = None
 
 
-class Mcp(YamlMixin, BaseModel):
+class Mcp(YamlMixin):
     name: str
     tenant_name: str
     updated_at: Optional[datetime]

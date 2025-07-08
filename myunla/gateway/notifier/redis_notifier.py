@@ -8,6 +8,7 @@ import redis.asyncio as redis
 from redis.asyncio.sentinel import Sentinel
 
 from api.mcp import Mcp
+from myunla.config.notifier_config import NotifierRedisConfig
 from myunla.config.session_config import RedisClusterType
 from myunla.gateway.notifier.enums import NotifierRole
 from myunla.gateway.notifier.notifier import Notifier, NotifierError
@@ -20,35 +21,16 @@ if TYPE_CHECKING:
 logger = get_logger(__name__)
 
 
-class RedisNotifierConfig:
-    """Redis 通知器配置"""
-
-    def __init__(
-        self,
-        addr: str = "localhost:6379",
-        username: str = "",
-        password: Optional[str] = None,
-        db: int = 0,
-        cluster_type: str = RedisClusterType.SINGLE,
-        master_name: str = "",
-        topic: str = "mcp_config_updates",
-        role: NotifierRole = NotifierRole.BOTH,
-    ):
-        self.addr = addr
-        self.username = username
-        self.password = password or ""
-        self.db = db
-        self.cluster_type = cluster_type
-        self.master_name = master_name
-        self.topic = topic
-        self.role = role
-
-
 class RedisNotifier(Notifier):
     """Redis 通知器实现"""
 
-    def __init__(self, config: RedisNotifierConfig):
+    def __init__(
+        self,
+        config: NotifierRedisConfig,
+        role: NotifierRole = NotifierRole.BOTH,
+    ):
         self.config = config
+        self.role = role
         self.client: Optional[Redis] = None
         self.pubsub = None
         self._listen_task: Optional[asyncio.Task] = None
@@ -222,37 +204,38 @@ class RedisNotifier(Notifier):
 
     def can_receive(self) -> bool:
         """返回是否可以接收更新"""
-        return self.config.role in (NotifierRole.RECEIVER, NotifierRole.BOTH)
+        return self.role in (NotifierRole.RECEIVER, NotifierRole.BOTH)
 
     def can_send(self) -> bool:
         """返回是否可以发送更新"""
-        return self.config.role in (NotifierRole.SENDER, NotifierRole.BOTH)
+        return self.role in (NotifierRole.SENDER, NotifierRole.BOTH)
 
     async def close(self):
         """关闭通知器"""
         self._closed = True
 
-        if self._listen_task:
+        # 停止监听任务
+        if self._listen_task and not self._listen_task.done():
             self._listen_task.cancel()
             try:
                 await self._listen_task
             except asyncio.CancelledError:
                 pass
 
+        # 关闭发布订阅
         if self.pubsub:
-            await self.pubsub.close()
+            try:
+                await self.pubsub.unsubscribe()
+                await self.pubsub.close()
+            except Exception as e:
+                logger.warning(f"关闭 Redis 发布订阅失败: {e}")
 
+        # 关闭Redis连接
         if self.client:
-            await self.client.close()
-
-        # 清空队列
-        if self._queue is not None:
-            while not self._queue.empty():
-                try:
-                    self._queue.get_nowait()
-                    self._queue.task_done()
-                except asyncio.QueueEmpty:
-                    break
+            try:
+                await self.client.close()
+            except Exception as e:
+                logger.warning(f"关闭 Redis 连接失败: {e}")
 
         self._connected = False
         logger.info("Redis 通知器已关闭")
@@ -265,7 +248,7 @@ class RedisNotifier(Notifier):
     @property
     def is_connected(self) -> bool:
         """检查是否已连接"""
-        return self._connected and not self.is_closed
+        return self._connected
 
 
 def create_redis_notifier(
@@ -279,7 +262,7 @@ def create_redis_notifier(
     role: NotifierRole = NotifierRole.BOTH,
 ) -> RedisNotifier:
     """创建 Redis 通知器实例"""
-    config = RedisNotifierConfig(
+    config = NotifierRedisConfig(
         addr=addr,
         username=username,
         password=password,
@@ -287,6 +270,5 @@ def create_redis_notifier(
         cluster_type=cluster_type,
         master_name=master_name,
         topic=topic,
-        role=role,
     )
-    return RedisNotifier(config)
+    return RedisNotifier(config, role)

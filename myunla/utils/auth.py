@@ -28,7 +28,7 @@ async def get_user_db(session: AsyncSessionDependency):
 
 def get_jwt_strategy() -> JWTStrategy:
     return JWTStrategy(
-        secret=app_settings.SECRET_KEY, lifetime_seconds=COOKIE_MAX_AGE
+        secret=app_settings.secret_key, lifetime_seconds=COOKIE_MAX_AGE
     )
 
 

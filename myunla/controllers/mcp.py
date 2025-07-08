@@ -2,8 +2,10 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
-from api.mcp import Mcp
+from api.mcp import HttpServer, Mcp, McpServer, Router, Tool
+from myunla.config import default_notifier_config
 from myunla.config.apiserver_config import AsyncSessionDependency
+from myunla.gateway.notifier import Notifier, NotifierError, NotifierFactory
 from myunla.models.user import McpConfig, User
 from myunla.repos import async_db_ops
 from myunla.schema.mcp import (
@@ -14,6 +16,38 @@ from myunla.utils import check_mcp_tenant_permission, current_user, get_logger
 
 router = APIRouter()
 logger = get_logger(__name__)
+
+# 全局 notifier 实例
+_global_notifier: Optional[Notifier] = None
+
+
+def _get_notifier() -> Notifier:
+    """获取全局 notifier 实例，如果不存在则创建"""
+    global _global_notifier
+    if _global_notifier is None:
+        # 使用配置文件中的设置，直接传递配置对象
+        config = default_notifier_config
+
+        _global_notifier = NotifierFactory.create_notifier(config)
+        logger.info(
+            f"创建全局 notifier 实例 (type: {config.type}, role: {config.role})"
+        )
+    return _global_notifier
+
+
+def _convert_mcp_config_to_mcp(config: McpConfig) -> Mcp:
+    """将 McpConfig 转换为 Mcp 对象"""
+    return Mcp(
+        name=config.name,
+        tenant_name=config.tenant_name,
+        created_at=config.gmt_created,
+        updated_at=config.gmt_updated,
+        deleted_at=config.gmt_deleted,
+        routers=[Router(**router) for router in config.routers],
+        servers=[McpServer(**server) for server in config.servers],
+        tools=[Tool(**tool) for tool in config.tools],
+        http_servers=[HttpServer(**server) for server in config.http_servers],
+    )
 
 
 @router.get("/configs/names", response_model=list[McpConfigName])
@@ -220,6 +254,24 @@ async def sync_mcp_config(
         logger.warning(f"同步失败 - 配置不存在: {config_id}")
         raise HTTPException(status_code=404, detail="MCP config not found")
 
-    # TODO: 实现同步逻辑
-    logger.info(f"MCP配置同步启动: {config_id}")
-    return {"message": "MCP config sync started"}
+    await check_mcp_tenant_permission(config, config.tenant_name, user)
+
+    try:
+        # 将 McpConfig 转换为 Mcp 对象
+        mcp_data = _convert_mcp_config_to_mcp(config)
+
+        # 获取全局 notifier 实例
+        notifier = _get_notifier()
+
+        # 发送配置更新通知
+        await notifier.notify_update(mcp_data)
+
+        logger.info(f"MCP配置同步成功: {config_id} (name: {config.name})")
+        return {"message": f"MCP config {config.name} synced successfully"}
+
+    except NotifierError as e:
+        logger.error(f"同步失败 - 通知器错误: {config_id} - {e}")
+        raise HTTPException(status_code=500, detail=f"同步失败: {e}")
+    except Exception as e:
+        logger.error(f"同步MCP配置失败: {config_id} - {e}")
+        raise HTTPException(status_code=500, detail=f"同步失败: {e}")
