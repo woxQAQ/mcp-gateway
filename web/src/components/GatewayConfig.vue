@@ -53,8 +53,6 @@ const configForm = ref<{
 // OpenAPI 导入表单
 const importForm = ref({
   file: null as File | null,
-  configName: '',
-  tenantName: '',
 })
 
 // 分页
@@ -110,8 +108,8 @@ async function importOpenAPI() {
       return
     }
 
-    // 确保使用正确的租户标识（虽然当前不生效，但为将来做准备）
-    const _tenantName = importForm.value.tenantName ? getTenantId(importForm.value.tenantName) : 'default'
+    // 使用默认租户
+    const _tenantName = 'default'
 
     ElMessage.info('正在导入 OpenAPI 文档...')
 
@@ -155,8 +153,6 @@ function handleFileChange(file: File | null) {
 function resetImportForm() {
   importForm.value = {
     file: null,
-    configName: '',
-    tenantName: '',
   }
 }
 
@@ -407,36 +403,8 @@ onMounted(async () => {
       width="600px"
       :close-on-click-modal="false"
     >
-      <el-form :model="importForm" label-width="120px">
-        <el-form-item label="配置名称">
-          <el-input
-            v-model="importForm.configName"
-            placeholder="请输入配置名称（可选）"
-          />
-          <div class="text-xs text-gray-500 mt-1">
-            注意：当前系统会自动生成配置名称，此字段暂不生效
-          </div>
-        </el-form-item>
-        <el-form-item label="租户名称">
-          <el-select
-            v-model="importForm.tenantName"
-            placeholder="请选择租户（可选）"
-            :loading="tenantLoading"
-            clearable
-            filterable
-          >
-            <el-option
-              v-for="tenant in tenants"
-              :key="tenant.id"
-              :label="tenant.name"
-              :value="tenant.name"
-            />
-          </el-select>
-          <div class="text-xs text-gray-500 mt-1">
-            注意：当前系统会使用默认租户，此字段暂不生效
-          </div>
-        </el-form-item>
-        <el-form-item label="导入方式">
+      <el-form :model="importForm">
+        <el-form-item>
           <el-card class="upload-card" shadow="never">
             <div class="upload-area">
               <el-upload
@@ -448,12 +416,14 @@ onMounted(async () => {
                 :on-change="(file: any) => handleFileChange(file.raw)"
                 :on-remove="() => handleFileChange(null)"
               >
-                <div class="text-center p-4">
-                  <Download class="text-4xl text-gray-400 mb-2" />
-                  <div class="text-gray-600">
+                <div class="text-center p-3">
+                  <el-icon :size="60" class="text-gray-400 mb-1">
+                    <Download />
+                  </el-icon>
+                  <div class="text-sm text-gray-400 mb-1">
                     将 OpenAPI 文件拖到此处，或<em>点击上传</em>
                   </div>
-                  <div class="text-xs text-gray-400 mt-2">
+                  <div class="text-xs text-gray-400">
                     支持 .json, .yaml, .yml 格式，最大 5MB
                   </div>
                 </div>
@@ -540,6 +510,8 @@ onMounted(async () => {
   border-radius: 8px;
   background: #fafafa;
   transition: all 0.3s ease;
+  width: 100%;
+  margin: 0;
 }
 
 .upload-card:hover {
@@ -548,6 +520,31 @@ onMounted(async () => {
 }
 
 .upload-area {
-  padding: 8px;
+  padding: 4px;
+  width: 100%;
+}
+
+/* 确保上传区域占满对话框宽度 */
+.upload-card .el-card__body {
+  padding: 0;
+  width: 100%;
+}
+
+/* 确保el-upload占满宽度并居中 */
+.upload-area .el-upload-dragger {
+  width: 100% !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+}
+
+/* 移除form-item的默认边距，让上传区域占满对话框 */
+.el-dialog .el-form .el-form-item {
+  margin-bottom: 0;
+}
+
+.el-dialog .el-form .el-form-item__content {
+  width: 100%;
 }
 </style>

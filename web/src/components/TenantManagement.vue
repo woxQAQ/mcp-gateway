@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import type { TenantCreate, TenantModel, TenantUpdate } from '../../generated/types'
 import { Delete, Edit, Plus, Refresh, Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
-import type { TenantCreate, TenantModel, TenantUpdate } from '../../generated/types'
+import { onMounted, ref } from 'vue'
 import {
   createTenantApiV1TenantTenantsPost,
   deleteTenantApiV1TenantTenantsTenantIdDelete,
