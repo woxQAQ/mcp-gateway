@@ -1,24 +1,10 @@
+import type { UserModel } from '../../generated/types/UserModel'
 import type { ApiError } from '../../mutator'
 import { computed, ref } from 'vue'
 import * as api from '../../generated/api/APIServer.gen'
 
-// 用户数据类型 - 匹配后端UserModel
-export interface User {
-  id: string
-  username: string
-  email?: string
-  role: 'normal' | 'admin'
-  is_active: boolean
-  is_superuser: boolean
-  is_verified: boolean
-  is_staff: boolean
-  date_joined: string
-  gmt_created: string
-  gmt_updated: string
-}
-
 // 状态
-const users = ref<User[]>([])
+const users = ref<UserModel[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
 
@@ -145,7 +131,7 @@ async function deleteUser(userId: string) {
 }
 
 // 更新用户状态
-async function updateUserStatus(user: User, newStatus: boolean) {
+async function updateUserStatus(user: UserModel, newStatus: boolean) {
   loading.value = true
   error.value = null
 
@@ -158,7 +144,7 @@ async function updateUserStatus(user: User, newStatus: boolean) {
     // 更新本地状态
     const userIndex = users.value.findIndex(u => u.id === user.id)
     if (userIndex !== -1 && response.data) {
-      users.value[userIndex] = response.data as User
+      users.value[userIndex] = response.data as UserModel
     }
 
     return response.data
@@ -194,7 +180,7 @@ function searchUsers(keyword: string) {
   const lowerKeyword = keyword.toLowerCase()
   return users.value.filter(user =>
     user.username.toLowerCase().includes(lowerKeyword)
-    || user.email?.toLowerCase().includes(lowerKeyword),
+    || (user.email && user.email.toLowerCase().includes(lowerKeyword)),
   )
 }
 

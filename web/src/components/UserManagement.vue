@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { User } from '../stores/users'
+import type { UserModel } from '../../generated/types/UserModel'
 import { Delete, Edit, Plus, Refresh, Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { computed, onMounted, ref } from 'vue'
@@ -31,7 +31,7 @@ const userForm = ref({
 // 状态
 const showCreateDialog = ref(false)
 const editMode = ref(false)
-const currentUser = ref<User | null>(null)
+const currentUser = ref<UserModel | null>(null)
 const searchKeyword = ref('')
 
 // 分页
@@ -72,7 +72,7 @@ function createNewUser() {
 }
 
 // 编辑用户
-function editUser(user: User) {
+function editUser(user: UserModel) {
   editMode.value = true
   currentUser.value = user
   userForm.value = {
@@ -130,7 +130,7 @@ async function saveUser() {
 }
 
 // 删除用户
-async function handleDeleteUser(user: User) {
+async function handleDeleteUser(user: UserModel) {
   try {
     await ElMessageBox.confirm(
       `确定要删除用户 "${user.username}" 吗？`,
@@ -154,7 +154,7 @@ async function handleDeleteUser(user: User) {
 }
 
 // 切换用户状态
-async function toggleUserStatus(user: User) {
+async function toggleUserStatus(user: UserModel) {
   try {
     const newStatus = !user.is_active
     const action = newStatus ? '启用' : '禁用'
