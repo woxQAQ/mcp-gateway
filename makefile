@@ -13,6 +13,7 @@ migrate:
 .PHONY: fmt
 fmt:
 	@echo "Formatting code..."
+	@uv run -m scripts.fix_blank_lines
 	@ruff check . --fix
 	@black .
 

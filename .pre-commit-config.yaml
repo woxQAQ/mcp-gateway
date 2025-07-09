@@ -28,11 +28,12 @@ repos:
 
   # Ruff linter and formatter
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.2
+    rev: v0.12.1
     hooks:
       - id: ruff
-        args: ["--fix", "--exit-non-zero-on-fix"]
+        args: ["--fix", "--exit-non-zero-on-fix", "--config=pyproject.toml"]
       - id: ruff-format
+        args: ["--config=pyproject.toml"]
 
   # isort import sorting
   - repo: https://github.com/pycqa/isort
