@@ -23,6 +23,7 @@ import type {
   TenantUpdate,
   UserList,
   UserModel,
+  UserStatusUpdate,
 } from "../types";
 
 import { customInstance } from "../../mutator";
@@ -281,6 +282,51 @@ export const deleteUserApiV1AuthUsersUserIdDelete = async (
     {
       ...options,
       method: "DELETE",
+    },
+  );
+};
+
+/**
+ * 修改用户状态（仅管理员）
+ * @summary Update User Status
+ */
+export type updateUserStatusApiV1AuthUsersUserIdStatusPatchResponse200 = {
+  data: UserModel;
+  status: 200;
+};
+
+export type updateUserStatusApiV1AuthUsersUserIdStatusPatchResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type updateUserStatusApiV1AuthUsersUserIdStatusPatchResponseComposite =
+  | updateUserStatusApiV1AuthUsersUserIdStatusPatchResponse200
+  | updateUserStatusApiV1AuthUsersUserIdStatusPatchResponse422;
+
+export type updateUserStatusApiV1AuthUsersUserIdStatusPatchResponse =
+  updateUserStatusApiV1AuthUsersUserIdStatusPatchResponseComposite & {
+    headers: Headers;
+  };
+
+export const getUpdateUserStatusApiV1AuthUsersUserIdStatusPatchUrl = (
+  userId: string,
+) => {
+  return `/api/v1/auth/users/${userId}/status`;
+};
+
+export const updateUserStatusApiV1AuthUsersUserIdStatusPatch = async (
+  userId: string,
+  userStatusUpdate: UserStatusUpdate,
+  options?: RequestInit,
+): Promise<updateUserStatusApiV1AuthUsersUserIdStatusPatchResponse> => {
+  return customInstance<updateUserStatusApiV1AuthUsersUserIdStatusPatchResponse>(
+    getUpdateUserStatusApiV1AuthUsersUserIdStatusPatchUrl(userId),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(userStatusUpdate),
     },
   );
 };

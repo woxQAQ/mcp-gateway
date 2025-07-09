@@ -10,7 +10,7 @@ from fastapi_users.authentication import (
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 
 from myunla.config import AsyncSessionDependency, app_settings
-from myunla.models.user import User
+from myunla.models.user import Role, User
 
 COOKIE_MAX_AGE = 86400
 
@@ -61,3 +61,12 @@ async def current_user(
         return user
     else:
         raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+async def current_admin_user(
+    user: User = Depends(current_user),
+):
+    """管理员权限依赖注入"""
+    if user.role != Role.ADMIN.value:
+        raise HTTPException(status_code=403, detail="需要管理员权限")
+    return user

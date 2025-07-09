@@ -15,6 +15,7 @@ from myunla.schema.auth_schema import (
     RegisterResponse,
     UserList,
     UserModel,
+    UserStatusUpdate,
     UserSummary,
 )
 from myunla.utils import get_logger, utc_now
@@ -22,6 +23,7 @@ from myunla.utils import get_logger, utc_now
 from .auth_utils import (
     COOKIE_MAX_AGE,
     UserManager,
+    current_admin_user,
     current_user,
     get_jwt_strategy,
     get_user_manager,
@@ -170,12 +172,8 @@ async def get_user(user: Optional[User] = Depends(current_user)):
 
 @router.get("/users", response_model=UserList)
 async def list_users(
-    session: AsyncSessionDependency, user: User = Depends(current_user)
+    session: AsyncSessionDependency, user: User = Depends(current_admin_user)
 ):
-    if user.role != Role.ADMIN.value:
-        logger.warning(f"用户 {user.username} 没有权限获取用户列表")
-        raise HTTPException(status_code=403, detail="Forbidden")
-
     logger.info(f"管理员 {user.username} 获取用户列表")
     result = await session.execute(select(User))
     all_users = result.scalars().all()
@@ -188,6 +186,7 @@ async def change_password(
     request: Request,
     session: AsyncSessionDependency,
     data: ChangePassword,
+    current_user_obj: User = Depends(current_user),
     user_manager: UserManager = Depends(get_user_manager),
 ):
     logger.info(f"用户修改密码: {data.username}")
@@ -200,6 +199,16 @@ async def change_password(
     if not data.username:
         logger.warning(f"修改密码失败 - 用户名为空: {data.username}")
         raise HTTPException(status_code=400, detail="Invalid credentials")
+
+    # 安全检查：用户只能修改自己的密码，除非是管理员
+    if (
+        current_user_obj.username != data.username
+        and current_user_obj.role != Role.ADMIN.value
+    ):
+        logger.warning(
+            f"修改密码失败 - 没有权限修改其他用户密码: {current_user_obj.username} 试图修改 {data.username}"
+        )
+        raise HTTPException(status_code=403, detail="只能修改自己的密码")
 
     user = await async_db_ops.query_user_by_username(data.username)
     if not user:
@@ -217,7 +226,9 @@ async def change_password(
     session.add(user)
     await session.commit()
 
-    logger.info(f"用户密码修改成功: {data.username}")
+    logger.info(
+        f"用户密码修改成功: {data.username} (操作者: {current_user_obj.username})"
+    )
     return UserModel.from_orm(user)
 
 
@@ -226,7 +237,7 @@ async def delete_user(
     request: Request,
     user_id: str,
     session: AsyncSessionDependency,
-    user: User = Depends(current_user),
+    user: User = Depends(current_admin_user),
 ):
     logger.info(f"管理员 {user.username} 尝试删除用户: {user_id}")
 
@@ -249,3 +260,50 @@ async def delete_user(
     await async_db_ops.delete_user(_user)  # 修复bug: 应该删除_user而不是user
     logger.info(f"用户删除成功: {_user.username} (删除者: {user.username})")
     return MessageResponse(message="用户删除成功")
+
+
+@router.patch("/users/{user_id}/status", response_model=UserModel)
+async def update_user_status(
+    request: Request,
+    user_id: str,
+    data: UserStatusUpdate,
+    session: AsyncSessionDependency,
+    user: User = Depends(current_admin_user),
+):
+    """修改用户状态（仅管理员）"""
+    logger.info(
+        f"管理员 {user.username} 修改用户状态: {user_id} -> {data.is_active}"
+    )
+
+    # 查找目标用户
+    target_user = await async_db_ops.query_user_by_id(user_id)
+    if not target_user:
+        logger.warning(f"状态修改失败 - 用户不存在: {user_id}")
+        raise HTTPException(status_code=404, detail="用户不存在")
+
+    # 检查是否是管理员且要禁用
+    if target_user.role == Role.ADMIN.value and not data.is_active:
+        # 检查管理员数量
+        admin_count = await async_db_ops.query_admin_count()
+        if admin_count <= 1:
+            logger.warning("状态修改失败 - 不能禁用最后一个管理员")
+            raise HTTPException(
+                status_code=400, detail="不能禁用最后一个管理员"
+            )
+
+    # 不能修改自己的状态
+    if user.id == target_user.id:
+        logger.warning(f"状态修改失败 - 不能修改自己的状态: {user.username}")
+        raise HTTPException(status_code=400, detail="不能修改自己的状态")
+
+    # 更新用户状态
+    target_user.is_active = data.is_active
+    session.add(target_user)
+    await session.commit()
+    await session.refresh(target_user)
+
+    action = "启用" if data.is_active else "禁用"
+    logger.info(
+        f"用户状态修改成功: {target_user.username} {action} (操作者: {user.username})"
+    )
+    return UserModel.from_orm(target_user)

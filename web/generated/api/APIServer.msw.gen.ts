@@ -94,6 +94,29 @@ export const getListUsersApiV1AuthUsersGetResponseMock = (
   ...overrideResponse,
 });
 
+export const getUpdateUserStatusApiV1AuthUsersUserIdStatusPatchResponseMock = (
+  overrideResponse: Partial<UserModel> = {},
+): UserModel => ({
+  date_joined: `${faker.date.past().toISOString().split(".")[0]}Z`,
+  email: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.string.alpha({ length: { min: 10, max: 20 } }),
+      null,
+    ]),
+    undefined,
+  ]),
+  gmt_created: `${faker.date.past().toISOString().split(".")[0]}Z`,
+  gmt_updated: `${faker.date.past().toISOString().split(".")[0]}Z`,
+  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  is_active: faker.datatype.boolean(),
+  is_staff: faker.datatype.boolean(),
+  is_superuser: faker.datatype.boolean(),
+  is_verified: faker.datatype.boolean(),
+  role: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  username: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  ...overrideResponse,
+});
+
 export const getListMcpConfigsApiV1McpConfigsGetResponseMock =
   (): McpConfigModel[] =>
     Array.from(
@@ -687,6 +710,29 @@ export const getDeleteUserApiV1AuthUsersUserIdDeleteMockHandler = (
   });
 };
 
+export const getUpdateUserStatusApiV1AuthUsersUserIdStatusPatchMockHandler = (
+  overrideResponse?:
+    | UserModel
+    | ((
+        info: Parameters<Parameters<typeof http.patch>[1]>[0],
+      ) => Promise<UserModel> | UserModel),
+) => {
+  return http.patch("*/api/v1/auth/users/:userId/status", async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getUpdateUserStatusApiV1AuthUsersUserIdStatusPatchResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+};
+
 export const getListMcpConfigsApiV1McpConfigsGetMockHandler = (
   overrideResponse?:
     | McpConfigModel[]
@@ -1016,6 +1062,7 @@ export const getAPIServerMock = () => [
   getListUsersApiV1AuthUsersGetMockHandler(),
   getChangePasswordApiV1AuthUsersChangePasswordPostMockHandler(),
   getDeleteUserApiV1AuthUsersUserIdDeleteMockHandler(),
+  getUpdateUserStatusApiV1AuthUsersUserIdStatusPatchMockHandler(),
   getListMcpConfigsApiV1McpConfigsGetMockHandler(),
   getCreateMcpConfigApiV1McpConfigsPostMockHandler(),
   getUpdateMcpConfigApiV1McpConfigsPutMockHandler(),

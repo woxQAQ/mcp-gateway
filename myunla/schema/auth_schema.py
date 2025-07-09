@@ -133,6 +133,13 @@ class RegisterResponse(BaseModel):
     message: Optional[str] = Field(None, description="响应消息")
 
 
+# 用户状态更新 Schema
+class UserStatusUpdate(BaseModel):
+    """用户状态更新"""
+
+    is_active: bool = Field(..., description="是否激活")
+
+
 # 通用响应 Schema
 class MessageResponse(BaseModel):
     """通用消息响应"""
