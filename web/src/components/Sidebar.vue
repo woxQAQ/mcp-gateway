@@ -2,7 +2,8 @@
 import {
   ArrowRight,
 } from '@element-plus/icons-vue'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 interface Props {
   isCollapsed: boolean
@@ -18,7 +19,14 @@ interface MenuItemType {
 
 defineProps<Props>()
 
-const activeRoute = ref('/dashboard')
+const router = useRouter()
+const route = useRoute()
+const activeRoute = ref(route.path)
+
+// 监听路由变化，更新活跃状态
+watch(() => route.path, (newPath) => {
+  activeRoute.value = newPath
+})
 
 // 菜单项配置
 const menuItems = ref<MenuItemType[]>([
@@ -29,47 +37,23 @@ const menuItems = ref<MenuItemType[]>([
     route: '/dashboard',
   },
   {
-    id: 'mcp-configs',
-    title: 'MCP 配置',
+    id: 'gateway-config',
+    title: '网关配置',
     icon: 'Setting',
-    route: '/mcp-configs',
+    route: '/gateway-config',
     badge: 3,
   },
   {
-    id: 'tools',
-    title: '工具管理',
-    icon: 'Tools',
-    route: '/tools',
-  },
-  {
-    id: 'servers',
-    title: '服务器',
-    icon: 'Monitor',
-    route: '/servers',
-  },
-  {
-    id: 'routers',
-    title: '路由配置',
-    icon: 'Connection',
-    route: '/routers',
-  },
-  {
-    id: 'users',
+    id: 'user-management',
     title: '用户管理',
     icon: 'User',
-    route: '/users',
+    route: '/user-management',
   },
   {
-    id: 'logs',
-    title: '系统日志',
-    icon: 'Document',
-    route: '/logs',
-  },
-  {
-    id: 'settings',
-    title: '系统设置',
-    icon: 'Operation',
-    route: '/settings',
+    id: 'tenant-management',
+    title: '租户管理',
+    icon: 'OfficeBuilding',
+    route: '/tenant-management',
   },
 ])
 
@@ -81,7 +65,8 @@ const menuItemsWithBadge = computed(() =>
 // 处理菜单选择
 function handleMenuSelect(index: string) {
   activeRoute.value = index
-  // 导航逻辑
+  // 执行路由导航
+  router.push(index)
 }
 </script>
 

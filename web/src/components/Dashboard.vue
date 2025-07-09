@@ -25,8 +25,8 @@ const { configs, configCount, fetchConfigs } = useMcp()
 // 动态统计数据
 const stats = computed(() => [
   {
-    id: 'configs',
-    label: 'MCP配置',
+    id: 'gateway-configs',
+    label: '网关配置',
     value: configCount.value?.toString() || '0',
     change: '+0%',
     trend: 'up',
@@ -34,30 +34,30 @@ const stats = computed(() => [
     color: '#409EFF',
   },
   {
-    id: 'tools',
-    label: '活跃工具',
-    value: configs.value?.length?.toString() || '0',
-    change: '+0%',
+    id: 'users',
+    label: '系统用户',
+    value: '3',
+    change: '+2',
     trend: 'up',
-    icon: 'Tools',
+    icon: 'User',
     color: '#67C23A',
   },
   {
-    id: 'servers',
-    label: '在线服务器',
-    value: '1',
-    change: '+0%',
+    id: 'tenants',
+    label: '租户数量',
+    value: '3',
+    change: '+1',
     trend: 'up',
-    icon: 'Monitor',
+    icon: 'OfficeBuilding',
     color: '#E6A23C',
   },
   {
-    id: 'users',
-    label: '系统用户',
-    value: '1',
+    id: 'api-endpoints',
+    label: 'API端点',
+    value: configs.value?.reduce((sum, config) => sum + (config.tools?.length || 0), 0)?.toString() || '0',
     change: '+0%',
     trend: 'up',
-    icon: 'User',
+    icon: 'Connection',
     color: '#F56C6C',
   },
 ])
@@ -74,59 +74,59 @@ onMounted(async () => {
 const activities = ref([
   {
     id: 1,
-    title: 'MCP配置已创建',
-    description: '新的文件处理配置已成功创建',
+    title: '网关配置已创建',
+    description: '新的API网关配置已成功创建并激活',
     time: '2分钟前',
     type: 'success',
     icon: 'SuccessFilled',
   },
   {
     id: 2,
-    title: '服务器连接警告',
-    description: 'API服务器响应时间较慢',
-    time: '5分钟前',
-    type: 'warning',
-    icon: 'WarningFilled',
-  },
-  {
-    id: 3,
     title: '用户登录',
     description: 'admin 用户成功登录系统',
-    time: '10分钟前',
+    time: '5分钟前',
     type: 'info',
     icon: 'InfoFilled',
   },
   {
+    id: 3,
+    title: 'OpenAPI导入',
+    description: '成功导入并转换OpenAPI文档为MCP配置',
+    time: '10分钟前',
+    type: 'success',
+    icon: 'SuccessFilled',
+  },
+  {
     id: 4,
-    title: '配置同步失败',
-    description: '数据库配置同步出现错误',
+    title: '租户状态变更',
+    description: '企业租户B的状态已更新为暂停',
     time: '15分钟前',
-    type: 'danger',
-    icon: 'CircleCloseFilled',
+    type: 'warning',
+    icon: 'WarningFilled',
   },
 ])
 
 // 快速操作
 const quickActions = ref([
   {
-    id: 'create-config',
-    title: '创建MCP配置',
-    description: '快速创建新的MCP配置',
-    icon: 'Setting',
+    id: 'import-openapi',
+    title: '导入OpenAPI',
+    description: '导入OpenAPI文档并转换为网关配置',
+    icon: 'Upload',
     color: '#409EFF',
   },
   {
-    id: 'add-tool',
-    title: '添加工具',
-    description: '向系统添加新的工具',
-    icon: 'Tools',
+    id: 'create-user',
+    title: '创建用户',
+    description: '添加新的平台用户账户',
+    icon: 'UserFilled',
     color: '#67C23A',
   },
   {
-    id: 'view-logs',
-    title: '查看日志',
-    description: '检查系统运行日志',
-    icon: 'Monitor',
+    id: 'manage-tenants',
+    title: '管理租户',
+    description: '查看和管理平台租户配置',
+    icon: 'OfficeBuilding',
     color: '#E6A23C',
   },
 ])
@@ -134,14 +134,14 @@ const quickActions = ref([
 // 处理快速操作点击
 function handleQuickAction(action: any) {
   switch (action.id) {
-    case 'create-config':
-      router.push('/mcp-config')
+    case 'import-openapi':
+      router.push('/gateway-config')
       break
-    case 'view-users':
-      router.push('/users')
+    case 'create-user':
+      router.push('/user-management')
       break
-    case 'settings':
-      router.push('/settings')
+    case 'manage-tenants':
+      router.push('/tenant-management')
       break
     default:
       console.error('Unknown quick action:', action.id)
@@ -183,9 +183,9 @@ async function loadChartData() {
               <el-icon><Refresh /></el-icon>
               刷新
             </el-button>
-            <el-button type="primary" class="shadow-sm">
+            <el-button type="primary" class="shadow-sm" @click="() => router.push('/gateway-config')">
               <el-icon><Plus /></el-icon>
-              新建配置
+              导入OpenAPI
             </el-button>
           </el-button-group>
         </template>
@@ -197,7 +197,7 @@ async function loadChartData() {
           欢迎回来，{{ displayName }}！ 👋
         </h1>
         <p class="text-gray-600 dark:text-gray-400">
-          系统运行良好，今天有 <span class="text-primary-500 font-semibold">3个新的</span> MCP配置更新
+          系统运行良好，今天有 <span class="text-primary-500 font-semibold">2个新的</span> 网关配置更新
         </p>
       </div>
     </div>

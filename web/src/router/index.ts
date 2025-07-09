@@ -24,9 +24,19 @@ const routes = [
         component: () => import('../components/Dashboard.vue'),
       },
       {
-        path: '/mcp-config',
-        name: 'McpConfig',
-        component: () => import('../components/McpConfig.vue'),
+        path: '/gateway-config',
+        name: 'GatewayConfig',
+        component: () => import('../components/GatewayConfig.vue'),
+      },
+      {
+        path: '/user-management',
+        name: 'UserManagement',
+        component: () => import('../components/UserManagement.vue'),
+      },
+      {
+        path: '/tenant-management',
+        name: 'TenantManagement',
+        component: () => import('../components/TenantManagement.vue'),
       },
     ],
   },

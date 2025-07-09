@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: b69f9797db65
+Revision ID: 73dfe2c12e33
 Revises:
-Create Date: 2025-07-04 04:01:58.139916
+Create Date: 2025-07-10 00:22:02.992191
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = 'b69f9797db65'
+revision: str = '73dfe2c12e33'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -140,36 +140,36 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint('id'),
     )
-    op.create_index(
-        'idx_audit_api_name', 'audit_log', ['api_name'], unique=False
-    )
-    op.create_index(
-        'idx_audit_gmt_created', 'audit_log', ['gmt_created'], unique=False
-    )
-    op.create_index(
-        'idx_audit_http_method', 'audit_log', ['http_method'], unique=False
-    )
-    op.create_index(
-        'idx_audit_request_id', 'audit_log', ['request_id'], unique=False
-    )
-    op.create_index(
-        'idx_audit_resource_id', 'audit_log', ['resource_id'], unique=False
-    )
-    op.create_index(
-        'idx_audit_resource_type', 'audit_log', ['resource_type'], unique=False
-    )
-    op.create_index(
-        'idx_audit_start_time', 'audit_log', ['start_time'], unique=False
-    )
-    op.create_index(
-        'idx_audit_status_code', 'audit_log', ['status_code'], unique=False
-    )
-    op.create_index('idx_audit_user_id', 'audit_log', ['user_id'], unique=False)
+    with op.batch_alter_table('audit_log', schema=None) as batch_op:
+        batch_op.create_index('idx_audit_api_name', ['api_name'], unique=False)
+        batch_op.create_index(
+            'idx_audit_gmt_created', ['gmt_created'], unique=False
+        )
+        batch_op.create_index(
+            'idx_audit_http_method', ['http_method'], unique=False
+        )
+        batch_op.create_index(
+            'idx_audit_request_id', ['request_id'], unique=False
+        )
+        batch_op.create_index(
+            'idx_audit_resource_id', ['resource_id'], unique=False
+        )
+        batch_op.create_index(
+            'idx_audit_resource_type', ['resource_type'], unique=False
+        )
+        batch_op.create_index(
+            'idx_audit_start_time', ['start_time'], unique=False
+        )
+        batch_op.create_index(
+            'idx_audit_status_code', ['status_code'], unique=False
+        )
+        batch_op.create_index('idx_audit_user_id', ['user_id'], unique=False)
+
     op.create_table(
         'mcp_config',
         sa.Column('id', sa.String(length=24), nullable=False),
         sa.Column('name', sa.String(length=256), nullable=True),
-        sa.Column('tenant_id', sa.String(length=24), nullable=False),
+        sa.Column('tenant_name', sa.String(length=24), nullable=False),
         sa.Column('routers', sa.JSON(), nullable=False),
         sa.Column('servers', sa.JSON(), nullable=False),
         sa.Column('tools', sa.JSON(), nullable=False),
@@ -179,12 +179,14 @@ def upgrade() -> None:
         sa.Column('gmt_deleted', sa.DateTime(timezone=True), nullable=True),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint(
-            'name', 'tenant_id', name='uidx_mcp_config_name_tenant_id'
+            'name', 'tenant_name', name='uidx_mcp_config_name_tenant_name'
         ),
     )
-    op.create_index(
-        'idx_mcp_config_deleted_at', 'mcp_config', ['gmt_deleted'], unique=False
-    )
+    with op.batch_alter_table('mcp_config', schema=None) as batch_op:
+        batch_op.create_index(
+            'idx_mcp_config_deleted_at', ['gmt_deleted'], unique=False
+        )
+
     op.create_table(
         'tenant',
         sa.Column('id', sa.String(length=24), nullable=False),
@@ -224,12 +226,14 @@ def upgrade() -> None:
         'user_tenant',
         sa.Column('id', sa.String(length=24), nullable=False),
         sa.Column('user_id', sa.String(length=24), nullable=False),
-        sa.Column('tenant_id', sa.String(length=24), nullable=False),
+        sa.Column('tenant_name', sa.String(length=24), nullable=False),
         sa.Column('gmt_created', sa.DateTime(timezone=True), nullable=False),
         sa.Column('gmt_updated', sa.DateTime(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint(
-            'user_id', 'tenant_id', name='uidx_user_tenant_user_id_tenant_id'
+            'user_id',
+            'tenant_name',
+            name='uidx_user_tenant_user_id_tenant_name',
         ),
     )
     # ### end Alembic commands ###
@@ -241,16 +245,20 @@ def downgrade() -> None:
     op.drop_table('user_tenant')
     op.drop_table('user')
     op.drop_table('tenant')
-    op.drop_index('idx_mcp_config_deleted_at', table_name='mcp_config')
+    with op.batch_alter_table('mcp_config', schema=None) as batch_op:
+        batch_op.drop_index('idx_mcp_config_deleted_at')
+
     op.drop_table('mcp_config')
-    op.drop_index('idx_audit_user_id', table_name='audit_log')
-    op.drop_index('idx_audit_status_code', table_name='audit_log')
-    op.drop_index('idx_audit_start_time', table_name='audit_log')
-    op.drop_index('idx_audit_resource_type', table_name='audit_log')
-    op.drop_index('idx_audit_resource_id', table_name='audit_log')
-    op.drop_index('idx_audit_request_id', table_name='audit_log')
-    op.drop_index('idx_audit_http_method', table_name='audit_log')
-    op.drop_index('idx_audit_gmt_created', table_name='audit_log')
-    op.drop_index('idx_audit_api_name', table_name='audit_log')
+    with op.batch_alter_table('audit_log', schema=None) as batch_op:
+        batch_op.drop_index('idx_audit_user_id')
+        batch_op.drop_index('idx_audit_status_code')
+        batch_op.drop_index('idx_audit_start_time')
+        batch_op.drop_index('idx_audit_resource_type')
+        batch_op.drop_index('idx_audit_resource_id')
+        batch_op.drop_index('idx_audit_request_id')
+        batch_op.drop_index('idx_audit_http_method')
+        batch_op.drop_index('idx_audit_gmt_created')
+        batch_op.drop_index('idx_audit_api_name')
+
     op.drop_table('audit_log')
     # ### end Alembic commands ###

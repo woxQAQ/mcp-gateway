@@ -15,14 +15,20 @@ const error = ref<string | null>(null)
 const configCount = computed(() => configs.value.length)
 
 // 获取MCP配置列表
-async function fetchConfigs(tenantId?: string) {
+async function fetchConfigs(tenantName?: string) {
   loading.value = true
   error.value = null
 
   try {
-    const response = await api.listMcpConfigsApiV1McpConfigsGet({ tenant_id: tenantId })
-    configs.value = response.data
-    return response.data
+    const response = await api.listMcpConfigsApiV1McpConfigsGet({ tenant_name: tenantName })
+    // 处理可能的错误响应
+    if (Array.isArray(response.data)) {
+      configs.value = response.data as McpConfigModel[]
+    }
+    else {
+      configs.value = []
+    }
+    return configs.value
   }
   catch (err: any) {
     const apiError = err as ApiError
@@ -35,14 +41,20 @@ async function fetchConfigs(tenantId?: string) {
 }
 
 // 获取配置名称列表
-async function fetchConfigNames(tenantId?: string, includeDeleted = false) {
+async function fetchConfigNames(tenantName?: string, includeDeleted = false) {
   try {
     const response = await api.listMcpConfigNamesApiV1McpConfigsNamesGet({
-      tenant_id: tenantId,
+      tenant_name: tenantName,
       include_deleted: includeDeleted,
     })
-    configNames.value = response.data
-    return response.data
+    // 处理可能的错误响应
+    if (Array.isArray(response.data)) {
+      configNames.value = response.data as McpConfigName[]
+    }
+    else {
+      configNames.value = []
+    }
+    return configNames.value
   }
   catch (err: any) {
     const apiError = err as ApiError
@@ -83,11 +95,15 @@ async function updateConfig(config: Mcp) {
     const response = await api.updateMcpConfigApiV1McpConfigsPut(config)
 
     // 更新本地状态
-    const index = configs.value.findIndex(c => c.name === config.name)
-    if (index !== -1) {
-      configs.value[index] = response.data
+    if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
+      const updatedConfig = response.data as McpConfigModel
+      const index = configs.value.findIndex(c => c.name === config.name)
+      if (index !== -1) {
+        configs.value[index] = updatedConfig
+            }
+      return updatedConfig
     }
-
+    
     return response.data
   }
   catch (err: any) {
@@ -101,15 +117,15 @@ async function updateConfig(config: Mcp) {
 }
 
 // 删除MCP配置
-async function deleteConfig(tenantId: string, name: string) {
+async function deleteConfig(tenantName: string, name: string) {
   loading.value = true
   error.value = null
 
   try {
-    await api.deleteMcpConfigApiV1McpConfigsTenantIdNameDelete(tenantId, name)
+    await api.deleteMcpConfigApiV1McpConfigsTenantNameNameDelete(tenantName, name)
 
     // 从本地状态中移除
-    configs.value = configs.value.filter(c => !(c.tenant_name === tenantId && c.name === name))
+    configs.value = configs.value.filter(c => !(c.tenant_name === tenantName && c.name === name))
   }
   catch (err: any) {
     const apiError = err as ApiError
