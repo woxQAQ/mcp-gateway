@@ -4,12 +4,11 @@
  * API Server
  * OpenAPI spec version: 0.1.0
  */
-import type { Cors } from './Cors'
-import type { HttpServer } from './HttpServer'
+import type { RouterCors } from "./RouterCors";
 
 export interface Router {
-  cors: Cors
-  http_server_ref: HttpServer
-  prefix: string
-  sse_prefix: string
+  cors?: RouterCors;
+  prefix: string;
+  server: string;
+  sse_prefix: string;
 }

@@ -6,8 +6,8 @@
  */
 
 export interface HttpServer {
-  description: string
-  name: string
-  tools: string[]
-  url: string
+  description: string;
+  name: string;
+  tools: string[];
+  url: string;
 }

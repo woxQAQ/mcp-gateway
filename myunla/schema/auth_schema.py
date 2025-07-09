@@ -14,6 +14,19 @@ class Login(BaseModel):
     )
 
 
+class Register(BaseModel):
+    username: str = Field(
+        ..., min_length=2, max_length=50, description="The username of the user"
+    )
+    email: Optional[str] = Field(None, description="The email of the user")
+    password: str = Field(
+        ..., min_length=6, description="The password of the user"
+    )
+    confirm_password: str = Field(
+        ..., min_length=6, description="The confirm password of the user"
+    )
+
+
 class ChangePassword(BaseModel):
     username: Optional[str] = Field(
         None, description="The username of the user"
@@ -40,9 +53,15 @@ class UserModel(BaseModel):
             id=user.id,
             username=user.username,
             email=user.email,
-            role=user.role.value,
+            role=(
+                user.role.value
+                if hasattr(user.role, 'value')
+                else str(user.role)
+            ),
             is_active=user.is_active,
-            date_joined=user.date_joined.isoformat(),
+            date_joined=(
+                user.date_joined.isoformat() if user.date_joined else None
+            ),
         )
 
 

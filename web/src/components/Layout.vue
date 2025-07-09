@@ -58,7 +58,7 @@ onUnmounted(() => {
 
       <!-- 主内容区 -->
       <el-main class="layout-main">
-        <slot />
+        <router-view />
       </el-main>
     </el-container>
 

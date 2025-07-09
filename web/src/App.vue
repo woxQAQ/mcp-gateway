@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import Dashboard from './components/Dashboard.vue'
-import Layout from './components/Layout.vue'
+// 主应用组件，使用路由视图
 </script>
 
 <template>
-  <Layout>
-    <Dashboard />
-  </Layout>
+  <div id="app">
+    <router-view />
+  </div>
 </template>
 
 <style>

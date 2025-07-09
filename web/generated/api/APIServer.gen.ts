@@ -14,535 +14,631 @@ import type {
   Mcp,
   McpConfigModel,
   McpConfigName,
-} from '../types'
+  Register,
+} from "../types";
 
-import { customInstance } from '../../mutator'
+import { customInstance } from "../../mutator";
 
 /**
  * @summary Login
  */
-export interface loginApiV1AuthLoginPostResponse200 {
-  data: unknown
-  status: 200
-}
+export type loginApiV1AuthLoginPostResponse200 = {
+  data: unknown;
+  status: 200;
+};
 
-export interface loginApiV1AuthLoginPostResponse422 {
-  data: HTTPValidationError
-  status: 422
-}
+export type loginApiV1AuthLoginPostResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
 
-export type loginApiV1AuthLoginPostResponseComposite
-  = | loginApiV1AuthLoginPostResponse200
-    | loginApiV1AuthLoginPostResponse422
+export type loginApiV1AuthLoginPostResponseComposite =
+  | loginApiV1AuthLoginPostResponse200
+  | loginApiV1AuthLoginPostResponse422;
 
-export type loginApiV1AuthLoginPostResponse
-  = loginApiV1AuthLoginPostResponseComposite & {
-    headers: Headers
-  }
+export type loginApiV1AuthLoginPostResponse =
+  loginApiV1AuthLoginPostResponseComposite & {
+    headers: Headers;
+  };
 
-export function getLoginApiV1AuthLoginPostUrl() {
-  return `/api/v1/auth/login`
-}
+export const getLoginApiV1AuthLoginPostUrl = () => {
+  return `/api/v1/auth/login`;
+};
 
-export async function loginApiV1AuthLoginPost(login: Login, options?: RequestInit): Promise<loginApiV1AuthLoginPostResponse> {
+export const loginApiV1AuthLoginPost = async (
+  login: Login,
+  options?: RequestInit,
+): Promise<loginApiV1AuthLoginPostResponse> => {
   return customInstance<loginApiV1AuthLoginPostResponse>(
     getLoginApiV1AuthLoginPostUrl(),
     {
       ...options,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...options?.headers },
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
       body: JSON.stringify(login),
     },
-  )
-}
+  );
+};
 
 /**
  * @summary Logout
  */
-export interface logoutApiV1AuthLogoutPostResponse200 {
-  data: unknown
-  status: 200
-}
+export type logoutApiV1AuthLogoutPostResponse200 = {
+  data: unknown;
+  status: 200;
+};
 
-export type logoutApiV1AuthLogoutPostResponseComposite
-  = logoutApiV1AuthLogoutPostResponse200
+export type logoutApiV1AuthLogoutPostResponseComposite =
+  logoutApiV1AuthLogoutPostResponse200;
 
-export type logoutApiV1AuthLogoutPostResponse
-  = logoutApiV1AuthLogoutPostResponseComposite & {
-    headers: Headers
-  }
+export type logoutApiV1AuthLogoutPostResponse =
+  logoutApiV1AuthLogoutPostResponseComposite & {
+    headers: Headers;
+  };
 
-export function getLogoutApiV1AuthLogoutPostUrl() {
-  return `/api/v1/auth/logout`
-}
+export const getLogoutApiV1AuthLogoutPostUrl = () => {
+  return `/api/v1/auth/logout`;
+};
 
-export async function logoutApiV1AuthLogoutPost(options?: RequestInit): Promise<logoutApiV1AuthLogoutPostResponse> {
+export const logoutApiV1AuthLogoutPost = async (
+  options?: RequestInit,
+): Promise<logoutApiV1AuthLogoutPostResponse> => {
   return customInstance<logoutApiV1AuthLogoutPostResponse>(
     getLogoutApiV1AuthLogoutPostUrl(),
     {
       ...options,
-      method: 'POST',
+      method: "POST",
     },
-  )
-}
+  );
+};
+
+/**
+ * @summary Register
+ */
+export type registerApiV1AuthRegisterPostResponse200 = {
+  data: unknown;
+  status: 200;
+};
+
+export type registerApiV1AuthRegisterPostResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type registerApiV1AuthRegisterPostResponseComposite =
+  | registerApiV1AuthRegisterPostResponse200
+  | registerApiV1AuthRegisterPostResponse422;
+
+export type registerApiV1AuthRegisterPostResponse =
+  registerApiV1AuthRegisterPostResponseComposite & {
+    headers: Headers;
+  };
+
+export const getRegisterApiV1AuthRegisterPostUrl = () => {
+  return `/api/v1/auth/register`;
+};
+
+export const registerApiV1AuthRegisterPost = async (
+  register: Register,
+  options?: RequestInit,
+): Promise<registerApiV1AuthRegisterPostResponse> => {
+  return customInstance<registerApiV1AuthRegisterPostResponse>(
+    getRegisterApiV1AuthRegisterPostUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(register),
+    },
+  );
+};
 
 /**
  * @summary Get User
  */
-export interface getUserApiV1AuthUserGetResponse200 {
-  data: unknown
-  status: 200
-}
+export type getUserApiV1AuthUserGetResponse200 = {
+  data: unknown;
+  status: 200;
+};
 
-export type getUserApiV1AuthUserGetResponseComposite
-  = getUserApiV1AuthUserGetResponse200
+export type getUserApiV1AuthUserGetResponseComposite =
+  getUserApiV1AuthUserGetResponse200;
 
-export type getUserApiV1AuthUserGetResponse
-  = getUserApiV1AuthUserGetResponseComposite & {
-    headers: Headers
-  }
+export type getUserApiV1AuthUserGetResponse =
+  getUserApiV1AuthUserGetResponseComposite & {
+    headers: Headers;
+  };
 
-export function getGetUserApiV1AuthUserGetUrl() {
-  return `/api/v1/auth/user`
-}
+export const getGetUserApiV1AuthUserGetUrl = () => {
+  return `/api/v1/auth/user`;
+};
 
-export async function getUserApiV1AuthUserGet(options?: RequestInit): Promise<getUserApiV1AuthUserGetResponse> {
+export const getUserApiV1AuthUserGet = async (
+  options?: RequestInit,
+): Promise<getUserApiV1AuthUserGetResponse> => {
   return customInstance<getUserApiV1AuthUserGetResponse>(
     getGetUserApiV1AuthUserGetUrl(),
     {
       ...options,
-      method: 'GET',
+      method: "GET",
     },
-  )
-}
+  );
+};
 
 /**
  * @summary List Users
  */
-export interface listUsersApiV1AuthUsersGetResponse200 {
-  data: unknown
-  status: 200
-}
+export type listUsersApiV1AuthUsersGetResponse200 = {
+  data: unknown;
+  status: 200;
+};
 
-export type listUsersApiV1AuthUsersGetResponseComposite
-  = listUsersApiV1AuthUsersGetResponse200
+export type listUsersApiV1AuthUsersGetResponseComposite =
+  listUsersApiV1AuthUsersGetResponse200;
 
-export type listUsersApiV1AuthUsersGetResponse
-  = listUsersApiV1AuthUsersGetResponseComposite & {
-    headers: Headers
-  }
+export type listUsersApiV1AuthUsersGetResponse =
+  listUsersApiV1AuthUsersGetResponseComposite & {
+    headers: Headers;
+  };
 
-export function getListUsersApiV1AuthUsersGetUrl() {
-  return `/api/v1/auth/users`
-}
+export const getListUsersApiV1AuthUsersGetUrl = () => {
+  return `/api/v1/auth/users`;
+};
 
-export async function listUsersApiV1AuthUsersGet(options?: RequestInit): Promise<listUsersApiV1AuthUsersGetResponse> {
+export const listUsersApiV1AuthUsersGet = async (
+  options?: RequestInit,
+): Promise<listUsersApiV1AuthUsersGetResponse> => {
   return customInstance<listUsersApiV1AuthUsersGetResponse>(
     getListUsersApiV1AuthUsersGetUrl(),
     {
       ...options,
-      method: 'GET',
+      method: "GET",
     },
-  )
-}
+  );
+};
 
 /**
  * @summary Change Password
  */
-export interface changePasswordApiV1AuthUsersChangePasswordPostResponse200 {
-  data: unknown
-  status: 200
-}
+export type changePasswordApiV1AuthUsersChangePasswordPostResponse200 = {
+  data: unknown;
+  status: 200;
+};
 
-export interface changePasswordApiV1AuthUsersChangePasswordPostResponse422 {
-  data: HTTPValidationError
-  status: 422
-}
+export type changePasswordApiV1AuthUsersChangePasswordPostResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
 
-export type changePasswordApiV1AuthUsersChangePasswordPostResponseComposite
-  = | changePasswordApiV1AuthUsersChangePasswordPostResponse200
-    | changePasswordApiV1AuthUsersChangePasswordPostResponse422
+export type changePasswordApiV1AuthUsersChangePasswordPostResponseComposite =
+  | changePasswordApiV1AuthUsersChangePasswordPostResponse200
+  | changePasswordApiV1AuthUsersChangePasswordPostResponse422;
 
-export type changePasswordApiV1AuthUsersChangePasswordPostResponse
-  = changePasswordApiV1AuthUsersChangePasswordPostResponseComposite & {
-    headers: Headers
-  }
+export type changePasswordApiV1AuthUsersChangePasswordPostResponse =
+  changePasswordApiV1AuthUsersChangePasswordPostResponseComposite & {
+    headers: Headers;
+  };
 
-export function getChangePasswordApiV1AuthUsersChangePasswordPostUrl() {
-  return `/api/v1/auth/users/change-password`
-}
+export const getChangePasswordApiV1AuthUsersChangePasswordPostUrl = () => {
+  return `/api/v1/auth/users/change-password`;
+};
 
-export async function changePasswordApiV1AuthUsersChangePasswordPost(changePassword: ChangePassword, options?: RequestInit): Promise<changePasswordApiV1AuthUsersChangePasswordPostResponse> {
+export const changePasswordApiV1AuthUsersChangePasswordPost = async (
+  changePassword: ChangePassword,
+  options?: RequestInit,
+): Promise<changePasswordApiV1AuthUsersChangePasswordPostResponse> => {
   return customInstance<changePasswordApiV1AuthUsersChangePasswordPostResponse>(
     getChangePasswordApiV1AuthUsersChangePasswordPostUrl(),
     {
       ...options,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...options?.headers },
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
       body: JSON.stringify(changePassword),
     },
-  )
-}
+  );
+};
 
 /**
  * @summary Delete User
  */
-export interface deleteUserApiV1AuthUsersUserIdDeleteResponse200 {
-  data: unknown
-  status: 200
-}
+export type deleteUserApiV1AuthUsersUserIdDeleteResponse200 = {
+  data: unknown;
+  status: 200;
+};
 
-export interface deleteUserApiV1AuthUsersUserIdDeleteResponse422 {
-  data: HTTPValidationError
-  status: 422
-}
+export type deleteUserApiV1AuthUsersUserIdDeleteResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
 
-export type deleteUserApiV1AuthUsersUserIdDeleteResponseComposite
-  = | deleteUserApiV1AuthUsersUserIdDeleteResponse200
-    | deleteUserApiV1AuthUsersUserIdDeleteResponse422
+export type deleteUserApiV1AuthUsersUserIdDeleteResponseComposite =
+  | deleteUserApiV1AuthUsersUserIdDeleteResponse200
+  | deleteUserApiV1AuthUsersUserIdDeleteResponse422;
 
-export type deleteUserApiV1AuthUsersUserIdDeleteResponse
-  = deleteUserApiV1AuthUsersUserIdDeleteResponseComposite & {
-    headers: Headers
-  }
+export type deleteUserApiV1AuthUsersUserIdDeleteResponse =
+  deleteUserApiV1AuthUsersUserIdDeleteResponseComposite & {
+    headers: Headers;
+  };
 
-export function getDeleteUserApiV1AuthUsersUserIdDeleteUrl(userId: string) {
-  return `/api/v1/auth/users/${userId}`
-}
+export const getDeleteUserApiV1AuthUsersUserIdDeleteUrl = (userId: string) => {
+  return `/api/v1/auth/users/${userId}`;
+};
 
-export async function deleteUserApiV1AuthUsersUserIdDelete(userId: string, options?: RequestInit): Promise<deleteUserApiV1AuthUsersUserIdDeleteResponse> {
+export const deleteUserApiV1AuthUsersUserIdDelete = async (
+  userId: string,
+  options?: RequestInit,
+): Promise<deleteUserApiV1AuthUsersUserIdDeleteResponse> => {
   return customInstance<deleteUserApiV1AuthUsersUserIdDeleteResponse>(
     getDeleteUserApiV1AuthUsersUserIdDeleteUrl(userId),
     {
       ...options,
-      method: 'DELETE',
+      method: "DELETE",
     },
-  )
-}
+  );
+};
 
 /**
  * 获取MCP配置列表
  * @summary List Mcp Configs
  */
-export interface listMcpConfigsApiV1McpConfigsGetResponse200 {
-  data: McpConfigModel[]
-  status: 200
-}
+export type listMcpConfigsApiV1McpConfigsGetResponse200 = {
+  data: McpConfigModel[];
+  status: 200;
+};
 
-export interface listMcpConfigsApiV1McpConfigsGetResponse422 {
-  data: HTTPValidationError
-  status: 422
-}
+export type listMcpConfigsApiV1McpConfigsGetResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
 
-export type listMcpConfigsApiV1McpConfigsGetResponseComposite
-  = | listMcpConfigsApiV1McpConfigsGetResponse200
-    | listMcpConfigsApiV1McpConfigsGetResponse422
+export type listMcpConfigsApiV1McpConfigsGetResponseComposite =
+  | listMcpConfigsApiV1McpConfigsGetResponse200
+  | listMcpConfigsApiV1McpConfigsGetResponse422;
 
-export type listMcpConfigsApiV1McpConfigsGetResponse
-  = listMcpConfigsApiV1McpConfigsGetResponseComposite & {
-    headers: Headers
-  }
+export type listMcpConfigsApiV1McpConfigsGetResponse =
+  listMcpConfigsApiV1McpConfigsGetResponseComposite & {
+    headers: Headers;
+  };
 
-export function getListMcpConfigsApiV1McpConfigsGetUrl(params?: ListMcpConfigsApiV1McpConfigsGetParams) {
-  const normalizedParams = new URLSearchParams()
+export const getListMcpConfigsApiV1McpConfigsGetUrl = (
+  params?: ListMcpConfigsApiV1McpConfigsGetParams,
+) => {
+  const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
     if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
+      normalizedParams.append(key, value === null ? "null" : value.toString());
     }
-  })
+  });
 
-  const stringifiedParams = normalizedParams.toString()
+  const stringifiedParams = normalizedParams.toString();
 
   return stringifiedParams.length > 0
     ? `/api/v1/mcp/configs?${stringifiedParams}`
-    : `/api/v1/mcp/configs`
-}
+    : `/api/v1/mcp/configs`;
+};
 
-export async function listMcpConfigsApiV1McpConfigsGet(params?: ListMcpConfigsApiV1McpConfigsGetParams, options?: RequestInit): Promise<listMcpConfigsApiV1McpConfigsGetResponse> {
+export const listMcpConfigsApiV1McpConfigsGet = async (
+  params?: ListMcpConfigsApiV1McpConfigsGetParams,
+  options?: RequestInit,
+): Promise<listMcpConfigsApiV1McpConfigsGetResponse> => {
   return customInstance<listMcpConfigsApiV1McpConfigsGetResponse>(
     getListMcpConfigsApiV1McpConfigsGetUrl(params),
     {
       ...options,
-      method: 'GET',
+      method: "GET",
     },
-  )
-}
+  );
+};
 
 /**
  * 创建MCP配置
  * @summary Create Mcp Config
  */
-export interface createMcpConfigApiV1McpConfigsPostResponse200 {
-  data: McpConfigModel
-  status: 200
-}
+export type createMcpConfigApiV1McpConfigsPostResponse200 = {
+  data: McpConfigModel;
+  status: 200;
+};
 
-export interface createMcpConfigApiV1McpConfigsPostResponse422 {
-  data: HTTPValidationError
-  status: 422
-}
+export type createMcpConfigApiV1McpConfigsPostResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
 
-export type createMcpConfigApiV1McpConfigsPostResponseComposite
-  = | createMcpConfigApiV1McpConfigsPostResponse200
-    | createMcpConfigApiV1McpConfigsPostResponse422
+export type createMcpConfigApiV1McpConfigsPostResponseComposite =
+  | createMcpConfigApiV1McpConfigsPostResponse200
+  | createMcpConfigApiV1McpConfigsPostResponse422;
 
-export type createMcpConfigApiV1McpConfigsPostResponse
-  = createMcpConfigApiV1McpConfigsPostResponseComposite & {
-    headers: Headers
-  }
+export type createMcpConfigApiV1McpConfigsPostResponse =
+  createMcpConfigApiV1McpConfigsPostResponseComposite & {
+    headers: Headers;
+  };
 
-export function getCreateMcpConfigApiV1McpConfigsPostUrl() {
-  return `/api/v1/mcp/configs`
-}
+export const getCreateMcpConfigApiV1McpConfigsPostUrl = () => {
+  return `/api/v1/mcp/configs`;
+};
 
-export async function createMcpConfigApiV1McpConfigsPost(mcp: Mcp, options?: RequestInit): Promise<createMcpConfigApiV1McpConfigsPostResponse> {
+export const createMcpConfigApiV1McpConfigsPost = async (
+  mcp: Mcp,
+  options?: RequestInit,
+): Promise<createMcpConfigApiV1McpConfigsPostResponse> => {
   return customInstance<createMcpConfigApiV1McpConfigsPostResponse>(
     getCreateMcpConfigApiV1McpConfigsPostUrl(),
     {
       ...options,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...options?.headers },
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
       body: JSON.stringify(mcp),
     },
-  )
-}
+  );
+};
 
 /**
  * 更新MCP配置
  * @summary Update Mcp Config
  */
-export interface updateMcpConfigApiV1McpConfigsPutResponse200 {
-  data: McpConfigModel
-  status: 200
-}
+export type updateMcpConfigApiV1McpConfigsPutResponse200 = {
+  data: McpConfigModel;
+  status: 200;
+};
 
-export interface updateMcpConfigApiV1McpConfigsPutResponse422 {
-  data: HTTPValidationError
-  status: 422
-}
+export type updateMcpConfigApiV1McpConfigsPutResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
 
-export type updateMcpConfigApiV1McpConfigsPutResponseComposite
-  = | updateMcpConfigApiV1McpConfigsPutResponse200
-    | updateMcpConfigApiV1McpConfigsPutResponse422
+export type updateMcpConfigApiV1McpConfigsPutResponseComposite =
+  | updateMcpConfigApiV1McpConfigsPutResponse200
+  | updateMcpConfigApiV1McpConfigsPutResponse422;
 
-export type updateMcpConfigApiV1McpConfigsPutResponse
-  = updateMcpConfigApiV1McpConfigsPutResponseComposite & {
-    headers: Headers
-  }
+export type updateMcpConfigApiV1McpConfigsPutResponse =
+  updateMcpConfigApiV1McpConfigsPutResponseComposite & {
+    headers: Headers;
+  };
 
-export function getUpdateMcpConfigApiV1McpConfigsPutUrl() {
-  return `/api/v1/mcp/configs`
-}
+export const getUpdateMcpConfigApiV1McpConfigsPutUrl = () => {
+  return `/api/v1/mcp/configs`;
+};
 
-export async function updateMcpConfigApiV1McpConfigsPut(mcp: Mcp, options?: RequestInit): Promise<updateMcpConfigApiV1McpConfigsPutResponse> {
+export const updateMcpConfigApiV1McpConfigsPut = async (
+  mcp: Mcp,
+  options?: RequestInit,
+): Promise<updateMcpConfigApiV1McpConfigsPutResponse> => {
   return customInstance<updateMcpConfigApiV1McpConfigsPutResponse>(
     getUpdateMcpConfigApiV1McpConfigsPutUrl(),
     {
       ...options,
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', ...options?.headers },
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...options?.headers },
       body: JSON.stringify(mcp),
     },
-  )
-}
+  );
+};
 
 /**
  * 获取MCP配置名称列表
  * @summary List Mcp Config Names
  */
-export interface listMcpConfigNamesApiV1McpConfigsNamesGetResponse200 {
-  data: McpConfigName[]
-  status: 200
-}
+export type listMcpConfigNamesApiV1McpConfigsNamesGetResponse200 = {
+  data: McpConfigName[];
+  status: 200;
+};
 
-export interface listMcpConfigNamesApiV1McpConfigsNamesGetResponse422 {
-  data: HTTPValidationError
-  status: 422
-}
+export type listMcpConfigNamesApiV1McpConfigsNamesGetResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
 
-export type listMcpConfigNamesApiV1McpConfigsNamesGetResponseComposite
-  = | listMcpConfigNamesApiV1McpConfigsNamesGetResponse200
-    | listMcpConfigNamesApiV1McpConfigsNamesGetResponse422
+export type listMcpConfigNamesApiV1McpConfigsNamesGetResponseComposite =
+  | listMcpConfigNamesApiV1McpConfigsNamesGetResponse200
+  | listMcpConfigNamesApiV1McpConfigsNamesGetResponse422;
 
-export type listMcpConfigNamesApiV1McpConfigsNamesGetResponse
-  = listMcpConfigNamesApiV1McpConfigsNamesGetResponseComposite & {
-    headers: Headers
-  }
+export type listMcpConfigNamesApiV1McpConfigsNamesGetResponse =
+  listMcpConfigNamesApiV1McpConfigsNamesGetResponseComposite & {
+    headers: Headers;
+  };
 
-export function getListMcpConfigNamesApiV1McpConfigsNamesGetUrl(params?: ListMcpConfigNamesApiV1McpConfigsNamesGetParams) {
-  const normalizedParams = new URLSearchParams()
+export const getListMcpConfigNamesApiV1McpConfigsNamesGetUrl = (
+  params?: ListMcpConfigNamesApiV1McpConfigsNamesGetParams,
+) => {
+  const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
     if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
+      normalizedParams.append(key, value === null ? "null" : value.toString());
     }
-  })
+  });
 
-  const stringifiedParams = normalizedParams.toString()
+  const stringifiedParams = normalizedParams.toString();
 
   return stringifiedParams.length > 0
     ? `/api/v1/mcp/configs/names?${stringifiedParams}`
-    : `/api/v1/mcp/configs/names`
-}
+    : `/api/v1/mcp/configs/names`;
+};
 
-export async function listMcpConfigNamesApiV1McpConfigsNamesGet(params?: ListMcpConfigNamesApiV1McpConfigsNamesGetParams, options?: RequestInit): Promise<listMcpConfigNamesApiV1McpConfigsNamesGetResponse> {
+export const listMcpConfigNamesApiV1McpConfigsNamesGet = async (
+  params?: ListMcpConfigNamesApiV1McpConfigsNamesGetParams,
+  options?: RequestInit,
+): Promise<listMcpConfigNamesApiV1McpConfigsNamesGetResponse> => {
   return customInstance<listMcpConfigNamesApiV1McpConfigsNamesGetResponse>(
     getListMcpConfigNamesApiV1McpConfigsNamesGetUrl(params),
     {
       ...options,
-      method: 'GET',
+      method: "GET",
     },
-  )
-}
+  );
+};
 
 /**
  * 同步MCP配置
  * @summary Sync Mcp Config
  */
-export interface syncMcpConfigApiV1McpConfigsConfigIdSyncPostResponse200 {
-  data: unknown
-  status: 200
-}
+export type syncMcpConfigApiV1McpConfigsConfigIdSyncPostResponse200 = {
+  data: unknown;
+  status: 200;
+};
 
-export interface syncMcpConfigApiV1McpConfigsConfigIdSyncPostResponse422 {
-  data: HTTPValidationError
-  status: 422
-}
+export type syncMcpConfigApiV1McpConfigsConfigIdSyncPostResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
 
-export type syncMcpConfigApiV1McpConfigsConfigIdSyncPostResponseComposite
-  = | syncMcpConfigApiV1McpConfigsConfigIdSyncPostResponse200
-    | syncMcpConfigApiV1McpConfigsConfigIdSyncPostResponse422
+export type syncMcpConfigApiV1McpConfigsConfigIdSyncPostResponseComposite =
+  | syncMcpConfigApiV1McpConfigsConfigIdSyncPostResponse200
+  | syncMcpConfigApiV1McpConfigsConfigIdSyncPostResponse422;
 
-export type syncMcpConfigApiV1McpConfigsConfigIdSyncPostResponse
-  = syncMcpConfigApiV1McpConfigsConfigIdSyncPostResponseComposite & {
-    headers: Headers
-  }
+export type syncMcpConfigApiV1McpConfigsConfigIdSyncPostResponse =
+  syncMcpConfigApiV1McpConfigsConfigIdSyncPostResponseComposite & {
+    headers: Headers;
+  };
 
-export function getSyncMcpConfigApiV1McpConfigsConfigIdSyncPostUrl(configId: string) {
-  return `/api/v1/mcp/configs/${configId}/sync`
-}
+export const getSyncMcpConfigApiV1McpConfigsConfigIdSyncPostUrl = (
+  configId: string,
+) => {
+  return `/api/v1/mcp/configs/${configId}/sync`;
+};
 
-export async function syncMcpConfigApiV1McpConfigsConfigIdSyncPost(configId: string, options?: RequestInit): Promise<syncMcpConfigApiV1McpConfigsConfigIdSyncPostResponse> {
+export const syncMcpConfigApiV1McpConfigsConfigIdSyncPost = async (
+  configId: string,
+  options?: RequestInit,
+): Promise<syncMcpConfigApiV1McpConfigsConfigIdSyncPostResponse> => {
   return customInstance<syncMcpConfigApiV1McpConfigsConfigIdSyncPostResponse>(
     getSyncMcpConfigApiV1McpConfigsConfigIdSyncPostUrl(configId),
     {
       ...options,
-      method: 'POST',
+      method: "POST",
     },
-  )
-}
+  );
+};
 
 /**
  * 删除MCP配置
  * @summary Delete Mcp Config
  */
-export interface deleteMcpConfigApiV1McpConfigsTenantIdNameDeleteResponse200 {
-  data: unknown
-  status: 200
-}
+export type deleteMcpConfigApiV1McpConfigsTenantNameNameDeleteResponse200 = {
+  data: unknown;
+  status: 200;
+};
 
-export interface deleteMcpConfigApiV1McpConfigsTenantIdNameDeleteResponse422 {
-  data: HTTPValidationError
-  status: 422
-}
+export type deleteMcpConfigApiV1McpConfigsTenantNameNameDeleteResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
 
-export type deleteMcpConfigApiV1McpConfigsTenantIdNameDeleteResponseComposite
-  = | deleteMcpConfigApiV1McpConfigsTenantIdNameDeleteResponse200
-    | deleteMcpConfigApiV1McpConfigsTenantIdNameDeleteResponse422
+export type deleteMcpConfigApiV1McpConfigsTenantNameNameDeleteResponseComposite =
 
-export type deleteMcpConfigApiV1McpConfigsTenantIdNameDeleteResponse
-  = deleteMcpConfigApiV1McpConfigsTenantIdNameDeleteResponseComposite & {
-    headers: Headers
-  }
+    | deleteMcpConfigApiV1McpConfigsTenantNameNameDeleteResponse200
+    | deleteMcpConfigApiV1McpConfigsTenantNameNameDeleteResponse422;
 
-export function getDeleteMcpConfigApiV1McpConfigsTenantIdNameDeleteUrl(tenantId: string, name: string) {
-  return `/api/v1/mcp/configs/${tenantId}/${name}`
-}
+export type deleteMcpConfigApiV1McpConfigsTenantNameNameDeleteResponse =
+  deleteMcpConfigApiV1McpConfigsTenantNameNameDeleteResponseComposite & {
+    headers: Headers;
+  };
 
-export async function deleteMcpConfigApiV1McpConfigsTenantIdNameDelete(tenantId: string, name: string, options?: RequestInit): Promise<deleteMcpConfigApiV1McpConfigsTenantIdNameDeleteResponse> {
-  return customInstance<deleteMcpConfigApiV1McpConfigsTenantIdNameDeleteResponse>(
-    getDeleteMcpConfigApiV1McpConfigsTenantIdNameDeleteUrl(tenantId, name),
+export const getDeleteMcpConfigApiV1McpConfigsTenantNameNameDeleteUrl = (
+  tenantName: string,
+  name: string,
+) => {
+  return `/api/v1/mcp/configs/${tenantName}/${name}`;
+};
+
+export const deleteMcpConfigApiV1McpConfigsTenantNameNameDelete = async (
+  tenantName: string,
+  name: string,
+  options?: RequestInit,
+): Promise<deleteMcpConfigApiV1McpConfigsTenantNameNameDeleteResponse> => {
+  return customInstance<deleteMcpConfigApiV1McpConfigsTenantNameNameDeleteResponse>(
+    getDeleteMcpConfigApiV1McpConfigsTenantNameNameDeleteUrl(tenantName, name),
     {
       ...options,
-      method: 'DELETE',
+      method: "DELETE",
     },
-  )
-}
+  );
+};
 
 /**
  * 激活MCP配置
  * @summary Active Mcp Config
  */
-export interface activeMcpConfigApiV1McpTenantNameNameActivePostResponse200 {
-  data: unknown
-  status: 200
-}
+export type activeMcpConfigApiV1McpTenantNameNameActivePostResponse200 = {
+  data: unknown;
+  status: 200;
+};
 
-export interface activeMcpConfigApiV1McpTenantNameNameActivePostResponse422 {
-  data: HTTPValidationError
-  status: 422
-}
+export type activeMcpConfigApiV1McpTenantNameNameActivePostResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
 
-export type activeMcpConfigApiV1McpTenantNameNameActivePostResponseComposite
-  = | activeMcpConfigApiV1McpTenantNameNameActivePostResponse200
-    | activeMcpConfigApiV1McpTenantNameNameActivePostResponse422
+export type activeMcpConfigApiV1McpTenantNameNameActivePostResponseComposite =
+  | activeMcpConfigApiV1McpTenantNameNameActivePostResponse200
+  | activeMcpConfigApiV1McpTenantNameNameActivePostResponse422;
 
-export type activeMcpConfigApiV1McpTenantNameNameActivePostResponse
-  = activeMcpConfigApiV1McpTenantNameNameActivePostResponseComposite & {
-    headers: Headers
-  }
+export type activeMcpConfigApiV1McpTenantNameNameActivePostResponse =
+  activeMcpConfigApiV1McpTenantNameNameActivePostResponseComposite & {
+    headers: Headers;
+  };
 
-export function getActiveMcpConfigApiV1McpTenantNameNameActivePostUrl(tenantName: string, name: string) {
-  return `/api/v1/mcp/${tenantName}/${name}/active`
-}
+export const getActiveMcpConfigApiV1McpTenantNameNameActivePostUrl = (
+  tenantName: string,
+  name: string,
+) => {
+  return `/api/v1/mcp/${tenantName}/${name}/active`;
+};
 
-export async function activeMcpConfigApiV1McpTenantNameNameActivePost(tenantName: string, name: string, options?: RequestInit): Promise<activeMcpConfigApiV1McpTenantNameNameActivePostResponse> {
+export const activeMcpConfigApiV1McpTenantNameNameActivePost = async (
+  tenantName: string,
+  name: string,
+  options?: RequestInit,
+): Promise<activeMcpConfigApiV1McpTenantNameNameActivePostResponse> => {
   return customInstance<activeMcpConfigApiV1McpTenantNameNameActivePostResponse>(
     getActiveMcpConfigApiV1McpTenantNameNameActivePostUrl(tenantName, name),
     {
       ...options,
-      method: 'POST',
+      method: "POST",
     },
-  )
-}
+  );
+};
 
 /**
  * @summary Import Openapi
  */
-export interface importOpenapiApiV1OpenapiOpenapiImportPostResponse200 {
-  data: unknown
-  status: 200
-}
+export type importOpenapiApiV1OpenapiOpenapiImportPostResponse200 = {
+  data: unknown;
+  status: 200;
+};
 
-export interface importOpenapiApiV1OpenapiOpenapiImportPostResponse422 {
-  data: HTTPValidationError
-  status: 422
-}
+export type importOpenapiApiV1OpenapiOpenapiImportPostResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
 
-export type importOpenapiApiV1OpenapiOpenapiImportPostResponseComposite
-  = | importOpenapiApiV1OpenapiOpenapiImportPostResponse200
-    | importOpenapiApiV1OpenapiOpenapiImportPostResponse422
+export type importOpenapiApiV1OpenapiOpenapiImportPostResponseComposite =
+  | importOpenapiApiV1OpenapiOpenapiImportPostResponse200
+  | importOpenapiApiV1OpenapiOpenapiImportPostResponse422;
 
-export type importOpenapiApiV1OpenapiOpenapiImportPostResponse
-  = importOpenapiApiV1OpenapiOpenapiImportPostResponseComposite & {
-    headers: Headers
-  }
+export type importOpenapiApiV1OpenapiOpenapiImportPostResponse =
+  importOpenapiApiV1OpenapiOpenapiImportPostResponseComposite & {
+    headers: Headers;
+  };
 
-export function getImportOpenapiApiV1OpenapiOpenapiImportPostUrl() {
-  return `/api/v1/openapi/openapi/import`
-}
+export const getImportOpenapiApiV1OpenapiOpenapiImportPostUrl = () => {
+  return `/api/v1/openapi/openapi/import`;
+};
 
-export async function importOpenapiApiV1OpenapiOpenapiImportPost(bodyImportOpenapiApiV1OpenapiOpenapiImportPost: BodyImportOpenapiApiV1OpenapiOpenapiImportPost, options?: RequestInit): Promise<importOpenapiApiV1OpenapiOpenapiImportPostResponse> {
-  const formData = new FormData()
-  formData.append(`file`, bodyImportOpenapiApiV1OpenapiOpenapiImportPost.file)
+export const importOpenapiApiV1OpenapiOpenapiImportPost = async (
+  bodyImportOpenapiApiV1OpenapiOpenapiImportPost: BodyImportOpenapiApiV1OpenapiOpenapiImportPost,
+  options?: RequestInit,
+): Promise<importOpenapiApiV1OpenapiOpenapiImportPostResponse> => {
+  const formData = new FormData();
+  formData.append(`file`, bodyImportOpenapiApiV1OpenapiOpenapiImportPost.file);
 
   return customInstance<importOpenapiApiV1OpenapiOpenapiImportPostResponse>(
     getImportOpenapiApiV1OpenapiOpenapiImportPostUrl(),
     {
       ...options,
-      method: 'POST',
+      method: "POST",
       body: formData,
     },
-  )
-}
+  );
+};

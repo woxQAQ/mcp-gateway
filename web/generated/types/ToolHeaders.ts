@@ -5,4 +5,4 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface ToolHeaders { [key: string]: string }
+export type ToolHeaders = { [key: string]: string };

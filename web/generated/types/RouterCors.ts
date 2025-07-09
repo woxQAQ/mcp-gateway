@@ -4,8 +4,6 @@
  * API Server
  * OpenAPI spec version: 0.1.0
  */
+import type { Cors } from "./Cors";
 
-/**
- * The new password of the user
- */
-export type ChangePasswordNewPassword = string | null;
+export type RouterCors = Cors | null;

@@ -8,4 +8,4 @@
 /**
  * The username of the user
  */
-export type LoginUsername = string | null
+export type LoginUsername = string | null;

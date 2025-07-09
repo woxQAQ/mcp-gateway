@@ -5,13 +5,13 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface ListMcpConfigNamesApiV1McpConfigsNamesGetParams {
+export type ListMcpConfigNamesApiV1McpConfigsNamesGetParams = {
   /**
    * 租户ID
    */
-  tenant_id?: string | null
+  tenant_name?: string | null;
   /**
    * 是否包含已删除的配置
    */
-  include_deleted?: boolean
-}
+  include_deleted?: boolean;
+};

@@ -5,10 +5,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type Policy = (typeof Policy)[keyof typeof Policy]
+export type Policy = (typeof Policy)[keyof typeof Policy];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const Policy = {
-  on_start: 'on_start',
-  on_demand: 'on_demand',
-} as const
+  on_start: "on_start",
+  on_demand: "on_demand",
+} as const;

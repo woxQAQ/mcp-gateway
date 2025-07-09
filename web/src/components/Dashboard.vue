@@ -7,17 +7,28 @@ import {
   Refresh,
   TrendCharts,
 } from '@element-plus/icons-vue'
-import { ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+// 导入API stores
+import { useAuth } from '../stores/auth'
+import { useMcp } from '../stores/mcp'
+
+const router = useRouter()
 
 const chartPeriod = ref('7d')
 
-// 统计数据
-const stats = ref([
+// 使用stores
+const { user, fetchCurrentUser } = useAuth()
+const { configs, configCount, fetchConfigs } = useMcp()
+
+// 动态统计数据
+const stats = computed(() => [
   {
     id: 'configs',
     label: 'MCP配置',
-    value: '12',
-    change: '+8%',
+    value: configCount.value?.toString() || '0',
+    change: '+0%',
     trend: 'up',
     icon: 'Setting',
     color: '#409EFF',
@@ -25,8 +36,8 @@ const stats = ref([
   {
     id: 'tools',
     label: '活跃工具',
-    value: '24',
-    change: '+12%',
+    value: configs.value?.length?.toString() || '0',
+    change: '+0%',
     trend: 'up',
     icon: 'Tools',
     color: '#67C23A',
@@ -34,22 +45,30 @@ const stats = ref([
   {
     id: 'servers',
     label: '在线服务器',
-    value: '8',
-    change: '-2%',
-    trend: 'down',
+    value: '1',
+    change: '+0%',
+    trend: 'up',
     icon: 'Monitor',
     color: '#E6A23C',
   },
   {
     id: 'users',
     label: '系统用户',
-    value: '156',
-    change: '+5%',
+    value: '1',
+    change: '+0%',
     trend: 'up',
     icon: 'User',
     color: '#F56C6C',
   },
 ])
+
+// 用户显示名称
+const displayName = computed(() => user?.username || '用户')
+
+// 页面初始化
+onMounted(async () => {
+  await refreshData()
+})
 
 // 最近活动
 const activities = ref([
@@ -113,23 +132,43 @@ const quickActions = ref([
 ])
 
 // 处理快速操作点击
-function handleQuickAction(_action: any) {
-  // 处理快速操作逻辑
+function handleQuickAction(action: any) {
+  switch (action.id) {
+    case 'create-config':
+      router.push('/mcp-config')
+      break
+    case 'view-users':
+      router.push('/users')
+      break
+    case 'settings':
+      router.push('/settings')
+      break
+    default:
+      console.error('Unknown quick action:', action.id)
+  }
 }
 
 // 刷新数据
-function refreshData() {
-  // 刷新数据逻辑
+async function refreshData() {
+  try {
+    await Promise.all([
+      fetchCurrentUser(),
+      fetchConfigs(),
+    ])
+  }
+  catch (error) {
+    console.error('Refresh data failed:', error)
+  }
 }
 
 // 返回操作
 function goBack() {
-  // 返回操作逻辑
+  router.go(-1)
 }
 
 // 加载图表数据
-function loadChartData() {
-  // 加载图表数据逻辑
+async function loadChartData() {
+  await refreshData()
 }
 </script>
 
@@ -155,7 +194,7 @@ function loadChartData() {
       <!-- 欢迎信息 -->
       <div class="glass-20 rounded-xl p-6 mb-6 border border-white/20">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          欢迎回来，John！ 👋
+          欢迎回来，{{ displayName }}！ 👋
         </h1>
         <p class="text-gray-600 dark:text-gray-400">
           系统运行良好，今天有 <span class="text-primary-500 font-semibold">3个新的</span> MCP配置更新

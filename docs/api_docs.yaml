@@ -171,16 +171,6 @@ components:
       type: object
     McpConfigModel:
       properties:
-        created_at:
-          format: date-time
-          title: Created At
-          type: string
-        deleted_at:
-          anyOf:
-          - format: date-time
-            type: string
-          - type: 'null'
-          title: Deleted At
         gmt_created:
           format: date-time
           title: Gmt Created
@@ -224,23 +214,14 @@ components:
             $ref: '#/components/schemas/Tool'
           title: Tools
           type: array
-        updated_at:
-          anyOf:
-          - format: date-time
-            type: string
-          - type: 'null'
-          title: Updated At
       required:
+      - id
       - name
       - tenant_name
-      - updated_at
-      - created_at
-      - deleted_at
-      - servers
       - routers
+      - servers
       - tools
       - http_servers
-      - id
       - gmt_created
       - gmt_updated
       title: McpConfigModel
@@ -254,17 +235,22 @@ components:
         name:
           title: Name
           type: string
-        tenant_id:
-          title: Tenant Id
+        tenant_name:
+          title: Tenant Name
           type: string
       required:
       - id
       - name
-      - tenant_id
+      - tenant_name
       title: McpConfigName
       type: object
     McpServer:
       properties:
+        args:
+          items:
+            type: string
+          title: Args
+          type: array
         command:
           title: Command
           type: string
@@ -292,6 +278,7 @@ components:
       - command
       - preinstalled
       - url
+      - args
       title: McpServer
       type: object
     McpServerType:
@@ -306,23 +293,55 @@ components:
       - on_demand
       title: Policy
       type: string
+    Register:
+      properties:
+        confirm_password:
+          description: The confirm password of the user
+          minLength: 6
+          title: Confirm Password
+          type: string
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: The email of the user
+          title: Email
+        password:
+          description: The password of the user
+          minLength: 6
+          title: Password
+          type: string
+        username:
+          description: The username of the user
+          maxLength: 50
+          minLength: 2
+          title: Username
+          type: string
+      required:
+      - username
+      - password
+      - confirm_password
+      title: Register
+      type: object
     Router:
       properties:
         cors:
-          $ref: '#/components/schemas/Cors'
-        http_server_ref:
-          $ref: '#/components/schemas/HttpServer'
+          anyOf:
+          - $ref: '#/components/schemas/Cors'
+          - type: 'null'
         prefix:
           title: Prefix
+          type: string
+        server:
+          title: Server
           type: string
         sse_prefix:
           title: Sse Prefix
           type: string
       required:
       - prefix
-      - http_server_ref
+      - server
       - sse_prefix
-      - cors
       title: Router
       type: object
     Tool:
@@ -435,6 +454,28 @@ paths:
               schema: {}
           description: Successful Response
       summary: Logout
+  /api/v1/auth/register:
+    post:
+      operationId: register_api_v1_auth_register_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Register
   /api/v1/auth/user:
     get:
       operationId: get_user_api_v1_auth_user_get
@@ -513,14 +554,14 @@ paths:
       parameters:
       - description: 租户ID
         in: query
-        name: tenant_id
+        name: tenant_name
         required: false
         schema:
           anyOf:
           - type: string
           - type: 'null'
           description: 租户ID
-          title: Tenant Id
+          title: Tenant Name
       responses:
         '200':
           content:
@@ -597,14 +638,14 @@ paths:
       parameters:
       - description: 租户ID
         in: query
-        name: tenant_id
+        name: tenant_name
         required: false
         schema:
           anyOf:
           - type: string
           - type: 'null'
           description: 租户ID
-          title: Tenant Id
+          title: Tenant Name
       - description: 是否包含已删除的配置
         in: query
         name: include_deleted
@@ -659,16 +700,16 @@ paths:
       security:
       - APIKeyCookie: []
       summary: Sync Mcp Config
-  /api/v1/mcp/configs/{tenant_id}/{name}:
+  /api/v1/mcp/configs/{tenant_name}/{name}:
     delete:
       description: 删除MCP配置
-      operationId: delete_mcp_config_api_v1_mcp_configs__tenant_id___name__delete
+      operationId: delete_mcp_config_api_v1_mcp_configs__tenant_name___name__delete
       parameters:
       - in: path
-        name: tenant_id
+        name: tenant_name
         required: true
         schema:
-          title: Tenant Id
+          title: Tenant Name
           type: string
       - in: path
         name: name

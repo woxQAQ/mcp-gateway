@@ -6,10 +6,6 @@
  */
 
 /**
- * MCP config name.
+ * The email of the user
  */
-export interface McpConfigName {
-  id: string;
-  name: string;
-  tenant_name: string;
-}
+export type RegisterEmail = string | null;

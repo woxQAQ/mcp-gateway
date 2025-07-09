@@ -4,9 +4,15 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy import select
 
 from myunla.config.apiserver_config import AsyncSessionDependency
-from myunla.models.user import User
+from myunla.models.user import Role, User
 from myunla.repos import async_db_ops
-from myunla.schema.auth_schema import ChangePassword, Login, UserList, UserModel
+from myunla.schema.auth_schema import (
+    ChangePassword,
+    Login,
+    Register,
+    UserList,
+    UserModel,
+)
 from myunla.utils import (
     COOKIE_MAX_AGE,
     UserManager,
@@ -69,6 +75,77 @@ async def login(
 
     logger.info(f"用户登录成功: {data.username}")
     return UserModel.from_orm(user)
+
+
+@router.post("/register")
+async def register(
+    request: Request,
+    data: Register,
+    session: AsyncSessionDependency,
+    user_manager: UserManager = Depends(get_user_manager),
+):
+    logger.info(f"用户注册尝试: {data.username}")
+
+    # 验证密码确认
+    if data.password != data.confirm_password:
+        logger.warning(f"注册失败 - 密码确认不匹配: {data.username}")
+        raise HTTPException(
+            status_code=400, detail="Password confirmation does not match"
+        )
+
+    # 检查用户名是否已存在
+    result = await session.execute(
+        select(User).where(User.username == data.username)
+    )
+    if result.scalar():
+        logger.warning(f"注册失败 - 用户名已存在: {data.username}")
+        raise HTTPException(status_code=400, detail="Username already exists")
+
+    # 检查邮箱是否已存在（如果提供了邮箱）
+    if data.email:
+        result = await session.execute(
+            select(User).where(User.email == data.email)
+        )
+        if result.scalar():
+            logger.warning(f"注册失败 - 邮箱已存在: {data.email}")
+            raise HTTPException(status_code=400, detail="Email already exists")
+
+    try:
+        # 创建新用户
+        from myunla.models.user import utc_now
+
+        hashed_password = user_manager.password_helper.hash(data.password)
+        current_time = utc_now()
+
+        user = User(
+            username=data.username,
+            email=data.email,
+            hashed_password=hashed_password,
+            role=Role.NORMAL.value,  # 使用枚举的字符串值
+            date_joined=current_time,
+            gmt_created=current_time,
+            gmt_updated=current_time,
+        )
+
+        session.add(user)
+
+        # 在提交之前先验证序列化是否成功
+        user_model = UserModel.from_orm(user)
+
+        # 只有在所有操作都成功时才提交事务
+        await session.commit()
+        await session.refresh(user)
+
+        logger.info(f"用户注册成功: {data.username}")
+        return user_model
+
+    except Exception as e:
+        # 如果有任何错误，回滚事务
+        await session.rollback()
+        logger.error(f"注册失败，已回滚事务: {data.username}, 错误: {e!s}")
+        raise HTTPException(
+            status_code=500, detail="Registration failed due to server error"
+        )
 
 
 @router.post("/logout")

@@ -62,7 +62,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(254), unique=True, nullable=True)
     hashed_password: Mapped[str] = mapped_column(String(128), nullable=False)
     role: Mapped[Role] = mapped_column(
-        EnumColumn(Role), nullable=False, default=Role.NORMAL
+        EnumColumn(Role), nullable=False, default=Role.NORMAL.value
     )
     is_active: Mapped[bool] = mapped_column(
         Boolean, default=True, nullable=False
