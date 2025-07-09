@@ -12,17 +12,21 @@ export default {
     },
     output: {
       // 生成文件的输出目录
-      target: "./src/api/generated/api.ts",
       client: "fetch", // 可选: fetch, axios, angular, react-query, swr
-      mode: "single", // split: 分文件, single: 单文件, tags: 按标签分组
+      mode: "split", // split: 分文件, single: 单文件, tags: 按标签分组
       mock: true, // 启用 mock 数据生成
       prettier: true, // 使用 prettier 格式化生成的代码
+      namingConvention: "PascalCase",
+      schemas: "./src/generated/types",
+      target: "./src/generated/api",
+      fileExtension: ".gen.ts",
       override: {
         // 自定义配置
         mutator: {
-          path: "./src/api/mutator.ts",
+          path: "./src/mutator.ts",
           name: "customInstance",
         },
+
         // 请求/响应拦截器
         operations: {
           // 为所有操作添加通用配置
