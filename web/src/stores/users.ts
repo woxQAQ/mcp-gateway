@@ -72,13 +72,30 @@ async function createUser(userData: {
       confirm_password: userData.confirmPassword,
     })
 
-    // 重新获取用户列表
+    // 重新获取用户列表以确保数据一致性
     await fetchUsers()
-    return response.data
+
+    // 尝试从响应中提取用户信息
+    const responseData = response.data as any
+    return responseData?.user || responseData
   }
   catch (err: any) {
     const apiError = err as ApiError
-    error.value = apiError.message || '创建用户失败'
+    // 处理具体的错误信息
+    if (apiError.status === 400) {
+      if (apiError.message?.includes('already exists')) {
+        error.value = '用户名或邮箱已存在'
+      }
+      else if (apiError.message?.includes('not match')) {
+        error.value = '密码确认不匹配'
+      }
+      else {
+        error.value = apiError.message || '用户信息无效'
+      }
+    }
+    else {
+      error.value = apiError.message || '创建用户失败'
+    }
     throw err
   }
   finally {
@@ -99,7 +116,27 @@ async function deleteUser(userId: string) {
   }
   catch (err: any) {
     const apiError = err as ApiError
-    error.value = apiError.message || '删除用户失败'
+    // 处理具体的错误信息
+    if (apiError.status === 403) {
+      error.value = '权限不足：需要管理员权限才能删除用户'
+    }
+    else if (apiError.status === 400) {
+      if (apiError.message?.includes('last admin')) {
+        error.value = '无法删除最后一个管理员账户'
+      }
+      else if (apiError.message?.includes('yourself')) {
+        error.value = '无法删除自己的账户'
+      }
+      else if (apiError.message?.includes('not found')) {
+        error.value = '用户不存在'
+      }
+      else {
+        error.value = apiError.message || '删除操作无效'
+      }
+    }
+    else {
+      error.value = apiError.message || '删除用户失败'
+    }
     throw err
   }
   finally {
@@ -107,13 +144,44 @@ async function deleteUser(userId: string) {
   }
 }
 
-// 更新用户状态（模拟，后端暂无此API）
+// 更新用户状态
 async function updateUserStatus(user: User, newStatus: boolean) {
-  // 注意：后端目前没有更新用户状态的API
-  // 这里只是本地更新，实际项目需要后端支持
-  const userIndex = users.value.findIndex(u => u.id === user.id)
-  if (userIndex !== -1) {
-    users.value[userIndex].is_active = newStatus
+  loading.value = true
+  error.value = null
+
+  try {
+    const response = await api.updateUserStatusApiV1AuthUsersUserIdStatusPatch(
+      user.id,
+      { is_active: newStatus },
+    )
+
+    // 更新本地状态
+    const userIndex = users.value.findIndex(u => u.id === user.id)
+    if (userIndex !== -1 && response.data) {
+      users.value[userIndex] = response.data as User
+    }
+
+    return response.data
+  }
+  catch (err: any) {
+    const apiError = err as ApiError
+    // 处理权限错误
+    if (apiError.status === 403) {
+      error.value = '权限不足：需要管理员权限才能修改用户状态'
+    }
+    else if (apiError.status === 400 && apiError.message?.includes('最后一个管理员')) {
+      error.value = '无法禁用最后一个管理员账户'
+    }
+    else if (apiError.status === 400 && apiError.message?.includes('自己的状态')) {
+      error.value = '无法修改自己的账户状态'
+    }
+    else {
+      error.value = apiError.message || '更新用户状态失败'
+    }
+    throw err
+  }
+  finally {
+    loading.value = false
   }
 }
 

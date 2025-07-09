@@ -91,31 +91,41 @@ async function saveUser() {
     if (editMode.value) {
       // 更新用户逻辑 - 后端暂无此API
       ElMessage.warning('编辑用户功能需要后端API支持')
-      return
     }
     else {
-      // 创建用户
+      // 表单验证
+      if (!userForm.value.username.trim()) {
+        ElMessage.error('用户名不能为空')
+        return
+      }
+      if (!userForm.value.password) {
+        ElMessage.error('密码不能为空')
+        return
+      }
       if (userForm.value.password !== userForm.value.confirmPassword) {
         ElMessage.error('密码确认不一致')
         return
       }
+      if (userForm.value.password.length < 6) {
+        ElMessage.error('密码长度至少6位')
+        return
+      }
 
       await createUser({
-        username: userForm.value.username,
-        email: userForm.value.email || undefined,
+        username: userForm.value.username.trim(),
+        email: userForm.value.email?.trim() || undefined,
         password: userForm.value.password,
         confirmPassword: userForm.value.confirmPassword,
       })
 
       ElMessage.success('用户创建成功')
+      showCreateDialog.value = false
+      resetForm()
     }
-
-    showCreateDialog.value = false
-    resetForm()
   }
   catch (err: any) {
     console.error('保存用户失败:', err)
-    // 错误已经在store中处理
+    // 错误信息已经在store中设置，不需要额外显示
   }
 }
 
@@ -147,12 +157,30 @@ async function handleDeleteUser(user: User) {
 async function toggleUserStatus(user: User) {
   try {
     const newStatus = !user.is_active
+    const action = newStatus ? '启用' : '禁用'
+
+    // 添加确认对话框
+    await ElMessageBox.confirm(
+      `确定要${action}用户 "${user.username}" 吗？`,
+      `确认${action}`,
+      {
+        confirmButtonText: action,
+        cancelButtonText: '取消',
+        type: 'warning',
+      },
+    )
+
     await updateUserStatus(user, newStatus)
-    ElMessage.success(`用户状态已${newStatus ? '启用' : '禁用'}`)
+    ElMessage.success(`用户状态已${action}`)
   }
   catch (err: any) {
-    console.error('状态更新失败:', err)
-    ElMessage.error('状态更新失败')
+    if (err !== 'cancel') {
+      console.error('状态更新失败:', err)
+      // 错误信息已经在store中设置，这里不再重复显示
+      if (!getErrorMessage()) {
+        ElMessage.error('状态更新失败')
+      }
+    }
   }
 }
 
@@ -304,6 +332,8 @@ onMounted(async () => {
               type="primary"
               size="small"
               @click="editUser(row)"
+              disabled
+              title="编辑功能暂未开放"
             >
               <Edit />
               编辑
@@ -311,6 +341,7 @@ onMounted(async () => {
             <el-button
               :type="row.is_active ? 'warning' : 'success'"
               size="small"
+              :loading="loading"
               @click="toggleUserStatus(row)"
             >
               {{ row.is_active ? '禁用' : '启用' }}
@@ -318,6 +349,7 @@ onMounted(async () => {
             <el-button
               type="danger"
               size="small"
+              :loading="loading"
               @click="handleDeleteUser(row)"
             >
               <Delete />
@@ -352,18 +384,25 @@ onMounted(async () => {
         <el-form-item label="用户名" required>
           <el-input
             v-model="userForm.username"
-            placeholder="请输入用户名"
+            placeholder="请输入用户名（2-50个字符）"
             :disabled="editMode"
+            maxlength="50"
+            show-word-limit
           />
         </el-form-item>
         <el-form-item label="邮箱">
-          <el-input v-model="userForm.email" placeholder="请输入邮箱" />
+          <el-input
+            v-model="userForm.email"
+            placeholder="请输入邮箱（可选）"
+            type="email"
+          />
         </el-form-item>
         <el-form-item :label="editMode ? '新密码' : '密码'" :required="!editMode">
           <el-input
             v-model="userForm.password"
             type="password"
-            :placeholder="editMode ? '留空则不修改密码' : '请输入密码'"
+            :placeholder="editMode ? '留空则不修改密码' : '请输入密码（至少6位）'"
+            show-password
           />
         </el-form-item>
         <el-form-item
@@ -375,6 +414,7 @@ onMounted(async () => {
             v-model="userForm.confirmPassword"
             type="password"
             placeholder="请再次输入密码"
+            show-password
           />
         </el-form-item>
         <el-form-item label="角色" required>
