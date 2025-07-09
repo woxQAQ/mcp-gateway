@@ -100,10 +100,10 @@ async function updateConfig(config: Mcp) {
       const index = configs.value.findIndex(c => c.name === config.name)
       if (index !== -1) {
         configs.value[index] = updatedConfig
-            }
+      }
       return updatedConfig
     }
-    
+
     return response.data
   }
   catch (err: any) {

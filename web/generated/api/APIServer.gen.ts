@@ -10,11 +10,17 @@ import type {
   HTTPValidationError,
   ListMcpConfigNamesApiV1McpConfigsNamesGetParams,
   ListMcpConfigsApiV1McpConfigsGetParams,
+  ListTenantsApiV1TenantTenantsGetParams,
   Login,
   Mcp,
   McpConfigModel,
   McpConfigName,
   Register,
+  TenantCreate,
+  TenantList,
+  TenantModel,
+  TenantStatusUpdate,
+  TenantUpdate,
 } from "../types";
 
 import { customInstance } from "../../mutator";
@@ -639,6 +645,322 @@ export const importOpenapiApiV1OpenapiOpenapiImportPost = async (
       ...options,
       method: "POST",
       body: formData,
+    },
+  );
+};
+
+/**
+ * 获取租户列表
+ * @summary List Tenants
+ */
+export type listTenantsApiV1TenantTenantsGetResponse200 = {
+  data: TenantList;
+  status: 200;
+};
+
+export type listTenantsApiV1TenantTenantsGetResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type listTenantsApiV1TenantTenantsGetResponseComposite =
+  | listTenantsApiV1TenantTenantsGetResponse200
+  | listTenantsApiV1TenantTenantsGetResponse422;
+
+export type listTenantsApiV1TenantTenantsGetResponse =
+  listTenantsApiV1TenantTenantsGetResponseComposite & {
+    headers: Headers;
+  };
+
+export const getListTenantsApiV1TenantTenantsGetUrl = (
+  params?: ListTenantsApiV1TenantTenantsGetParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/tenant/tenants?${stringifiedParams}`
+    : `/api/v1/tenant/tenants`;
+};
+
+export const listTenantsApiV1TenantTenantsGet = async (
+  params?: ListTenantsApiV1TenantTenantsGetParams,
+  options?: RequestInit,
+): Promise<listTenantsApiV1TenantTenantsGetResponse> => {
+  return customInstance<listTenantsApiV1TenantTenantsGetResponse>(
+    getListTenantsApiV1TenantTenantsGetUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+/**
+ * 创建租户
+ * @summary Create Tenant
+ */
+export type createTenantApiV1TenantTenantsPostResponse200 = {
+  data: TenantModel;
+  status: 200;
+};
+
+export type createTenantApiV1TenantTenantsPostResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type createTenantApiV1TenantTenantsPostResponseComposite =
+  | createTenantApiV1TenantTenantsPostResponse200
+  | createTenantApiV1TenantTenantsPostResponse422;
+
+export type createTenantApiV1TenantTenantsPostResponse =
+  createTenantApiV1TenantTenantsPostResponseComposite & {
+    headers: Headers;
+  };
+
+export const getCreateTenantApiV1TenantTenantsPostUrl = () => {
+  return `/api/v1/tenant/tenants`;
+};
+
+export const createTenantApiV1TenantTenantsPost = async (
+  tenantCreate: TenantCreate,
+  options?: RequestInit,
+): Promise<createTenantApiV1TenantTenantsPostResponse> => {
+  return customInstance<createTenantApiV1TenantTenantsPostResponse>(
+    getCreateTenantApiV1TenantTenantsPostUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(tenantCreate),
+    },
+  );
+};
+
+/**
+ * 根据名称获取租户信息
+ * @summary Get Tenant By Name
+ */
+export type getTenantByNameApiV1TenantTenantsNameTenantNameGetResponse200 = {
+  data: TenantModel;
+  status: 200;
+};
+
+export type getTenantByNameApiV1TenantTenantsNameTenantNameGetResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type getTenantByNameApiV1TenantTenantsNameTenantNameGetResponseComposite =
+
+    | getTenantByNameApiV1TenantTenantsNameTenantNameGetResponse200
+    | getTenantByNameApiV1TenantTenantsNameTenantNameGetResponse422;
+
+export type getTenantByNameApiV1TenantTenantsNameTenantNameGetResponse =
+  getTenantByNameApiV1TenantTenantsNameTenantNameGetResponseComposite & {
+    headers: Headers;
+  };
+
+export const getGetTenantByNameApiV1TenantTenantsNameTenantNameGetUrl = (
+  tenantName: string,
+) => {
+  return `/api/v1/tenant/tenants/name/${tenantName}`;
+};
+
+export const getTenantByNameApiV1TenantTenantsNameTenantNameGet = async (
+  tenantName: string,
+  options?: RequestInit,
+): Promise<getTenantByNameApiV1TenantTenantsNameTenantNameGetResponse> => {
+  return customInstance<getTenantByNameApiV1TenantTenantsNameTenantNameGetResponse>(
+    getGetTenantByNameApiV1TenantTenantsNameTenantNameGetUrl(tenantName),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+/**
+ * 删除租户
+ * @summary Delete Tenant
+ */
+export type deleteTenantApiV1TenantTenantsTenantIdDeleteResponse200 = {
+  data: unknown;
+  status: 200;
+};
+
+export type deleteTenantApiV1TenantTenantsTenantIdDeleteResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type deleteTenantApiV1TenantTenantsTenantIdDeleteResponseComposite =
+  | deleteTenantApiV1TenantTenantsTenantIdDeleteResponse200
+  | deleteTenantApiV1TenantTenantsTenantIdDeleteResponse422;
+
+export type deleteTenantApiV1TenantTenantsTenantIdDeleteResponse =
+  deleteTenantApiV1TenantTenantsTenantIdDeleteResponseComposite & {
+    headers: Headers;
+  };
+
+export const getDeleteTenantApiV1TenantTenantsTenantIdDeleteUrl = (
+  tenantId: string,
+) => {
+  return `/api/v1/tenant/tenants/${tenantId}`;
+};
+
+export const deleteTenantApiV1TenantTenantsTenantIdDelete = async (
+  tenantId: string,
+  options?: RequestInit,
+): Promise<deleteTenantApiV1TenantTenantsTenantIdDeleteResponse> => {
+  return customInstance<deleteTenantApiV1TenantTenantsTenantIdDeleteResponse>(
+    getDeleteTenantApiV1TenantTenantsTenantIdDeleteUrl(tenantId),
+    {
+      ...options,
+      method: "DELETE",
+    },
+  );
+};
+
+/**
+ * 获取单个租户信息
+ * @summary Get Tenant
+ */
+export type getTenantApiV1TenantTenantsTenantIdGetResponse200 = {
+  data: TenantModel;
+  status: 200;
+};
+
+export type getTenantApiV1TenantTenantsTenantIdGetResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type getTenantApiV1TenantTenantsTenantIdGetResponseComposite =
+  | getTenantApiV1TenantTenantsTenantIdGetResponse200
+  | getTenantApiV1TenantTenantsTenantIdGetResponse422;
+
+export type getTenantApiV1TenantTenantsTenantIdGetResponse =
+  getTenantApiV1TenantTenantsTenantIdGetResponseComposite & {
+    headers: Headers;
+  };
+
+export const getGetTenantApiV1TenantTenantsTenantIdGetUrl = (
+  tenantId: string,
+) => {
+  return `/api/v1/tenant/tenants/${tenantId}`;
+};
+
+export const getTenantApiV1TenantTenantsTenantIdGet = async (
+  tenantId: string,
+  options?: RequestInit,
+): Promise<getTenantApiV1TenantTenantsTenantIdGetResponse> => {
+  return customInstance<getTenantApiV1TenantTenantsTenantIdGetResponse>(
+    getGetTenantApiV1TenantTenantsTenantIdGetUrl(tenantId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+/**
+ * 更新租户信息
+ * @summary Update Tenant
+ */
+export type updateTenantApiV1TenantTenantsTenantIdPutResponse200 = {
+  data: TenantModel;
+  status: 200;
+};
+
+export type updateTenantApiV1TenantTenantsTenantIdPutResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type updateTenantApiV1TenantTenantsTenantIdPutResponseComposite =
+  | updateTenantApiV1TenantTenantsTenantIdPutResponse200
+  | updateTenantApiV1TenantTenantsTenantIdPutResponse422;
+
+export type updateTenantApiV1TenantTenantsTenantIdPutResponse =
+  updateTenantApiV1TenantTenantsTenantIdPutResponseComposite & {
+    headers: Headers;
+  };
+
+export const getUpdateTenantApiV1TenantTenantsTenantIdPutUrl = (
+  tenantId: string,
+) => {
+  return `/api/v1/tenant/tenants/${tenantId}`;
+};
+
+export const updateTenantApiV1TenantTenantsTenantIdPut = async (
+  tenantId: string,
+  tenantUpdate: TenantUpdate,
+  options?: RequestInit,
+): Promise<updateTenantApiV1TenantTenantsTenantIdPutResponse> => {
+  return customInstance<updateTenantApiV1TenantTenantsTenantIdPutResponse>(
+    getUpdateTenantApiV1TenantTenantsTenantIdPutUrl(tenantId),
+    {
+      ...options,
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(tenantUpdate),
+    },
+  );
+};
+
+/**
+ * 更新租户启用状态
+ * @summary Update Tenant Status
+ */
+export type updateTenantStatusApiV1TenantTenantsTenantIdStatusPatchResponse200 =
+  {
+    data: TenantModel;
+    status: 200;
+  };
+
+export type updateTenantStatusApiV1TenantTenantsTenantIdStatusPatchResponse422 =
+  {
+    data: HTTPValidationError;
+    status: 422;
+  };
+
+export type updateTenantStatusApiV1TenantTenantsTenantIdStatusPatchResponseComposite =
+
+    | updateTenantStatusApiV1TenantTenantsTenantIdStatusPatchResponse200
+    | updateTenantStatusApiV1TenantTenantsTenantIdStatusPatchResponse422;
+
+export type updateTenantStatusApiV1TenantTenantsTenantIdStatusPatchResponse =
+  updateTenantStatusApiV1TenantTenantsTenantIdStatusPatchResponseComposite & {
+    headers: Headers;
+  };
+
+export const getUpdateTenantStatusApiV1TenantTenantsTenantIdStatusPatchUrl = (
+  tenantId: string,
+) => {
+  return `/api/v1/tenant/tenants/${tenantId}/status`;
+};
+
+export const updateTenantStatusApiV1TenantTenantsTenantIdStatusPatch = async (
+  tenantId: string,
+  tenantStatusUpdate: TenantStatusUpdate,
+  options?: RequestInit,
+): Promise<updateTenantStatusApiV1TenantTenantsTenantIdStatusPatchResponse> => {
+  return customInstance<updateTenantStatusApiV1TenantTenantsTenantIdStatusPatchResponse>(
+    getUpdateTenantStatusApiV1TenantTenantsTenantIdStatusPatchUrl(tenantId),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(tenantStatusUpdate),
     },
   );
 };

@@ -344,6 +344,132 @@ components:
       - sse_prefix
       title: Router
       type: object
+    TenantCreate:
+      description: 创建租户的数据结构
+      properties:
+        description:
+          anyOf:
+          - maxLength: 256
+            type: string
+          - type: 'null'
+          description: 租户描述
+          title: Description
+        name:
+          description: 租户名称
+          maxLength: 256
+          minLength: 1
+          title: Name
+          type: string
+        prefix:
+          anyOf:
+          - maxLength: 256
+            type: string
+          - type: 'null'
+          description: 租户前缀
+          title: Prefix
+      required:
+      - name
+      title: TenantCreate
+      type: object
+    TenantList:
+      description: 租户列表数据结构
+      properties:
+        tenants:
+          items:
+            $ref: '#/components/schemas/TenantModel'
+          title: Tenants
+          type: array
+        total:
+          description: 总数量
+          title: Total
+          type: integer
+      required:
+      - tenants
+      - total
+      title: TenantList
+      type: object
+    TenantModel:
+      description: 租户数据模型
+      properties:
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        gmt_created:
+          format: date-time
+          title: Gmt Created
+          type: string
+        gmt_updated:
+          format: date-time
+          title: Gmt Updated
+          type: string
+        id:
+          title: Id
+          type: string
+        is_active:
+          title: Is Active
+          type: boolean
+        name:
+          title: Name
+          type: string
+        prefix:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Prefix
+      required:
+      - id
+      - name
+      - is_active
+      - gmt_created
+      - gmt_updated
+      title: TenantModel
+      type: object
+    TenantStatusUpdate:
+      description: 租户状态更新数据结构
+      properties:
+        is_active:
+          description: 是否激活
+          title: Is Active
+          type: boolean
+      required:
+      - is_active
+      title: TenantStatusUpdate
+      type: object
+    TenantUpdate:
+      description: 更新租户的数据结构
+      properties:
+        description:
+          anyOf:
+          - maxLength: 256
+            type: string
+          - type: 'null'
+          description: 租户描述
+          title: Description
+        is_active:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          description: 是否激活
+          title: Is Active
+        name:
+          anyOf:
+          - maxLength: 256
+            minLength: 1
+            type: string
+          - type: 'null'
+          description: 租户名称
+          title: Name
+        prefix:
+          anyOf:
+          - maxLength: 256
+            type: string
+          - type: 'null'
+          description: 租户前缀
+          title: Prefix
+      title: TenantUpdate
+      type: object
     Tool:
       properties:
         args:
@@ -786,3 +912,202 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Import Openapi
+  /api/v1/tenant/tenants:
+    get:
+      description: 获取租户列表
+      operationId: list_tenants_api_v1_tenant_tenants_get
+      parameters:
+      - description: 是否包含未激活的租户
+        in: query
+        name: include_inactive
+        required: false
+        schema:
+          default: false
+          description: 是否包含未激活的租户
+          title: Include Inactive
+          type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantList'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - APIKeyCookie: []
+      summary: List Tenants
+    post:
+      description: 创建租户
+      operationId: create_tenant_api_v1_tenant_tenants_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantCreate'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantModel'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - APIKeyCookie: []
+      summary: Create Tenant
+  /api/v1/tenant/tenants/name/{tenant_name}:
+    get:
+      description: 根据名称获取租户信息
+      operationId: get_tenant_by_name_api_v1_tenant_tenants_name__tenant_name__get
+      parameters:
+      - in: path
+        name: tenant_name
+        required: true
+        schema:
+          title: Tenant Name
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantModel'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - APIKeyCookie: []
+      summary: Get Tenant By Name
+  /api/v1/tenant/tenants/{tenant_id}:
+    delete:
+      description: 删除租户
+      operationId: delete_tenant_api_v1_tenant_tenants__tenant_id__delete
+      parameters:
+      - in: path
+        name: tenant_id
+        required: true
+        schema:
+          title: Tenant Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - APIKeyCookie: []
+      summary: Delete Tenant
+    get:
+      description: 获取单个租户信息
+      operationId: get_tenant_api_v1_tenant_tenants__tenant_id__get
+      parameters:
+      - in: path
+        name: tenant_id
+        required: true
+        schema:
+          title: Tenant Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantModel'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - APIKeyCookie: []
+      summary: Get Tenant
+    put:
+      description: 更新租户信息
+      operationId: update_tenant_api_v1_tenant_tenants__tenant_id__put
+      parameters:
+      - in: path
+        name: tenant_id
+        required: true
+        schema:
+          title: Tenant Id
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantUpdate'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantModel'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - APIKeyCookie: []
+      summary: Update Tenant
+  /api/v1/tenant/tenants/{tenant_id}/status:
+    patch:
+      description: 更新租户启用状态
+      operationId: update_tenant_status_api_v1_tenant_tenants__tenant_id__status_patch
+      parameters:
+      - in: path
+        name: tenant_id
+        required: true
+        schema:
+          title: Tenant Id
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantStatusUpdate'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantModel'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - APIKeyCookie: []
+      summary: Update Tenant Status

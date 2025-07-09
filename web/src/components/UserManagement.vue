@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import type { User } from '../stores/users'
 import { Delete, Edit, Plus, Refresh, Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { computed, onMounted, ref } from 'vue'
-import type { User } from '../stores/users'
 import { useUsers } from '../stores/users'
 
 // 使用用户状态管理
@@ -106,7 +106,7 @@ async function saveUser() {
         password: userForm.value.password,
         confirmPassword: userForm.value.confirmPassword,
       })
-             
+
       ElMessage.success('用户创建成功')
     }
 
@@ -251,7 +251,7 @@ onMounted(async () => {
       </div>
 
       <div class="flex space-x-2">
-        <el-button @click="fetchUsers" :loading="loading">
+        <el-button :loading="loading" @click="fetchUsers">
           <Refresh />
           刷新
         </el-button>
@@ -350,8 +350,8 @@ onMounted(async () => {
     >
       <el-form :model="userForm" label-width="100px">
         <el-form-item label="用户名" required>
-          <el-input 
-            v-model="userForm.username" 
+          <el-input
+            v-model="userForm.username"
             placeholder="请输入用户名"
             :disabled="editMode"
           />
@@ -366,9 +366,9 @@ onMounted(async () => {
             :placeholder="editMode ? '留空则不修改密码' : '请输入密码'"
           />
         </el-form-item>
-        <el-form-item 
-          v-if="!editMode" 
-          label="确认密码" 
+        <el-form-item
+          v-if="!editMode"
+          label="确认密码"
           required
         >
           <el-input
@@ -392,10 +392,10 @@ onMounted(async () => {
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="showCreateDialog = false">取消</el-button>
-          <el-button 
-            type="primary" 
-            @click="saveUser"
+          <el-button
+            type="primary"
             :loading="loading"
+            @click="saveUser"
           >
             {{ editMode ? '更新' : '创建' }}
           </el-button>

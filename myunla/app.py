@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from myunla.config import gateway_settings, settings
-from myunla.controllers import auth, mcp, openapi
+from myunla.controllers import auth, mcp, openapi, tenant
 from myunla.gateway.server import GatewayServer
 from myunla.gateway.state import Metrics, State
 from myunla.utils import get_logger
@@ -82,3 +82,4 @@ async def custom_http_exception_handler(
 app.include_router(auth.router, prefix="/api/v1/auth")
 app.include_router(mcp.router, prefix="/api/v1/mcp")
 app.include_router(openapi.router, prefix="/api/v1/openapi")
+app.include_router(tenant.router, prefix="/api/v1/tenant")
