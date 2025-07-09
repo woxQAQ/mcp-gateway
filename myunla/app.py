@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -7,14 +9,35 @@ from myunla.config import gateway_settings, settings
 from myunla.controllers import auth, mcp, openapi, tenant
 from myunla.gateway.server import GatewayServer
 from myunla.gateway.state import Metrics, State
-from myunla.utils import get_logger
+from myunla.utils import check_and_create_default_data, get_logger
 
 logger = get_logger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """应用生命周期管理"""
+    # 启动时的初始化
+    logger.info("API 服务器启动中...")
+
+    # 检查并创建默认数据（受特性开关控制）
+    try:
+        await check_and_create_default_data(settings.create_default_data)
+    except Exception as e:
+        logger.error(f"默认数据初始化失败: {e}")
+        # 不影响应用启动，只记录错误
+
+    logger.info("API 服务器启动完成")
+    yield
+    # 关闭时的清理
+    logger.info("API 服务器关闭")
+
 
 app = FastAPI(
     title="API Server",
     version="0.1.0",
     debug=settings.debug,
+    lifespan=lifespan,
 )
 
 # 添加CORS中间件

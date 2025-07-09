@@ -21,6 +21,7 @@ dependencies = [
     "mcp>=1.10.1",
     "mypy>=1.16.1",
     "openapi-core>=0.19.5",
+    "passlib>=1.7.4",
     "pre-commit>=4.2.0",
     "pydantic>=2.11.7",
     "pydantic-settings>=2.10.1",

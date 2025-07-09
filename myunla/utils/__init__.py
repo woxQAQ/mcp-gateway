@@ -12,6 +12,14 @@ from .auth import (
     get_user_manager,
 )
 
+# Bootstrap相关
+from .bootstrap import (
+    check_and_create_default_data,
+    create_default_admin,
+    create_default_tenant,
+    initialize_default_data,
+)
+
 # 日志相关
 from .logger import get_logger
 
@@ -32,6 +40,11 @@ __all__ = [
     "get_user_db",
     "fastapi_users",
     "cookie_authentication",
+    # Bootstrap
+    "check_and_create_default_data",
+    "create_default_admin",
+    "create_default_tenant",
+    "initialize_default_data",
     # Logger
     "get_logger",
     # MCP
