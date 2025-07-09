@@ -21,6 +21,7 @@ def start_api_server(
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
+    os.environ["CREATE_DEFAULT_DATA"] = "True"
 
     print(f"🚀 启动API服务器在 http://{host}:{port}")
     config = uvicorn.Config(

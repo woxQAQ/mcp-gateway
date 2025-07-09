@@ -6,7 +6,7 @@ from typing import Optional
 
 from myunla.models.user import Role, Tenant, User
 from myunla.repos import async_db_ops
-from myunla.utils import get_logger
+from myunla.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -63,7 +63,7 @@ async def create_default_admin() -> Optional[User]:
 
         # 创建密码哈希助手
         password_helper = PasswordHelper()
-        hashed_password = password_helper.hash("admin")
+        hashed_password = password_helper.hash("admin1")
 
         current_time = utc_now()
 
@@ -71,7 +71,7 @@ async def create_default_admin() -> Optional[User]:
             username="admin",
             email="admin@myunla.local",
             hashed_password=hashed_password,
-            role=Role.ADMIN,
+            role=Role.ADMIN.value,
             is_superuser=True,
             is_staff=True,
             is_active=True,
