@@ -44,3 +44,25 @@ precommit-update:
 precommit-clean:
 	@echo "Cleaning pre-commit cache..."
 	@pre-commit clean
+
+# Server management targets
+.PHONY: start-servers start-servers-dev start-api start-gateway stop-servers
+start-servers:
+	@echo "启动生产模式服务器..."
+	@./scripts/start_servers.sh
+
+start-servers-dev:
+	@echo "启动开发模式服务器（支持热重载）..."
+	@python scripts/start_servers.py --reload
+
+start-api:
+	@echo "仅启动API服务器..."
+	@uvicorn myunla.app:app --host 127.0.0.1 --port 8000 --reload
+
+start-gateway:
+	@echo "仅启动Gateway服务器..."
+	@python -c "from myunla.config import gateway_settings; from myunla.gateway.server import GatewayServer; from myunla.gateway.state import Metrics, State; import uvicorn; gateway_server = GatewayServer(State(mcps=[], runtime={}, metrics=Metrics()), gateway_settings['session_config']); uvicorn.run(gateway_server.app, host='127.0.0.1', port=8001, reload=True)"
+
+stop-servers:
+	@echo "停止所有服务器进程..."
+	@pkill -f "uvicorn.*myunla" || echo "没有找到运行中的服务器进程"

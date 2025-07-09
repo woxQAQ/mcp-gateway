@@ -248,6 +248,7 @@ ensure_newline_before_comments = true
 
 [dependency-groups]
 dev = [
+    "mcp-server-milvus>=0.1.1.dev4",
     "types-aiofiles>=24.1.0.20250606",
     "types-jinja2>=2.11.9",
     "types-pyyaml>=6.0.12.20250516",

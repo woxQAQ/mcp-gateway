@@ -22,8 +22,6 @@ from .mcp import check_mcp_tenant_permission
 from .redis_utils import split_by_multiple_delimiters
 
 # 通用工具
-from .utils import utc_now
-
 __all__ = [
     # Auth
     "COOKIE_MAX_AGE",
@@ -40,6 +38,4 @@ __all__ = [
     "check_mcp_tenant_permission",
     # Redis
     "split_by_multiple_delimiters",
-    # Utils
-    "utc_now",
 ]

@@ -1,0 +1,15 @@
+{
+    "mcpServers": {
+      "milvus": {
+        "command": "uv",
+        "args": [
+          "--directory",
+          "./scripts",
+          "run",
+          "run_milvus_mcp.py",
+          "--milvus-uri",
+          "http://192.168.31.117:19530"
+        ]
+      }
+    }
+  }

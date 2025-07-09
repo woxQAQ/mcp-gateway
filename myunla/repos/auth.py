@@ -3,7 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from myunla.models.user import Tenant, User
 from myunla.repos.base import AsyncRepository
-from myunla.utils import utc_now
+
+from .utils import utc_now
 
 
 class AsyncUserRepository(AsyncRepository):

@@ -105,6 +105,8 @@ class Runtime(BaseModel):
     工具集合和传输层等。每个路由前缀对应一个Runtime实例。
     """
 
+    model_config = {"arbitrary_types_allowed": True}
+
     backend_proto: BackendProto  # 后端协议类型
     router: Router  # 路由器配置
     http_server: Optional[HttpServer] = (
