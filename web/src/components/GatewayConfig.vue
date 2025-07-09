@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import type { McpConfigModel } from '../../generated/types'
+import type { HttpServer, McpConfigModel, McpServer, Router, TenantModel, Tool } from '../../generated/types'
 import { Download, Plus, Refresh, Upload } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { onMounted, ref } from 'vue'
+import {
+  importOpenapiApiV1OpenapiOpenapiImportPost,
+  listTenantsApiV1TenantTenantsGet,
+} from '../../generated/api/APIServer.gen'
 import { useMcp } from '../stores/mcp'
 
 // MCP store
@@ -17,13 +21,27 @@ const {
   syncConfig: syncMcpConfig,
 } = useMcp()
 
+// 租户相关状态
+const tenants = ref<TenantModel[]>([])
+const tenantLoading = ref(false)
+
+// 筛选状态
+const selectedTenant = ref('')
+
 // 对话框状态
 const showCreateDialog = ref(false)
 const showImportDialog = ref(false)
 const editMode = ref(false)
 
 // 表单数据
-const configForm = ref({
+const configForm = ref<{
+  name: string
+  tenant_name: string
+  servers: McpServer[]
+  routers: Router[]
+  tools: Tool[]
+  http_servers: HttpServer[]
+}>({
   name: '',
   tenant_name: '',
   servers: [],
@@ -34,7 +52,6 @@ const configForm = ref({
 
 // OpenAPI 导入表单
 const importForm = ref({
-  url: '',
   file: null as File | null,
   configName: '',
   tenantName: '',
@@ -45,10 +62,33 @@ const currentPage = ref(1)
 const pageSize = ref(20)
 const total = ref(0)
 
+// 获取租户列表
+async function fetchTenants() {
+  tenantLoading.value = true
+  try {
+    const response = await listTenantsApiV1TenantTenantsGet({
+      include_inactive: false, // 只获取活跃租户
+    })
+
+    if (response.status === 200) {
+      tenants.value = response.data.tenants
+    }
+    else {
+      ElMessage.error('获取租户列表失败')
+    }
+  }
+  catch {
+    ElMessage.error('获取租户列表失败')
+  }
+  finally {
+    tenantLoading.value = false
+  }
+}
+
 // 刷新配置列表
 async function refreshConfigs() {
   try {
-    await fetchConfigs()
+    await fetchConfigs(selectedTenant.value || undefined)
     total.value = configs.value.length
   }
   catch {
@@ -56,44 +96,64 @@ async function refreshConfigs() {
   }
 }
 
+// 租户筛选处理
+async function handleTenantFilter() {
+  await refreshConfigs()
+}
+
 // 导入 OpenAPI 文档
 async function importOpenAPI() {
   try {
-    if (!importForm.value.configName || !importForm.value.tenantName) {
-      ElMessage.error('请填写配置名称和租户名称')
+    // 当前 API 只支持文件上传，不支持 URL
+    if (!importForm.value.file) {
+      ElMessage.error('请选择要导入的文件')
       return
     }
 
-    if (!importForm.value.url && !importForm.value.file) {
-      ElMessage.error('请输入URL或选择文件')
-      return
+    // 确保使用正确的租户标识（虽然当前不生效，但为将来做准备）
+    const _tenantName = importForm.value.tenantName ? getTenantId(importForm.value.tenantName) : 'default'
+
+    ElMessage.info('正在导入 OpenAPI 文档...')
+
+    // 调用后端 API 导入 OpenAPI 文档
+    const response = await importOpenapiApiV1OpenapiOpenapiImportPost({
+      file: importForm.value.file,
+    })
+
+    if (response.status === 200) {
+      ElMessage.success('OpenAPI 文档导入成功！系统已自动生成 MCP 配置')
+      showImportDialog.value = false
+      resetImportForm()
+      await refreshConfigs()
     }
-
-    // 这里应该调用API来处理OpenAPI导入
-    // 示例：await importOpenAPIDoc(importForm.value)
-
-    ElMessage.success('OpenAPI文档导入成功，正在转换为MCP配置...')
-    showImportDialog.value = false
-    resetImportForm()
-    await refreshConfigs()
+    else {
+      ElMessage.error('导入失败，请检查文件格式')
+    }
   }
-  catch {
-    ElMessage.error('导入失败')
+  catch (error: any) {
+    console.error('OpenAPI 导入失败:', error)
+
+    // 处理不同类型的错误
+    if (error.response?.data?.detail) {
+      ElMessage.error(`导入失败: ${error.response.data.detail}`)
+    }
+    else if (error.message) {
+      ElMessage.error(`导入失败: ${error.message}`)
+    }
+    else {
+      ElMessage.error('导入失败，请稍后重试')
+    }
   }
 }
 
 // 文件上传处理
 function handleFileChange(file: File | null) {
   importForm.value.file = file
-  if (file) {
-    importForm.value.url = '' // 清空URL
-  }
 }
 
 // 重置导入表单
 function resetImportForm() {
   importForm.value = {
-    url: '',
     file: null,
     configName: '',
     tenantName: '',
@@ -105,7 +165,7 @@ function editConfig(config: McpConfigModel) {
   editMode.value = true
   configForm.value = {
     name: config.name,
-    tenant_name: config.tenant_name,
+    tenant_name: getTenantDisplayName(config.tenant_name),
     servers: config.servers || [],
     routers: config.routers || [],
     tools: config.tools || [],
@@ -117,12 +177,17 @@ function editConfig(config: McpConfigModel) {
 // 保存配置
 async function saveConfig() {
   try {
+    const configData = {
+      ...configForm.value,
+      tenant_name: getTenantId(configForm.value.tenant_name),
+    }
+
     if (editMode.value) {
-      await updateConfig(configForm.value as any)
+      await updateConfig(configData as any)
       ElMessage.success('配置更新成功')
     }
     else {
-      await createConfig(configForm.value as any)
+      await createConfig(configData as any)
       ElMessage.success('配置创建成功')
     }
 
@@ -130,7 +195,7 @@ async function saveConfig() {
     resetForm()
     await refreshConfigs()
   }
-  catch (error) {
+  catch {
     ElMessage.error('保存失败')
   }
 }
@@ -141,7 +206,7 @@ async function activateConfig(config: McpConfigModel) {
     await activateMcpConfig(config.tenant_name, config.name)
     ElMessage.success('配置激活成功')
   }
-  catch (error) {
+  catch {
     ElMessage.error('激活失败')
   }
 }
@@ -152,7 +217,7 @@ async function syncConfig(config: McpConfigModel) {
     await syncMcpConfig(config.id)
     ElMessage.success('配置同步成功')
   }
-  catch (error) {
+  catch {
     ElMessage.error('同步失败')
   }
 }
@@ -205,9 +270,24 @@ function handleCurrentChange(val: number) {
   refreshConfigs()
 }
 
+// 获取租户显示名称
+function getTenantDisplayName(tenantId: string) {
+  const tenant = tenants.value.find(t => t.id === tenantId || t.name === tenantId)
+  return tenant?.name || tenantId
+}
+
+// 获取租户ID（如果传入的是名称）
+function getTenantId(tenantNameOrId: string) {
+  const tenant = tenants.value.find(t => t.name === tenantNameOrId || t.id === tenantNameOrId)
+  return tenant?.name || tenantNameOrId // 这里根据后端 API 的要求返回 name 或 id
+}
+
 // 初始化
-onMounted(() => {
-  refreshConfigs()
+onMounted(async () => {
+  await Promise.all([
+    refreshConfigs(),
+    fetchTenants(),
+  ])
 })
 </script>
 
@@ -225,7 +305,22 @@ onMounted(() => {
 
     <!-- 头部操作栏 -->
     <div class="mb-6 flex justify-between items-center">
-      <div class="flex space-x-2">
+      <div class="flex space-x-2 items-center">
+        <el-select
+          v-model="selectedTenant"
+          placeholder="选择租户筛选"
+          clearable
+          :loading="tenantLoading"
+          style="width: 180px"
+          @change="handleTenantFilter"
+        >
+          <el-option
+            v-for="tenant in tenants"
+            :key="tenant.id"
+            :label="tenant.name"
+            :value="tenant.name"
+          />
+        </el-select>
         <el-button type="success" @click="showImportDialog = true">
           <Upload />
           导入OpenAPI
@@ -252,7 +347,11 @@ onMounted(() => {
         class="config-table"
       >
         <el-table-column prop="name" label="配置名称" width="200" />
-        <el-table-column prop="tenant_name" label="租户名称" width="150" />
+        <el-table-column prop="tenant_name" label="租户名称" width="150">
+          <template #default="{ row }">
+            {{ getTenantDisplayName(row.tenant_name) }}
+          </template>
+        </el-table-column>
         <el-table-column prop="gmt_created" label="创建时间" width="180">
           <template #default="{ row }">
             {{ new Date(row.gmt_created).toLocaleString() }}
@@ -309,50 +408,58 @@ onMounted(() => {
       :close-on-click-modal="false"
     >
       <el-form :model="importForm" label-width="120px">
-        <el-form-item label="配置名称" required>
+        <el-form-item label="配置名称">
           <el-input
             v-model="importForm.configName"
-            placeholder="请输入配置名称"
+            placeholder="请输入配置名称（可选）"
           />
+          <div class="text-xs text-gray-500 mt-1">
+            注意：当前系统会自动生成配置名称，此字段暂不生效
+          </div>
         </el-form-item>
-        <el-form-item label="租户名称" required>
-          <el-input
+        <el-form-item label="租户名称">
+          <el-select
             v-model="importForm.tenantName"
-            placeholder="请输入租户名称"
-          />
+            placeholder="请选择租户（可选）"
+            :loading="tenantLoading"
+            clearable
+            filterable
+          >
+            <el-option
+              v-for="tenant in tenants"
+              :key="tenant.id"
+              :label="tenant.name"
+              :value="tenant.name"
+            />
+          </el-select>
+          <div class="text-xs text-gray-500 mt-1">
+            注意：当前系统会使用默认租户，此字段暂不生效
+          </div>
         </el-form-item>
         <el-form-item label="导入方式">
-          <el-tabs type="border-card">
-            <el-tab-pane label="URL导入" name="url">
-              <el-input
-                v-model="importForm.url"
-                placeholder="请输入OpenAPI文档URL"
-                class="mt-4"
-                @input="() => { importForm.file = null }"
-              />
-            </el-tab-pane>
-            <el-tab-pane label="文件上传" name="file">
+          <el-card class="upload-card" shadow="never">
+            <div class="upload-area">
               <el-upload
-                class="mt-4"
                 drag
                 :auto-upload="false"
                 :show-file-list="true"
                 :limit="1"
                 accept=".json,.yaml,.yml"
-                @change="handleFileChange"
+                :on-change="(file: any) => handleFileChange(file.raw)"
+                :on-remove="() => handleFileChange(null)"
               >
                 <div class="text-center p-4">
                   <Download class="text-4xl text-gray-400 mb-2" />
                   <div class="text-gray-600">
-                    将文件拖到此处，或<em>点击上传</em>
+                    将 OpenAPI 文件拖到此处，或<em>点击上传</em>
                   </div>
                   <div class="text-xs text-gray-400 mt-2">
-                    支持 .json, .yaml, .yml 格式
+                    支持 .json, .yaml, .yml 格式，最大 5MB
                   </div>
                 </div>
               </el-upload>
-            </el-tab-pane>
-          </el-tabs>
+            </div>
+          </el-card>
         </el-form-item>
       </el-form>
 
@@ -378,7 +485,24 @@ onMounted(() => {
           <el-input v-model="configForm.name" placeholder="请输入配置名称" />
         </el-form-item>
         <el-form-item label="租户名称" required>
-          <el-input v-model="configForm.tenant_name" placeholder="请输入租户名称" />
+          <el-select
+            v-model="configForm.tenant_name"
+            placeholder="请选择租户"
+            :loading="tenantLoading"
+            :disabled="editMode"
+            clearable
+            filterable
+          >
+            <el-option
+              v-for="tenant in tenants"
+              :key="tenant.id"
+              :label="tenant.name"
+              :value="tenant.name"
+            />
+          </el-select>
+          <div v-if="editMode" class="text-xs text-gray-500 mt-1">
+            编辑模式下租户不可修改
+          </div>
         </el-form-item>
       </el-form>
 
@@ -409,5 +533,21 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+}
+
+.upload-card {
+  border: 2px dashed #d9d9d9;
+  border-radius: 8px;
+  background: #fafafa;
+  transition: all 0.3s ease;
+}
+
+.upload-card:hover {
+  border-color: #409eff;
+  background: #f0f9ff;
+}
+
+.upload-area {
+  padding: 8px;
 }
 </style>

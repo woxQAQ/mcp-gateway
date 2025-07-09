@@ -36,8 +36,8 @@ const stats = computed(() => [
   {
     id: 'users',
     label: '系统用户',
-    value: '3',
-    change: '+2',
+    value: '0',
+    change: '+0%',
     trend: 'up',
     icon: 'User',
     color: '#67C23A',
@@ -45,8 +45,8 @@ const stats = computed(() => [
   {
     id: 'tenants',
     label: '租户数量',
-    value: '3',
-    change: '+1',
+    value: '0',
+    change: '+0%',
     trend: 'up',
     icon: 'OfficeBuilding',
     color: '#E6A23C',
@@ -71,40 +71,14 @@ onMounted(async () => {
 })
 
 // 最近活动
-const activities = ref([
-  {
-    id: 1,
-    title: '网关配置已创建',
-    description: '新的API网关配置已成功创建并激活',
-    time: '2分钟前',
-    type: 'success',
-    icon: 'SuccessFilled',
-  },
-  {
-    id: 2,
-    title: '用户登录',
-    description: 'admin 用户成功登录系统',
-    time: '5分钟前',
-    type: 'info',
-    icon: 'InfoFilled',
-  },
-  {
-    id: 3,
-    title: 'OpenAPI导入',
-    description: '成功导入并转换OpenAPI文档为MCP配置',
-    time: '10分钟前',
-    type: 'success',
-    icon: 'SuccessFilled',
-  },
-  {
-    id: 4,
-    title: '租户状态变更',
-    description: '企业租户B的状态已更新为暂停',
-    time: '15分钟前',
-    type: 'warning',
-    icon: 'WarningFilled',
-  },
-])
+const activities = ref<Array<{
+  id: number
+  title: string
+  description: string
+  time: string
+  type: 'success' | 'warning' | 'info' | 'danger'
+  icon: string
+}>>([])
 
 // 快速操作
 const quickActions = ref([
@@ -197,7 +171,7 @@ async function loadChartData() {
           欢迎回来，{{ displayName }}！ 👋
         </h1>
         <p class="text-gray-600 dark:text-gray-400">
-          系统运行良好，今天有 <span class="text-primary-500 font-semibold">2个新的</span> 网关配置更新
+          系统运行良好，所有服务正常运行中
         </p>
       </div>
     </div>
