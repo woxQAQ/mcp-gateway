@@ -122,8 +122,9 @@ async function fetchCurrentUser() {
 
 // 修改密码
 async function changePassword(oldPassword: string, newPassword: string) {
-  if (!user.value)
+  if (!user.value) {
     throw new Error('用户未登录')
+  }
 
   loading.value = true
   error.value = null
@@ -154,7 +155,7 @@ function clearError() {
 export function useAuth() {
   return {
     // 状态
-    user: user.value,
+    user,
     loading,
     error,
     isAuthenticated,

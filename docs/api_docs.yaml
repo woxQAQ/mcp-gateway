@@ -287,6 +287,29 @@ components:
       - stdio
       title: McpServerType
       type: string
+    PageResult:
+      description: PageResult info
+      properties:
+        count:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          description: The total count of items
+          title: Count
+        page_number:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          description: The page number
+          title: Page Number
+        page_size:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          description: The page size
+          title: Page Size
+      title: PageResult
+      type: object
     Policy:
       enum:
       - on_start
@@ -517,6 +540,132 @@ components:
       - input_schema
       title: Tool
       type: object
+    UserList:
+      description: 用户列表响应
+      properties:
+        page_result:
+          anyOf:
+          - $ref: '#/components/schemas/PageResult'
+          - type: 'null'
+          description: 分页信息
+        total:
+          description: 用户总数
+          title: Total
+          type: integer
+        users:
+          description: 用户列表
+          items:
+            $ref: '#/components/schemas/UserSummary'
+          title: Users
+          type: array
+      required:
+      - users
+      - total
+      title: UserList
+      type: object
+    UserModel:
+      description: 完整的用户信息模型
+      properties:
+        date_joined:
+          description: 加入时间
+          format: date-time
+          title: Date Joined
+          type: string
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: 邮箱
+          title: Email
+        gmt_created:
+          description: 创建时间
+          format: date-time
+          title: Gmt Created
+          type: string
+        gmt_updated:
+          description: 更新时间
+          format: date-time
+          title: Gmt Updated
+          type: string
+        id:
+          description: 用户ID
+          title: Id
+          type: string
+        is_active:
+          description: 是否激活
+          title: Is Active
+          type: boolean
+        is_staff:
+          description: 是否为员工
+          title: Is Staff
+          type: boolean
+        is_superuser:
+          description: 是否为超级用户
+          title: Is Superuser
+          type: boolean
+        is_verified:
+          description: 是否已验证
+          title: Is Verified
+          type: boolean
+        role:
+          description: 用户角色
+          title: Role
+          type: string
+        username:
+          description: 用户名
+          title: Username
+          type: string
+      required:
+      - id
+      - username
+      - role
+      - is_active
+      - is_verified
+      - is_staff
+      - is_superuser
+      - date_joined
+      - gmt_created
+      - gmt_updated
+      title: UserModel
+      type: object
+    UserSummary:
+      description: 用户简略信息
+      properties:
+        date_joined:
+          description: 加入时间
+          format: date-time
+          title: Date Joined
+          type: string
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: 邮箱
+          title: Email
+        id:
+          description: 用户ID
+          title: Id
+          type: string
+        is_active:
+          description: 是否激活
+          title: Is Active
+          type: boolean
+        role:
+          description: 用户角色
+          title: Role
+          type: string
+        username:
+          description: 用户名
+          title: Username
+          type: string
+      required:
+      - id
+      - username
+      - role
+      - is_active
+      - date_joined
+      title: UserSummary
+      type: object
     ValidationError:
       properties:
         loc:
@@ -609,7 +758,8 @@ paths:
         '200':
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/UserModel'
           description: Successful Response
       security:
       - APIKeyCookie: []
@@ -621,7 +771,8 @@ paths:
         '200':
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/UserList'
           description: Successful Response
       security:
       - APIKeyCookie: []

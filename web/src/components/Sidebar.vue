@@ -4,6 +4,7 @@ import {
 } from '@element-plus/icons-vue'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useAuth } from '../stores/auth'
 
 interface Props {
   isCollapsed: boolean
@@ -21,7 +22,12 @@ defineProps<Props>()
 
 const router = useRouter()
 const route = useRoute()
+const { user } = useAuth()
 const activeRoute = ref(route.path)
+
+// 计算用户显示名称
+const displayName = computed(() => user.value?.username || '用户')
+const userEmail = computed(() => user.value?.email || '')
 
 // 监听路由变化，更新活跃状态
 watch(() => route.path, (newPath) => {
@@ -41,7 +47,6 @@ const menuItems = ref<MenuItemType[]>([
     title: '网关配置',
     icon: 'Setting',
     route: '/gateway-config',
-    badge: 3,
   },
   {
     id: 'user-management',
@@ -179,10 +184,10 @@ function handleMenuSelect(index: string) {
           </div>
           <div class="flex-1 min-w-0">
             <div class="text-sm font-medium text-gray-900 dark:text-white truncate">
-              John Doe
+              {{ displayName }}
             </div>
             <div class="text-xs text-gray-500 dark:text-gray-400 truncate">
-              john@example.com
+              {{ userEmail }}
             </div>
           </div>
           <el-icon

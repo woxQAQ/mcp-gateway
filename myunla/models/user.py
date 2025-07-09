@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime
 from enum import Enum
 
 from sqlalchemy import (
@@ -16,10 +16,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from api.mcp import Mcp
 from myunla.models.base import Base, EnumColumn, random_id
-
-
-def utc_now():
-    return datetime.now(UTC)
+from myunla.utils import utc_now
 
 
 class Role(Enum):

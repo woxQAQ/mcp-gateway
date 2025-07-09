@@ -21,6 +21,8 @@ import type {
   TenantModel,
   TenantStatusUpdate,
   TenantUpdate,
+  UserList,
+  UserModel,
 } from "../types";
 
 import { customInstance } from "../../mutator";
@@ -143,7 +145,7 @@ export const registerApiV1AuthRegisterPost = async (
  * @summary Get User
  */
 export type getUserApiV1AuthUserGetResponse200 = {
-  data: unknown;
+  data: UserModel;
   status: 200;
 };
 
@@ -175,7 +177,7 @@ export const getUserApiV1AuthUserGet = async (
  * @summary List Users
  */
 export type listUsersApiV1AuthUsersGetResponse200 = {
-  data: unknown;
+  data: UserList;
   status: 200;
 };
 

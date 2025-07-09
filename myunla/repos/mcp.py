@@ -7,8 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from myunla.models.user import McpConfig
 from myunla.repos.base import AsyncRepository
-
-from .utils import utc_now
+from myunla.utils import utc_now
 
 
 class AsyncMcpConfigRepository(AsyncRepository):

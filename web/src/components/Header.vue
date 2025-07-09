@@ -9,9 +9,14 @@ import {
   SwitchButton,
   User,
 } from '@element-plus/icons-vue'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuth } from '../stores/auth'
 
 defineEmits(['toggleSidebar'])
+
+const router = useRouter()
+const { user, logout } = useAuth()
 
 const isDark = ref(false)
 
@@ -23,8 +28,21 @@ function toggleTheme() {
   localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
 }
 
+// 计算用户显示名称
+const displayName = computed(() => user.value?.username || '用户')
+const userRole = computed(() => {
+  const role = user.value?.role
+  if (role === 'admin') {
+    return '管理员'
+  }
+  if (role === 'normal') {
+    return '普通用户'
+  }
+  return '用户'
+})
+
 // 处理用户菜单点击
-function handleUserMenuClick(command: string) {
+async function handleUserMenuClick(command: string) {
   // 处理用户菜单点击逻辑
   switch (command) {
     case 'profile':
@@ -38,6 +56,13 @@ function handleUserMenuClick(command: string) {
       break
     case 'logout':
       // 退出登录
+      try {
+        await logout()
+        router.push('/login')
+      }
+      catch (error) {
+        console.error('Logout failed:', error)
+      }
       break
   }
 }
@@ -149,10 +174,10 @@ initTheme()
           />
           <div class="hidden md:block text-left">
             <div class="text-sm font-medium text-gray-900 dark:text-white">
-              John Doe
+              {{ displayName }}
             </div>
             <div class="text-xs text-gray-500 dark:text-gray-400">
-              管理员
+              {{ userRole }}
             </div>
           </div>
           <el-icon

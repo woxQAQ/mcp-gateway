@@ -86,7 +86,14 @@ export interface UserInfo {
   id: string
   username: string
   email?: string
-  created_at: string
+  role: 'normal' | 'admin'
+  is_active: boolean
+  is_superuser: boolean
+  is_verified: boolean
+  is_staff: boolean
+  date_joined: string
+  gmt_created: string
+  gmt_updated: string
 }
 
 // 响应包装类型

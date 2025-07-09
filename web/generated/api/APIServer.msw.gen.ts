@@ -14,7 +14,85 @@ import type {
   McpConfigName,
   TenantList,
   TenantModel,
+  UserList,
+  UserModel,
 } from "../types";
+
+export const getGetUserApiV1AuthUserGetResponseMock = (
+  overrideResponse: Partial<UserModel> = {},
+): UserModel => ({
+  date_joined: `${faker.date.past().toISOString().split(".")[0]}Z`,
+  email: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.string.alpha({ length: { min: 10, max: 20 } }),
+      null,
+    ]),
+    undefined,
+  ]),
+  gmt_created: `${faker.date.past().toISOString().split(".")[0]}Z`,
+  gmt_updated: `${faker.date.past().toISOString().split(".")[0]}Z`,
+  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  is_active: faker.datatype.boolean(),
+  is_staff: faker.datatype.boolean(),
+  is_superuser: faker.datatype.boolean(),
+  is_verified: faker.datatype.boolean(),
+  role: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  username: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  ...overrideResponse,
+});
+
+export const getListUsersApiV1AuthUsersGetResponseMock = (
+  overrideResponse: Partial<UserList> = {},
+): UserList => ({
+  page_result: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      {
+        count: faker.helpers.arrayElement([
+          faker.helpers.arrayElement([
+            faker.number.int({ min: undefined, max: undefined }),
+            null,
+          ]),
+          undefined,
+        ]),
+        page_number: faker.helpers.arrayElement([
+          faker.helpers.arrayElement([
+            faker.number.int({ min: undefined, max: undefined }),
+            null,
+          ]),
+          undefined,
+        ]),
+        page_size: faker.helpers.arrayElement([
+          faker.helpers.arrayElement([
+            faker.number.int({ min: undefined, max: undefined }),
+            null,
+          ]),
+          undefined,
+        ]),
+      },
+      null,
+    ]),
+    undefined,
+  ]),
+  total: faker.number.int({ min: undefined, max: undefined }),
+  users: Array.from(
+    { length: faker.number.int({ min: 1, max: 10 }) },
+    (_, i) => i + 1,
+  ).map(() => ({
+    date_joined: `${faker.date.past().toISOString().split(".")[0]}Z`,
+    email: faker.helpers.arrayElement([
+      faker.helpers.arrayElement([
+        faker.string.alpha({ length: { min: 10, max: 20 } }),
+        null,
+      ]),
+      undefined,
+    ]),
+    id: faker.string.alpha({ length: { min: 10, max: 20 } }),
+    is_active: faker.datatype.boolean(),
+    role: faker.string.alpha({ length: { min: 10, max: 20 } }),
+    username: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  })),
+  ...overrideResponse,
+});
 
 export const getListMcpConfigsApiV1McpConfigsGetResponseMock =
   (): McpConfigModel[] =>
@@ -533,33 +611,47 @@ export const getRegisterApiV1AuthRegisterPostMockHandler = (
 
 export const getGetUserApiV1AuthUserGetMockHandler = (
   overrideResponse?:
-    | unknown
+    | UserModel
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<unknown> | unknown),
+      ) => Promise<UserModel> | UserModel),
 ) => {
   return http.get("*/api/v1/auth/user", async (info) => {
     await delay(1000);
-    if (typeof overrideResponse === "function") {
-      await overrideResponse(info);
-    }
-    return new HttpResponse(null, { status: 200 });
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getGetUserApiV1AuthUserGetResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
   });
 };
 
 export const getListUsersApiV1AuthUsersGetMockHandler = (
   overrideResponse?:
-    | unknown
+    | UserList
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<unknown> | unknown),
+      ) => Promise<UserList> | UserList),
 ) => {
   return http.get("*/api/v1/auth/users", async (info) => {
     await delay(1000);
-    if (typeof overrideResponse === "function") {
-      await overrideResponse(info);
-    }
-    return new HttpResponse(null, { status: 200 });
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getListUsersApiV1AuthUsersGetResponseMock(),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
   });
 };
 

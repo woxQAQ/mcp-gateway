@@ -10,7 +10,9 @@ from myunla.schema.tenant_schema import (
     TenantStatusUpdate,
     TenantUpdate,
 )
-from myunla.utils import current_user, get_logger
+from myunla.utils import get_logger
+
+from .auth_utils import current_user
 
 router = APIRouter()
 logger = get_logger(__name__)

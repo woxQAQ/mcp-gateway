@@ -13,6 +13,7 @@ import { useRouter } from 'vue-router'
 // 导入API stores
 import { useAuth } from '../stores/auth'
 import { useMcp } from '../stores/mcp'
+import { useUsers } from '../stores/users'
 
 const router = useRouter()
 
@@ -21,6 +22,10 @@ const chartPeriod = ref('7d')
 // 使用stores
 const { user, fetchCurrentUser } = useAuth()
 const { configs, configCount, fetchConfigs } = useMcp()
+const { userCount, fetchUsers } = useUsers()
+
+// 租户统计
+const tenantCount = ref(0)
 
 // 动态统计数据
 const stats = computed(() => [
@@ -36,7 +41,7 @@ const stats = computed(() => [
   {
     id: 'users',
     label: '系统用户',
-    value: '0',
+    value: userCount.value?.toString() || '0',
     change: '+0%',
     trend: 'up',
     icon: 'User',
@@ -45,7 +50,7 @@ const stats = computed(() => [
   {
     id: 'tenants',
     label: '租户数量',
-    value: '0',
+    value: tenantCount.value?.toString() || '0',
     change: '+0%',
     trend: 'up',
     icon: 'OfficeBuilding',
@@ -63,7 +68,7 @@ const stats = computed(() => [
 ])
 
 // 用户显示名称
-const displayName = computed(() => user?.username || '用户')
+const displayName = computed(() => user.value?.username || '用户')
 
 // 页面初始化
 onMounted(async () => {
@@ -122,12 +127,33 @@ function handleQuickAction(action: any) {
   }
 }
 
+// 获取租户统计数据
+async function fetchTenantStats() {
+  try {
+    const { listTenantsApiV1TenantTenantsGet } = await import('../../generated/api/APIServer.gen')
+    const response = await listTenantsApiV1TenantTenantsGet({ include_inactive: false })
+
+    if (response.status === 200 && 'total' in response.data) {
+      tenantCount.value = response.data.total || 0
+    }
+    else {
+      tenantCount.value = 0
+    }
+  }
+  catch (error) {
+    console.error('Failed to fetch tenant stats:', error)
+    tenantCount.value = 0
+  }
+}
+
 // 刷新数据
 async function refreshData() {
   try {
     await Promise.all([
       fetchCurrentUser(),
       fetchConfigs(),
+      fetchUsers(),
+      fetchTenantStats(),
     ])
   }
   catch (error) {

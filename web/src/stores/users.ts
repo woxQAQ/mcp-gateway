@@ -6,10 +6,15 @@ import * as api from '../../generated/api/APIServer.gen'
 export interface User {
   id: string
   username: string
-  email: string
-  role: string
+  email?: string
+  role: 'normal' | 'admin'
   is_active: boolean
+  is_superuser: boolean
+  is_verified: boolean
+  is_staff: boolean
   date_joined: string
+  gmt_created: string
+  gmt_updated: string
 }
 
 // 状态

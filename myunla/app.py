@@ -5,11 +5,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from myunla.bootstrap import check_and_create_default_data
 from myunla.config import gateway_settings, settings
 from myunla.controllers import auth, mcp, openapi, tenant
 from myunla.gateway.server import GatewayServer
 from myunla.gateway.state import Metrics, State
-from myunla.utils import check_and_create_default_data, get_logger
+from myunla.utils import get_logger
 
 logger = get_logger(__name__)
 
