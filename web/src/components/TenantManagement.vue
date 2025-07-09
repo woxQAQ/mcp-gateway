@@ -10,7 +10,7 @@ import {
   listTenantsApiV1TenantTenantsGet,
   updateTenantApiV1TenantTenantsTenantIdPut,
   updateTenantStatusApiV1TenantTenantsTenantIdStatusPatch,
-} from '../../generated/api/APIServer.gen'
+} from '../../generated/api/tenant/tenant.gen'
 
 // 租户数据接口 - 基于API返回的TenantModel
 interface Tenant extends TenantModel {

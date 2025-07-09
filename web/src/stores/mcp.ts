@@ -2,7 +2,7 @@ import type { Mcp, McpConfigModel, McpConfigName } from '../../generated/types'
 import type { ApiError } from '../../mutator'
 // MCP配置管理状态
 import { computed, ref } from 'vue'
-import * as api from '../../generated/api/APIServer.gen'
+import * as api from '../../generated/api/mcp/mcp.gen'
 
 // 状态
 const configs = ref<McpConfigModel[]>([])

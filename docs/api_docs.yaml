@@ -730,6 +730,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Login
+      tags:
+      - auth
   /api/v1/auth/logout:
     post:
       operationId: logout_api_v1_auth_logout_post
@@ -740,6 +742,8 @@ paths:
               schema: {}
           description: Successful Response
       summary: Logout
+      tags:
+      - auth
   /api/v1/auth/register:
     post:
       operationId: register_api_v1_auth_register_post
@@ -762,6 +766,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Register
+      tags:
+      - auth
   /api/v1/auth/user:
     get:
       operationId: get_user_api_v1_auth_user_get
@@ -775,6 +781,8 @@ paths:
       security:
       - APIKeyCookie: []
       summary: Get User
+      tags:
+      - auth
   /api/v1/auth/users:
     get:
       operationId: list_users_api_v1_auth_users_get
@@ -788,6 +796,8 @@ paths:
       security:
       - APIKeyCookie: []
       summary: List Users
+      tags:
+      - auth
   /api/v1/auth/users/change-password:
     post:
       operationId: change_password_api_v1_auth_users_change_password_post
@@ -812,6 +822,8 @@ paths:
       security:
       - APIKeyCookie: []
       summary: Change Password
+      tags:
+      - auth
   /api/v1/auth/users/{user_id}:
     delete:
       operationId: delete_user_api_v1_auth_users__user_id__delete
@@ -837,6 +849,8 @@ paths:
       security:
       - APIKeyCookie: []
       summary: Delete User
+      tags:
+      - auth
   /api/v1/auth/users/{user_id}/status:
     patch:
       description: 修改用户状态（仅管理员）
@@ -870,6 +884,8 @@ paths:
       security:
       - APIKeyCookie: []
       summary: Update User Status
+      tags:
+      - auth
   /api/v1/mcp/configs:
     get:
       description: 获取MCP配置列表
@@ -904,6 +920,8 @@ paths:
       security:
       - APIKeyCookie: []
       summary: List Mcp Configs
+      tags:
+      - mcp
     post:
       description: 创建MCP配置
       operationId: create_mcp_config_api_v1_mcp_configs_post
@@ -929,6 +947,8 @@ paths:
       security:
       - APIKeyCookie: []
       summary: Create Mcp Config
+      tags:
+      - mcp
     put:
       description: 更新MCP配置
       operationId: update_mcp_config_api_v1_mcp_configs_put
@@ -954,6 +974,8 @@ paths:
       security:
       - APIKeyCookie: []
       summary: Update Mcp Config
+      tags:
+      - mcp
   /api/v1/mcp/configs/names:
     get:
       description: 获取MCP配置名称列表
@@ -997,6 +1019,8 @@ paths:
       security:
       - APIKeyCookie: []
       summary: List Mcp Config Names
+      tags:
+      - mcp
   /api/v1/mcp/configs/{config_id}/sync:
     post:
       description: 同步MCP配置
@@ -1023,6 +1047,8 @@ paths:
       security:
       - APIKeyCookie: []
       summary: Sync Mcp Config
+      tags:
+      - mcp
   /api/v1/mcp/configs/{tenant_name}/{name}:
     delete:
       description: 删除MCP配置
@@ -1055,6 +1081,8 @@ paths:
       security:
       - APIKeyCookie: []
       summary: Delete Mcp Config
+      tags:
+      - mcp
   /api/v1/mcp/{tenant_name}/{name}/active:
     post:
       description: 激活MCP配置
@@ -1087,6 +1115,8 @@ paths:
       security:
       - APIKeyCookie: []
       summary: Active Mcp Config
+      tags:
+      - mcp
   /api/v1/openapi/openapi/import:
     post:
       operationId: import_openapi_api_v1_openapi_openapi_import_post
@@ -1109,6 +1139,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Import Openapi
+      tags:
+      - openapi
   /api/v1/tenant/tenants:
     get:
       description: 获取租户列表
@@ -1139,6 +1171,8 @@ paths:
       security:
       - APIKeyCookie: []
       summary: List Tenants
+      tags:
+      - tenant
     post:
       description: 创建租户
       operationId: create_tenant_api_v1_tenant_tenants_post
@@ -1164,6 +1198,8 @@ paths:
       security:
       - APIKeyCookie: []
       summary: Create Tenant
+      tags:
+      - tenant
   /api/v1/tenant/tenants/name/{tenant_name}:
     get:
       description: 根据名称获取租户信息
@@ -1191,6 +1227,8 @@ paths:
       security:
       - APIKeyCookie: []
       summary: Get Tenant By Name
+      tags:
+      - tenant
   /api/v1/tenant/tenants/{tenant_id}:
     delete:
       description: 删除租户
@@ -1217,6 +1255,8 @@ paths:
       security:
       - APIKeyCookie: []
       summary: Delete Tenant
+      tags:
+      - tenant
     get:
       description: 获取单个租户信息
       operationId: get_tenant_api_v1_tenant_tenants__tenant_id__get
@@ -1243,6 +1283,8 @@ paths:
       security:
       - APIKeyCookie: []
       summary: Get Tenant
+      tags:
+      - tenant
     put:
       description: 更新租户信息
       operationId: update_tenant_api_v1_tenant_tenants__tenant_id__put
@@ -1275,6 +1317,8 @@ paths:
       security:
       - APIKeyCookie: []
       summary: Update Tenant
+      tags:
+      - tenant
   /api/v1/tenant/tenants/{tenant_id}/status:
     patch:
       description: 更新租户启用状态
@@ -1308,3 +1352,5 @@ paths:
       security:
       - APIKeyCookie: []
       summary: Update Tenant Status
+      tags:
+      - tenant

@@ -130,7 +130,7 @@ function handleQuickAction(action: any) {
 // 获取租户统计数据
 async function fetchTenantStats() {
   try {
-    const { listTenantsApiV1TenantTenantsGet } = await import('../../generated/api/APIServer.gen')
+    const { listTenantsApiV1TenantTenantsGet } = await import('../../generated/api/tenant/tenant.gen')
     const response = await listTenantsApiV1TenantTenantsGet({ include_inactive: false })
 
     if (response.status === 200 && 'total' in response.data) {

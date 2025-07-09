@@ -3,10 +3,8 @@ import type { HttpServer, McpConfigModel, McpServer, Router, TenantModel, Tool }
 import { Download, Plus, Refresh, Upload } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { onMounted, ref } from 'vue'
-import {
-  importOpenapiApiV1OpenapiOpenapiImportPost,
-  listTenantsApiV1TenantTenantsGet,
-} from '../../generated/api/APIServer.gen'
+import { importOpenapiApiV1OpenapiOpenapiImportPost } from '../../generated/api/openapi/openapi.gen'
+import { listTenantsApiV1TenantTenantsGet } from '../../generated/api/tenant/tenant.gen'
 import { useMcp } from '../stores/mcp'
 
 // MCP store

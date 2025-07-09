@@ -331,9 +331,9 @@ onMounted(async () => {
             <el-button
               type="primary"
               size="small"
-              @click="editUser(row)"
               disabled
               title="编辑功能暂未开放"
+              @click="editUser(row)"
             >
               <Edit />
               编辑

@@ -1,7 +1,7 @@
 import type { UserModel } from '../../generated/types/UserModel'
 import type { ApiError } from '../../mutator'
 import { computed, ref } from 'vue'
-import * as api from '../../generated/api/APIServer.gen'
+import * as api from '../../generated/api/auth/auth.gen'
 
 // 状态
 const users = ref<UserModel[]>([])

@@ -103,7 +103,7 @@ async def custom_http_exception_handler(
     )
 
 
-app.include_router(auth.router, prefix="/api/v1/auth")
-app.include_router(mcp.router, prefix="/api/v1/mcp")
-app.include_router(openapi.router, prefix="/api/v1/openapi")
-app.include_router(tenant.router, prefix="/api/v1/tenant")
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
+app.include_router(mcp.router, prefix="/api/v1/mcp", tags=["mcp"])
+app.include_router(openapi.router, prefix="/api/v1/openapi", tags=["openapi"])
+app.include_router(tenant.router, prefix="/api/v1/tenant", tags=["tenant"])

@@ -1,7 +1,7 @@
 import type { ApiError, UserInfo } from '../../mutator'
 // 用户认证状态管理
 import { computed, ref } from 'vue'
-import * as api from '../../generated/api/APIServer.gen'
+import * as api from '../../generated/api/auth/auth.gen'
 
 // 用户状态
 const user = ref<UserInfo | null>(null)
