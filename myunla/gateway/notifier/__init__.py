@@ -4,7 +4,7 @@ from .api_notifier import APINotifier
 from .composite_notifier import CompositeNotifier, create_composite_notifier
 from .enums import NotifierRole, NotifierType
 from .factory import NotifierFactory
-from .notifier import BaseNotifier, Notifier, NotifierError
+from .notifier import Notifier, NotifierError
 from .redis_notifier import RedisNotifier
 from .signal_notifier import (
     SignalNotifier,
@@ -15,7 +15,6 @@ from .signal_notifier import (
 __all__ = [
     # 基础接口
     "Notifier",
-    "BaseNotifier",
     "NotifierError",
     "NotifierRole",
     "NotifierType",

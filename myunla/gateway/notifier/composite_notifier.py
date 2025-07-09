@@ -5,7 +5,6 @@ from typing import Optional
 
 from api.mcp import Mcp
 from myunla.gateway.notifier.notifier import (
-    BaseNotifier,
     Notifier,
     NotifierError,
 )
@@ -14,7 +13,7 @@ from myunla.utils import get_logger
 logger = get_logger(__name__)
 
 
-class CompositeNotifier(BaseNotifier):
+class CompositeNotifier(Notifier):
     """组合通知器实现，可以组合多个通知器"""
 
     def __init__(self, notifiers: list[Notifier]):
@@ -24,6 +23,7 @@ class CompositeNotifier(BaseNotifier):
         self._lock = asyncio.Lock()
         self._watch_tasks: list[asyncio.Task] = []
         self._running = False
+        self._is_closed = False
 
     async def _start_watching_underlying_notifiers(self):
         """开始监听所有底层通知器"""
@@ -58,7 +58,7 @@ class CompositeNotifier(BaseNotifier):
         try:
             queue = await notifier.watch()
 
-            while not self.is_closed:
+            while not self._is_closed:
                 try:
                     # 等待底层通知器的更新
                     config = await queue.get()
