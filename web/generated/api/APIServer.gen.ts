@@ -16,7 +16,7 @@ import type {
   McpConfigName,
 } from "../types";
 
-import { customInstance } from "../../api/mutator";
+import { customInstance } from "../../mutator";
 
 /**
  * @summary Login

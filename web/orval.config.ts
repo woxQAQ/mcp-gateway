@@ -17,13 +17,13 @@ export default {
       mock: true, // 启用 mock 数据生成
       prettier: true, // 使用 prettier 格式化生成的代码
       namingConvention: "PascalCase",
-      schemas: "./src/generated/types",
-      target: "./src/generated/api",
+      schemas: "./generated/types",
+      target: "./generated/api",
       fileExtension: ".gen.ts",
       override: {
         // 自定义配置
         mutator: {
-          path: "./src/mutator.ts",
+          path: "./mutator.ts",
           name: "customInstance",
         },
 
