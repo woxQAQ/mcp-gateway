@@ -16,7 +16,8 @@ export function customInstance<T>(url: string, config?: RequestInit): Promise<T>
   const defaultConfig: RequestInit = {
     credentials: 'include', // 重要：包含cookies用于认证
     headers: {
-      'Content-Type': 'application/json',
+      // 如果body是FormData，不设置Content-Type，让浏览器自动设置
+      ...(config?.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
       ...config?.headers,
     },
     ...config,

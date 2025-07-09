@@ -179,10 +179,10 @@ class McpConfig(Base):
         return cls(
             name=obj.name,
             tenant_name=obj.tenant_name,
-            routers=obj.routers,
-            servers=obj.servers,
-            tools=obj.tools,
-            http_servers=obj.http_servers,
+            routers=[router.model_dump() for router in obj.routers],
+            servers=[server.model_dump() for server in obj.servers],
+            tools=[tool.model_dump() for tool in obj.tools],
+            http_servers=[server.model_dump() for server in obj.http_servers],
             gmt_created=utc_now(),
             gmt_updated=utc_now(),
         )

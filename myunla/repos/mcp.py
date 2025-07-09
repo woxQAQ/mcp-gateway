@@ -117,13 +117,12 @@ class AsyncMcpConfigRepository(AsyncRepository):
         return await self._execute_query(query)
 
     async def set_active(self, config_id: str):
-        """设置MCP配置为激活状态"""
+        """设置MCP配置为激活状态 - 当前只记录操作"""
 
-        async def operation(session: AsyncSession):
-            config = await self.query_config_by_id(config_id)
-            if not config:
-                raise ValueError("MCP config not found")
-            config.is_active = True
-            session.add(config)
+        config = await self.query_config_by_id(config_id)
+        if not config:
+            raise ValueError("MCP config not found")
 
-        return await self.execute_with_transaction(operation)
+        # 目前MCP配置激活只是记录操作，没有持久化状态
+        # 如果需要持久化，可以在数据库模型中添加is_active字段
+        return config

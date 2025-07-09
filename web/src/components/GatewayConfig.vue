@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import type { HttpServer, McpConfigModel, McpServer, Router, TenantModel, Tool } from '../../generated/types'
+import type { UploadInstance } from 'element-plus'
+import type { BodyImportOpenapiApiV1OpenapiOpenapiImportPost, HttpServer, McpConfigModel, McpServer, Router, TenantModel, Tool } from '../../generated/types'
 import { Download, Plus, Refresh, Upload } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { onMounted, ref } from 'vue'
 import { importOpenapiApiV1OpenapiOpenapiImportPost } from '../../generated/api/openapi/openapi.gen'
 import { listTenantsApiV1TenantTenantsGet } from '../../generated/api/tenant/tenant.gen'
 import { useMcp } from '../stores/mcp'
+
+// 扩展导入表单类型，支持File类型和null初始值
+interface ImportFormData {
+  file: File | null
+}
 
 // MCP store
 const {
@@ -49,9 +55,12 @@ const configForm = ref<{
 })
 
 // OpenAPI 导入表单
-const importForm = ref({
-  file: null as File | null,
+const importForm = ref<ImportFormData>({
+  file: null,
 })
+
+// Upload组件引用
+const uploadRef = ref<UploadInstance>()
 
 // 分页
 const currentPage = ref(1)
@@ -106,15 +115,29 @@ async function importOpenAPI() {
       return
     }
 
-    // 使用默认租户
-    const _tenantName = 'default'
+    // 验证文件类型
+    const allowedTypes = ['application/json', 'text/yaml', 'application/x-yaml', 'text/x-yaml']
+    if (!allowedTypes.some(type => importForm.value.file!.type.includes(type))
+      && !importForm.value.file!.name.match(/\.(json|yaml|yml)$/i)) {
+      ElMessage.error('请选择有效的 OpenAPI 文件格式 (.json, .yaml, .yml)')
+      return
+    }
+
+    // 验证文件大小 (5MB限制)
+    if (importForm.value.file!.size > 5 * 1024 * 1024) {
+      ElMessage.error('文件大小不能超过 5MB')
+      return
+    }
 
     ElMessage.info('正在导入 OpenAPI 文档...')
 
     // 调用后端 API 导入 OpenAPI 文档
-    const response = await importOpenapiApiV1OpenapiOpenapiImportPost({
-      file: importForm.value.file,
-    })
+    // 转换为后端API期望的格式
+    const apiData: BodyImportOpenapiApiV1OpenapiOpenapiImportPost = {
+      file: importForm.value.file as File, // File 继承自 Blob，类型兼容
+    }
+
+    const response = await importOpenapiApiV1OpenapiOpenapiImportPost(apiData)
 
     if (response.status === 200) {
       ElMessage.success('OpenAPI 文档导入成功！系统已自动生成 MCP 配置')
@@ -143,8 +166,26 @@ async function importOpenAPI() {
 }
 
 // 文件上传处理
-function handleFileChange(file: File | null) {
-  importForm.value.file = file
+function handleUploadChange(uploadFile: any, uploadFiles: any[]) {
+  // 确保只保留最新的文件
+  if (uploadFiles.length > 1) {
+    uploadFiles.splice(0, uploadFiles.length - 1)
+  }
+
+  // 从 Element Plus 的 uploadFile 对象中获取原始文件
+  const file = uploadFile.raw || uploadFile
+
+  if (file instanceof File) {
+    importForm.value.file = file
+  }
+  else {
+    importForm.value.file = null
+  }
+}
+
+// 文件移除处理
+function handleUploadRemove() {
+  importForm.value.file = null
 }
 
 // 重置导入表单
@@ -152,6 +193,8 @@ function resetImportForm() {
   importForm.value = {
     file: null,
   }
+  // 清理upload组件状态
+  uploadRef.value?.clearFiles()
 }
 
 // 编辑配置
@@ -400,19 +443,21 @@ onMounted(async () => {
       title="导入OpenAPI文档"
       width="600px"
       :close-on-click-modal="false"
+      @close="resetImportForm"
     >
       <el-form :model="importForm">
         <el-form-item>
           <el-card class="upload-card" shadow="never">
             <div class="upload-area">
               <el-upload
+                ref="uploadRef"
                 drag
                 :auto-upload="false"
                 :show-file-list="true"
                 :limit="1"
                 accept=".json,.yaml,.yml"
-                :on-change="(file: any) => handleFileChange(file.raw)"
-                :on-remove="() => handleFileChange(null)"
+                :on-change="handleUploadChange"
+                :on-remove="handleUploadRemove"
               >
                 <div class="text-center p-3">
                   <el-icon :size="60" class="text-gray-400 mb-1">
@@ -433,7 +478,7 @@ onMounted(async () => {
 
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="showImportDialog = false">取消</el-button>
+          <el-button @click="showImportDialog = false; resetImportForm()">取消</el-button>
           <el-button type="primary" @click="importOpenAPI">
             导入并转换
           </el-button>

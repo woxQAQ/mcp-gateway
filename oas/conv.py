@@ -89,11 +89,10 @@ class OpenAPIConverter:
         Returns:
             Mcp: 完整的MCP配置对象
         """
+        rs = self._get_random_str()
         # 创建基础MCP配置
         mcp_config = Mcp(
-            name=self.spec["info"]["title"].replace(" ", "_")
-            + "_"
-            + self._get_random_name(),
+            name=self.spec["info"]["title"].replace(" ", "_") + "_" + rs,
             tenant_name="default",
             updated_at=datetime.datetime.now(),
             created_at=datetime.datetime.now(),
@@ -116,8 +115,8 @@ class OpenAPIConverter:
 
         # 创建路由器配置，包含CORS设置
         router_config = Router(
-            prefix="/",
-            sse_prefix="/sse",
+            prefix=f"/mcp/{rs}",
+            sse_prefix="",
             server=server_config.name,
             cors=Cors(
                 allow_origins=["*"],
@@ -139,7 +138,7 @@ class OpenAPIConverter:
         mcp_config.routers.append(router_config)
         return mcp_config
 
-    def _get_random_name(self, length: int = 10) -> str:
+    def _get_random_str(self, length: int = 10) -> str:
         """
         生成随机名称
 

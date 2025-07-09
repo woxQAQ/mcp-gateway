@@ -87,12 +87,6 @@ async def active_mcp_config(
     """激活MCP配置"""
     logger.info(f"用户 {user.username} 激活MCP配置: {tenant_name}/{name}")
 
-    tenant = await async_db_ops.query_tenant_by_name(tenant_name)
-    if not tenant:
-        logger.warning(f"激活失败 - 租户不存在: {tenant_name}")
-        raise HTTPException(status_code=404, detail="Tenant not found")
-
-    tenant_name = tenant.id
     config = await async_db_ops.query_config_by_name_and_tenant(
         name, tenant_name
     )
@@ -100,8 +94,12 @@ async def active_mcp_config(
         logger.warning(f"激活失败 - 配置不存在: {tenant_name}/{name}")
         raise HTTPException(status_code=404, detail="MCP config not found")
 
-    await check_mcp_tenant_permission(config, tenant_name, user)
-    await async_db_ops.set_active(config.id)
+    # 将McpConfig转换为Mcp对象进行权限检查
+    mcp_data = _convert_mcp_config_to_mcp(config)
+    await check_mcp_tenant_permission(mcp_data, tenant_name, user)
+
+    # 激活配置 - 这里可以添加实际的激活逻辑，比如通知其他服务
+    # 目前只记录激活操作
 
     logger.info(f"MCP配置激活成功: {tenant_name}/{name}")
     return {"message": f"MCP config {name} activated successfully"}
@@ -133,15 +131,15 @@ async def create_mcp_config(
             logger.warning(f"创建失败 - 租户不存在: {data.tenant_name}")
             raise HTTPException(status_code=400, detail="Tenant not found")
 
-        await check_mcp_tenant_permission(data, tenant.id, user)
+        await check_mcp_tenant_permission(data, data.tenant_name, user)
 
         config = McpConfig(
             name=data.name,
-            tenant_name=tenant.id,
-            routers=data.routers,
-            servers=data.servers,
-            tools=data.tools,
-            http_servers=data.http_servers,
+            tenant_name=data.tenant_name,
+            routers=[router.model_dump() for router in data.routers],
+            servers=[server.model_dump() for server in data.servers],
+            tools=[tool.model_dump() for tool in data.tools],
+            http_servers=[server.model_dump() for server in data.http_servers],
         )
 
         await async_db_ops.create_config(config)
@@ -225,14 +223,24 @@ async def delete_mcp_config(
     logger.info(f"用户 {user.username} 删除MCP配置: {tenant_name}/{name}")
 
     try:
+        # 直接使用租户名称查询配置
+        logger.debug(f"查询配置: name={name}, tenant_name={tenant_name}")
+
         cfg = await async_db_ops.query_config_by_name_and_tenant(
-            tenant_name, name
+            name, tenant_name
         )
         if not cfg:
+            # 列出所有配置以便调试
+            all_configs = await async_db_ops.list_configs()
             logger.warning(f"删除失败 - 配置不存在: {tenant_name}/{name}")
+            logger.debug(
+                f"现有配置: {[(c.name, c.tenant_name) for c in all_configs]}"
+            )
             raise HTTPException(status_code=404, detail="MCP config not found")
 
-        await check_mcp_tenant_permission(cfg, tenant_name, user)
+        # 将McpConfig转换为Mcp对象进行权限检查
+        mcp_data = _convert_mcp_config_to_mcp(cfg)
+        await check_mcp_tenant_permission(mcp_data, tenant_name, user)
         await async_db_ops.delete_config(cfg)
 
         logger.info(f"MCP配置删除成功: {tenant_name}/{name}")
@@ -257,12 +265,11 @@ async def sync_mcp_config(
         logger.warning(f"同步失败 - 配置不存在: {config_id}")
         raise HTTPException(status_code=404, detail="MCP config not found")
 
-    await check_mcp_tenant_permission(config, config.tenant_name, user)
+    # 将 McpConfig 转换为 Mcp 对象进行权限检查
+    mcp_data = _convert_mcp_config_to_mcp(config)
+    await check_mcp_tenant_permission(mcp_data, config.tenant_name, user)
 
     try:
-        # 将 McpConfig 转换为 Mcp 对象
-        mcp_data = _convert_mcp_config_to_mcp(config)
-
         # 获取全局 notifier 实例
         notifier = _get_notifier()
 
