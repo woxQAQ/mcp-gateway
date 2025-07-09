@@ -4,15 +4,15 @@
  * API Server
  * OpenAPI spec version: 0.1.0
  */
-import type { ChangePasswordNewPassword } from "./ChangePasswordNewPassword";
-import type { ChangePasswordOldPassword } from "./ChangePasswordOldPassword";
-import type { ChangePasswordUsername } from "./ChangePasswordUsername";
+import type { ChangePasswordNewPassword } from './ChangePasswordNewPassword'
+import type { ChangePasswordOldPassword } from './ChangePasswordOldPassword'
+import type { ChangePasswordUsername } from './ChangePasswordUsername'
 
 export interface ChangePassword {
   /** The new password of the user */
-  new_password?: ChangePasswordNewPassword;
+  new_password?: ChangePasswordNewPassword
   /** The old password of the user */
-  old_password?: ChangePasswordOldPassword;
+  old_password?: ChangePasswordOldPassword
   /** The username of the user */
-  username?: ChangePasswordUsername;
+  username?: ChangePasswordUsername
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import Layout from './components/Layout.vue'
 import Dashboard from './components/Dashboard.vue'
+import Layout from './components/Layout.vue'
 </script>
 
 <template>

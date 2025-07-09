@@ -5,4 +5,4 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ToolArgsItem = { [key: string]: unknown };
+export interface ToolArgsItem { [key: string]: unknown }

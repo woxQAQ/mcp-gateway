@@ -8,4 +8,4 @@
 /**
  * The new password of the user
  */
-export type ChangePasswordNewPassword = string | null;
+export type ChangePasswordNewPassword = string | null

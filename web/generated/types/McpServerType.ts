@@ -5,10 +5,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type McpServerType = (typeof McpServerType)[keyof typeof McpServerType];
+export type McpServerType = (typeof McpServerType)[keyof typeof McpServerType]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const McpServerType = {
-  sse: "sse",
-  stdio: "stdio",
-} as const;
+  sse: 'sse',
+  stdio: 'stdio',
+} as const

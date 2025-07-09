@@ -1,13 +1,13 @@
 {
   "name": "mcp-gateway",
-  "private": true,
-  "version": "1.0.0",
   "type": "module",
+  "version": "1.0.0",
+  "private": true,
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
-    "generate-api-types": "orval --config orval.config.ts"
+    "generate-api-types": "orval --config orval.config.ts && eslint --fix"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",

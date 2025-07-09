@@ -6,5 +6,5 @@
  */
 
 export interface BodyImportOpenapiApiV1OpenapiOpenapiImportPost {
-  file: Blob;
+  file: Blob
 }

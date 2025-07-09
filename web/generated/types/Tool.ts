@@ -4,18 +4,18 @@
  * API Server
  * OpenAPI spec version: 0.1.0
  */
-import type { ToolArgsItem } from "./ToolArgsItem";
-import type { ToolHeaders } from "./ToolHeaders";
-import type { ToolInputSchema } from "./ToolInputSchema";
+import type { ToolArgsItem } from './ToolArgsItem'
+import type { ToolHeaders } from './ToolHeaders'
+import type { ToolInputSchema } from './ToolInputSchema'
 
 export interface Tool {
-  args: ToolArgsItem[];
-  description: string;
-  headers: ToolHeaders;
-  input_schema: ToolInputSchema;
-  method: string;
-  name: string;
-  path: string;
-  request_body: string;
-  response_body: string;
+  args: ToolArgsItem[]
+  description: string
+  headers: ToolHeaders
+  input_schema: ToolInputSchema
+  method: string
+  name: string
+  path: string
+  request_body: string
+  response_body: string
 }

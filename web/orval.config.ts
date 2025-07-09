@@ -6,31 +6,31 @@ export default {
   api: {
     input: {
       // OpenAPI文档路径（可以是本地文件或URL）
-      target: "../docs/api_docs.yaml",
+      target: '../docs/api_docs.yaml',
       // 如果是远程URL，可以这样配置：
       // target: 'http://localhost:8000/openapi.json',
     },
     output: {
       // 生成文件的输出目录
-      client: "fetch", // 可选: fetch, axios, angular, react-query, swr
-      mode: "split", // split: 分文件, single: 单文件, tags: 按标签分组
+      client: 'fetch', // 可选: fetch, axios, angular, react-query, swr
+      mode: 'split', // split: 分文件, single: 单文件, tags: 按标签分组
       mock: true, // 启用 mock 数据生成
       prettier: true, // 使用 prettier 格式化生成的代码
-      namingConvention: "PascalCase",
-      schemas: "./generated/types",
-      target: "./generated/api",
-      fileExtension: ".gen.ts",
+      namingConvention: 'PascalCase',
+      schemas: './generated/types',
+      target: './generated/api',
+      fileExtension: '.gen.ts',
       override: {
         // 自定义配置
         mutator: {
-          path: "./mutator.ts",
-          name: "customInstance",
+          path: './mutator.ts',
+          name: 'customInstance',
         },
 
         // 请求/响应拦截器
         operations: {
           // 为所有操作添加通用配置
-          "*": {
+          '*': {
             mock: {
               // mock 数据生成配置
               delay: [100, 2000], // 随机延迟
@@ -44,4 +44,4 @@ export default {
     //   afterAllFilesWrite: "npm run format:generated",
     // },
   },
-};
+}

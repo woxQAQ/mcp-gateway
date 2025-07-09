@@ -5,9 +5,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ListMcpConfigsApiV1McpConfigsGetParams = {
+export interface ListMcpConfigsApiV1McpConfigsGetParams {
   /**
    * 租户ID
    */
-  tenant_id?: string | null;
-};
+  tenant_id?: string | null
+}

@@ -9,7 +9,7 @@
  * MCP config name.
  */
 export interface McpConfigName {
-  id: string;
-  name: string;
-  tenant_id: string;
+  id: string
+  name: string
+  tenant_id: string
 }

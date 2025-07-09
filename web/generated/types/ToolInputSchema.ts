@@ -5,4 +5,4 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ToolInputSchema = { [key: string]: unknown };
+export interface ToolInputSchema { [key: string]: unknown }

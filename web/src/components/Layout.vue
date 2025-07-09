@@ -1,36 +1,5 @@
-<template>
-  <el-container class="layout-container">
-    <!-- 顶部导航栏 -->
-    <el-header class="layout-header">
-      <Header @toggle-sidebar="toggleSidebar" />
-    </el-header>
-
-    <el-container>
-      <!-- 侧边栏 -->
-      <el-aside 
-        class="layout-aside"
-        :width="isCollapsed ? '64px' : '240px'"
-      >
-        <Sidebar :is-collapsed="isCollapsed" />
-      </el-aside>
-
-      <!-- 主内容区 -->
-      <el-main class="layout-main">
-        <slot />
-      </el-main>
-    </el-container>
-
-    <!-- 移动端遮罩层 -->
-    <div 
-      v-if="isMobileMenuOpen" 
-      class="mobile-overlay"
-      @click="closeMobileMenu"
-    ></div>
-  </el-container>
-</template>
-
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import Header from './Header.vue'
 import Sidebar from './Sidebar.vue'
 
@@ -39,21 +8,22 @@ const isMobile = ref(false)
 const isMobileMenuOpen = ref(false)
 
 // 切换侧边栏
-const toggleSidebar = () => {
+function toggleSidebar() {
   if (isMobile.value) {
     isMobileMenuOpen.value = !isMobileMenuOpen.value
-  } else {
+  }
+  else {
     isCollapsed.value = !isCollapsed.value
   }
 }
 
 // 关闭移动端菜单
-const closeMobileMenu = () => {
+function closeMobileMenu() {
   isMobileMenuOpen.value = false
 }
 
 // 检查屏幕尺寸
-const checkScreenSize = () => {
+function checkScreenSize() {
   isMobile.value = window.innerWidth < 768
   if (!isMobile.value) {
     isMobileMenuOpen.value = false
@@ -69,6 +39,37 @@ onUnmounted(() => {
   window.removeEventListener('resize', checkScreenSize)
 })
 </script>
+
+<template>
+  <el-container class="layout-container">
+    <!-- 顶部导航栏 -->
+    <el-header class="layout-header">
+      <Header @toggle-sidebar="toggleSidebar" />
+    </el-header>
+
+    <el-container>
+      <!-- 侧边栏 -->
+      <el-aside
+        class="layout-aside"
+        :width="isCollapsed ? '64px' : '240px'"
+      >
+        <Sidebar :is-collapsed="isCollapsed" />
+      </el-aside>
+
+      <!-- 主内容区 -->
+      <el-main class="layout-main">
+        <slot />
+      </el-main>
+    </el-container>
+
+    <!-- 移动端遮罩层 -->
+    <div
+      v-if="isMobileMenuOpen"
+      class="mobile-overlay"
+      @click="closeMobileMenu"
+    />
+  </el-container>
+</template>
 
 <style scoped>
 .layout-container {
@@ -112,9 +113,9 @@ onUnmounted(() => {
     transform: translateX(-100%);
     transition: transform 0.3s ease;
   }
-  
+
   .layout-aside.mobile-open {
     transform: translateX(0);
   }
 }
-</style> 
+</style>

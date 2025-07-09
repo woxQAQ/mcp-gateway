@@ -6,9 +6,9 @@
  */
 
 export interface Cors {
-  allow_credentials: boolean;
-  allow_headers: string[];
-  allow_methods: string[];
-  allow_origins: string[];
-  expose_headers: string[];
+  allow_credentials: boolean
+  allow_headers: string[]
+  allow_methods: string[]
+  allow_origins: string[]
+  expose_headers: string[]
 }

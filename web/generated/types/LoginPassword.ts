@@ -8,4 +8,4 @@
 /**
  * The password of the user
  */
-export type LoginPassword = string | null;
+export type LoginPassword = string | null
