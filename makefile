@@ -17,6 +17,10 @@ fmt:
 	@ruff check . --fix
 	@black .
 
+.PHONY: generate-api-types
+generate-api-types:
+	@cd web && pnpm run generate-api-types
+
 # Pre-commit targets
 .PHONY: setup-precommit precommit-install precommit-run precommit-update precommit-clean
 setup-precommit:
