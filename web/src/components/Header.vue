@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
   ArrowDown,
-  Bell,
   Menu,
   Moon,
   Setting,

@@ -26,7 +26,7 @@ const form = reactive({
 })
 
 // 确认密码验证函数
-function validateConfirmPassword(rule: any, value: any, callback: any) {
+function validateConfirmPassword(_: any, value: any, callback: any) {
   if (value === '') {
     callback(new Error('请再次输入密码'))
   }
@@ -332,8 +332,9 @@ html.dark .title {
 }
 
 .login-card :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 2px var(--el-color-primary-light-8) inset, 
-               0 0 0 1px var(--el-color-primary) inset;
+  box-shadow:
+    0 0 0 2px var(--el-color-primary-light-8) inset,
+    0 0 0 1px var(--el-color-primary) inset;
   transform: translateY(-1px);
 }
 
@@ -431,11 +432,11 @@ html.dark .toggle-button:hover {
     width: 90%;
     margin: 0 20px;
   }
-  
+
   .login-card :deep(.el-card__body) {
     padding: 24px;
   }
-  
+
   .title {
     font-size: 20px;
   }

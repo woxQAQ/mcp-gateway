@@ -30,7 +30,7 @@
   --el-color-success-light-7: #d1edc4;
   --el-color-success-light-8: #e1f3d8;
   --el-color-success-light-9: #f0f9eb;
-  
+
   /* 警告色 */
   --el-color-warning: #e6a23c;
   --el-color-warning-light-3: #eebe77;
@@ -38,7 +38,7 @@
   --el-color-warning-light-7: #f8e3c5;
   --el-color-warning-light-8: #faecd8;
   --el-color-warning-light-9: #fdf6ec;
-  
+
   /* 错误色 */
   --el-color-danger: #f56c6c;
   --el-color-danger-light-3: #f89898;
@@ -46,7 +46,7 @@
   --el-color-danger-light-7: #fcd3d3;
   --el-color-danger-light-8: #fde2e2;
   --el-color-danger-light-9: #fef0f0;
-  
+
   /* 信息色 */
   --el-color-info: #909399;
   --el-color-info-light-3: #b1b3b8;
@@ -62,14 +62,14 @@ html.dark {
   --el-bg-color: #1d1e1f;
   --el-bg-color-page: #0a0a0a;
   --el-bg-color-overlay: #1d1e1f;
-  
+
   /* 文字色 */
   --el-text-color-primary: #e5eaf3;
   --el-text-color-regular: #cfd3dc;
   --el-text-color-secondary: #a3a6ad;
   --el-text-color-placeholder: #8d9095;
   --el-text-color-disabled: #6c6e72;
-  
+
   /* 边框色 */
   --el-border-color: #4c4d4f;
   --el-border-color-light: #414243;
@@ -77,7 +77,7 @@ html.dark {
   --el-border-color-extra-light: #2b2b2c;
   --el-border-color-dark: #58585b;
   --el-border-color-darker: #636466;
-  
+
   /* 填充色 */
   --el-fill-color: #303133;
   --el-fill-color-light: #262727;
@@ -86,53 +86,54 @@ html.dark {
   --el-fill-color-dark: #39393a;
   --el-fill-color-darker: #424243;
   --el-fill-color-blank: transparent;
-  
+
   /* 主色在暗色模式下的调整 */
   --el-color-primary-light-3: #337ecc;
   --el-color-primary-light-5: #2b6bb2;
   --el-color-primary-light-7: #235899;
   --el-color-primary-light-8: #1d4b80;
   --el-color-primary-light-9: #173e66;
-  
+
   /* 成功色在暗色模式下的调整 */
   --el-color-success-light-3: #529b2e;
   --el-color-success-light-5: #448425;
   --el-color-success-light-7: #376d1c;
   --el-color-success-light-8: #2a5515;
   --el-color-success-light-9: #1d3e0e;
-  
+
   /* 警告色在暗色模式下的调整 */
   --el-color-warning-light-3: #b88230;
   --el-color-warning-light-5: #9e6b28;
   --el-color-warning-light-7: #845520;
   --el-color-warning-light-8: #6a3e18;
   --el-color-warning-light-9: #502810;
-  
+
   /* 错误色在暗色模式下的调整 */
   --el-color-danger-light-3: #c45656;
   --el-color-danger-light-5: #a64a4a;
   --el-color-danger-light-7: #893e3e;
   --el-color-danger-light-8: #6b3232;
   --el-color-danger-light-9: #4d2626;
-  
+
   /* 信息色在暗色模式下的调整 */
   --el-color-info-light-3: #767a82;
   --el-color-info-light-5: #65686f;
   --el-color-info-light-7: #54575c;
   --el-color-info-light-8: #434549;
   --el-color-info-light-9: #323336;
-  
+
   /* 阴影 */
   --el-box-shadow: 0 12px 32px 4px rgba(0, 0, 0, 0.36), 0 8px 20px rgba(0, 0, 0, 0.72);
   --el-box-shadow-light: 0 0 12px rgba(0, 0, 0, 0.72);
   --el-box-shadow-lighter: 0 0 6px rgba(0, 0, 0, 0.72);
-  --el-box-shadow-dark: 0 16px 48px 16px rgba(0, 0, 0, 0.72), 0 12px 32px rgba(0, 0, 0, 0.72), 0 8px 16px -8px rgba(0, 0, 0, 0.72);
-  
+  --el-box-shadow-dark:
+    0 16px 48px 16px rgba(0, 0, 0, 0.72), 0 12px 32px rgba(0, 0, 0, 0.72), 0 8px 16px -8px rgba(0, 0, 0, 0.72);
+
   /* 禁用状态 */
   --el-disabled-bg-color: var(--el-fill-color-light);
   --el-disabled-text-color: var(--el-text-color-placeholder);
   --el-disabled-border-color: var(--el-border-color-light);
-  
+
   /* 遮罩层 */
   --el-mask-color: rgba(0, 0, 0, 0.8);
   --el-mask-color-extra-light: rgba(0, 0, 0, 0.3);
@@ -150,7 +151,7 @@ html.dark .el-table {
   color: var(--el-text-color-primary);
 }
 
-html.dark .el-table td.el-table__cell, 
+html.dark .el-table td.el-table__cell,
 html.dark .el-table th.el-table__cell.is-leaf {
   border-bottom-color: var(--el-border-color-lighter);
 }
@@ -507,21 +508,21 @@ html.dark .el-loading-mask {
   .page-container {
     padding: 16px;
   }
-  
+
   .el-dialog {
     width: 95% !important;
     margin: 20px auto;
   }
-  
+
   .el-table .el-table__column {
     min-width: 120px;
   }
-  
+
   .mobile-stack {
     flex-direction: column;
     gap: 8px;
   }
-  
+
   .mobile-stack .el-button {
     width: 100%;
     margin: 0;

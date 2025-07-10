@@ -937,7 +937,7 @@ onMounted(async () => {
         </el-form-item>
         <el-form-item label="参数">
           <div class="w-full">
-            <div v-for="(arg, index) in newServer.args" :key="index" class="flex mb-2">
+            <div v-for="(_, index) in newServer.args" :key="index" class="flex mb-2">
               <el-input v-model="newServer.args[index]" placeholder="参数值" />
               <el-button
                 type="danger"
@@ -1058,7 +1058,7 @@ onMounted(async () => {
         </el-form-item>
         <el-form-item label="工具列表">
           <div class="w-full">
-            <div v-for="(tool, index) in newHttpServer.tools" :key="index" class="flex mb-2">
+            <div v-for="(_, index) in newHttpServer.tools" :key="index" class="flex mb-2">
               <el-input v-model="newHttpServer.tools[index]" placeholder="工具名称" />
               <el-button
                 type="danger"
