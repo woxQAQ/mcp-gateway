@@ -53,7 +53,7 @@ class AsyncMcpConfigRepository(AsyncRepository):
             if tenant_name:
                 stmt = stmt.where(McpConfig.tenant_name == tenant_name)
             result = await session.execute(stmt)
-            return result.all()
+            return [(row[0], row[1], row[2]) for row in result.all()]
 
         return await self._execute_query(query)
 

@@ -1,5 +1,5 @@
 from collections.abc import Awaitable, Callable
-from typing import Any, Optional, Protocol
+from typing import Optional, Protocol, TypeVar
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session, sessionmaker
@@ -10,25 +10,27 @@ from myunla.config import (
     sync_engine,
 )
 
+# 定义泛型类型变量
+T = TypeVar('T')
+R = TypeVar('R')
+
 
 class AsyncRepositoryProtocol(Protocol):
     async def _execute_query(
-        self, query_func: Callable[[AsyncSession], Awaitable[Any]]
-    ) -> Any: ...
+        self, query_func: Callable[[AsyncSession], Awaitable[T]]
+    ) -> T: ...
 
     async def execute_with_transaction(
-        self, operation: Callable[[AsyncSession], Awaitable[Any]]
-    ) -> Any: ...
+        self, operation: Callable[[AsyncSession], Awaitable[T]]
+    ) -> T: ...
 
 
 class SyncRepositoryProtocol(Protocol):
     def _get_session(self) -> Session: ...
 
-    def _execute_query(self, query_func: Callable[[Session], Any]) -> Any: ...
+    def _execute_query(self, query_func: Callable[[Session], T]) -> T: ...
 
-    def _execute_transaction(
-        self, operation: Callable[[Session], Any]
-    ) -> Any: ...
+    def _execute_transaction(self, operation: Callable[[Session], T]) -> T: ...
 
 
 class SyncRepository(SyncRepositoryProtocol):
@@ -44,7 +46,7 @@ class SyncRepository(SyncRepositoryProtocol):
                 return session
         return self._session
 
-    def _execute_query(self, query_func: Callable[[Session], Any]) -> Any:
+    def _execute_query(self, query_func: Callable[[Session], T]) -> T:
         if self._session:
             return query_func(self._session)
         session = sessionmaker(
@@ -53,7 +55,7 @@ class SyncRepository(SyncRepositoryProtocol):
         with session() as session:
             return query_func(self._session)
 
-    def _execute_transaction(self, operation: Callable[[Session], Any]) -> Any:
+    def _execute_transaction(self, operation: Callable[[Session], T]) -> T:
         for session in get_sync_session():
             try:
                 res = operation(session)
@@ -62,6 +64,8 @@ class SyncRepository(SyncRepositoryProtocol):
             except Exception as e:
                 session.rollback()
                 raise
+        # 如果 get_sync_session() 没有产生任何会话，抛出异常
+        raise RuntimeError("No database session available")
 
 
 class AsyncRepository(AsyncRepositoryProtocol):
@@ -69,17 +73,19 @@ class AsyncRepository(AsyncRepositoryProtocol):
         self._session = session
 
     async def _execute_query(
-        self, query_func: Callable[[AsyncSession], Awaitable[Any]]
-    ) -> Any:
+        self, query_func: Callable[[AsyncSession], Awaitable[T]]
+    ) -> T:
         if self._session:
             return await query_func(self._session)
         else:
             async for session in get_async_session():
                 return await query_func(session)
+        # 如果 get_async_session() 没有产生任何会话，抛出异常
+        raise RuntimeError("No database session available")
 
     async def execute_with_transaction(
-        self, operation: Callable[[AsyncSession], Awaitable[Any]]
-    ) -> Any:
+        self, operation: Callable[[AsyncSession], Awaitable[T]]
+    ) -> T:
         if self._session:
             return await operation(self._session)
         else:
@@ -91,6 +97,8 @@ class AsyncRepository(AsyncRepositoryProtocol):
                 except Exception:
                     await session.rollback()
                     raise
+        # 如果 get_async_session() 没有产生任何会话，抛出异常
+        raise RuntimeError("No database session available")
 
 
 # AsyncDBOps 类移到 __init__.py 中以避免循环导入

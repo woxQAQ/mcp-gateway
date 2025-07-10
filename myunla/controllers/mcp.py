@@ -178,7 +178,9 @@ async def list_mcp_configs(
 
     configs = await async_db_ops.list_configs(tenant_name)
     if tenant_name:
-        configs = configs.filter(lambda x: x.tenant_name == tenant_name)
+        configs = [
+            config for config in configs if config.tenant_name == tenant_name
+        ]
 
     logger.debug(f"返回 {len(configs)} 个配置")
     return [McpConfigModel.from_orm(config) for config in configs]

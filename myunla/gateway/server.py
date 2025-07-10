@@ -50,6 +50,7 @@ class GatewayServer:
     ):
         self.state = state
         self.app = FastAPI()
+        self.last_update_time: Optional[datetime] = None
 
         # 初始化会话存储
         if session_config is None:
