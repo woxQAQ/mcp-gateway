@@ -9,8 +9,6 @@ import { useUsers } from '../stores/users'
 const {
   loading,
   error,
-  userCount,
-  activeUserCount,
   fetchUsers,
   createUser,
   deleteUser,
@@ -240,14 +238,14 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="user-management-container p-6">
+  <div class="page-container p-6">
     <!-- 页面标题 -->
     <div class="mb-6">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+      <h1 class="text-2xl font-bold mb-2">
         用户管理
       </h1>
-      <p class="text-gray-600 dark:text-gray-400">
-        管理平台用户账户、权限和状态 (总计: {{ userCount }} 个用户，活跃: {{ activeUserCount }} 个)
+      <p>
+        管理系统用户账户、角色权限和状态设置
       </p>
     </div>
 
@@ -291,7 +289,7 @@ onMounted(async () => {
     </div>
 
     <!-- 用户列表 -->
-    <el-card class="shadow-md">
+    <el-card class="shadow-md fade-in-up">
       <el-table
         v-loading="loading"
         :data="paginatedUsers"
@@ -446,19 +444,28 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.user-management-container {
-  background: #f8fafc;
-  min-height: 100vh;
-}
-
+/* 仅保留组件特定样式 */
 .user-table {
-  background: white;
+  background: var(--el-bg-color);
   border-radius: 8px;
+  border: 1px solid var(--el-border-color-lighter);
+  box-shadow: var(--el-box-shadow-lighter);
 }
 
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
+/* 移动端响应式 */
+@media (max-width: 768px) {
+  .mb-6 {
+    margin-bottom: 16px;
+  }
+
+  .flex.space-x-2 {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .flex.space-x-2 .el-button {
+    width: 100%;
+    margin: 0;
+  }
 }
 </style>

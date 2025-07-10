@@ -240,13 +240,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="tenant-management-container p-6">
+  <div class="page-container p-6">
     <!-- 页面标题 -->
     <div class="mb-6">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+      <h1 class="text-2xl font-bold mb-2">
         租户管理
       </h1>
-      <p class="text-gray-600 dark:text-gray-400">
+      <p>
         管理平台租户配置、资源分配和访问控制
       </p>
     </div>
@@ -282,7 +282,7 @@ onMounted(() => {
     </div>
 
     <!-- 租户列表 -->
-    <el-card class="shadow-md">
+    <el-card class="shadow-md fade-in-up">
       <el-table
         v-loading="loading"
         :data="tenants"
@@ -400,60 +400,28 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.tenant-management-container {
-  background: #f8fafc;
-  min-height: 100vh;
-}
-
+/* 仅保留组件特定样式 */
 .tenant-table {
-  background: white;
+  background: var(--el-bg-color);
   border-radius: 8px;
+  border: 1px solid var(--el-border-color-lighter);
+  box-shadow: var(--el-box-shadow-lighter);
 }
 
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-
-.el-card {
-  border-radius: 12px;
-  border: none;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.el-table {
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.el-button {
-  border-radius: 6px;
-}
-
-.el-input {
-  border-radius: 6px;
-}
-
-.el-select {
-  width: 100%;
-}
-
-.el-pagination {
-  margin-top: 20px;
-}
-
+/* 移动端响应式 */
 @media (max-width: 768px) {
-  .tenant-management-container {
-    padding: 16px;
-  }
-
   .mb-6 {
     margin-bottom: 16px;
   }
 
-  .el-table-column {
-    min-width: 120px;
+  .flex.space-x-2 {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .flex.space-x-2 .el-button {
+    width: 100%;
+    margin: 0;
   }
 }
 </style>

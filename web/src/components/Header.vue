@@ -145,25 +145,6 @@ initTheme()
         </el-icon>
       </el-button>
 
-      <!-- 通知 -->
-      <div class="relative">
-        <el-badge :value="3" :max="99" class="notification-badge">
-          <el-button
-            type="text"
-            class="w-10 h-10 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 flex-center transition-colors group"
-          >
-            <el-icon
-              class="transition-transform group-hover:scale-110"
-              size="18"
-            >
-              <Bell />
-            </el-icon>
-          </el-button>
-        </el-badge>
-        <!-- 通知脉冲效果 -->
-        <div class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-ping" />
-      </div>
-
       <!-- 用户菜单 -->
       <el-dropdown trigger="click" @command="handleUserMenuClick">
         <div class="user-info flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors group">
