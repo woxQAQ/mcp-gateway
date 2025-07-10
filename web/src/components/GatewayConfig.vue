@@ -602,30 +602,30 @@ onMounted(async () => {
         stripe
         class="config-table"
       >
-        <el-table-column prop="name" label="配置名称" width="200" />
-        <el-table-column prop="tenant_name" label="租户名称" width="150">
+        <el-table-column prop="name" label="配置名称" min-width="150" />
+        <el-table-column prop="tenant_name" label="租户名称" width="120">
           <template #default="{ row }">
             {{ getTenantDisplayName(row.tenant_name) }}
           </template>
         </el-table-column>
-        <el-table-column prop="gmt_created" label="创建时间" width="180">
+        <el-table-column prop="gmt_created" label="创建时间" width="160">
           <template #default="{ row }">
             {{ new Date(row.gmt_created).toLocaleString() }}
           </template>
         </el-table-column>
-        <el-table-column prop="servers" label="服务器数量" width="120">
+        <el-table-column prop="servers" label="服务器数量" width="100">
           <template #default="{ row }">
             <el-tag>{{ row.servers?.length || 0 }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="tools" label="工具数量" width="120">
+        <el-table-column prop="tools" label="工具数量" width="100">
           <template #default="{ row }">
             <el-tag type="success">
               {{ row.tools?.length || 0 }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="300" fixed="right">
+        <el-table-column label="操作" width="280">
           <template #default="{ row }">
             <el-button size="small" @click="editConfig(row)">
               编辑
@@ -754,24 +754,24 @@ onMounted(async () => {
           </div>
 
           <el-table :data="configForm.servers" stripe style="width: 100%">
-            <el-table-column prop="name" label="名称" width="120" />
-            <el-table-column prop="description" label="描述" width="150" show-overflow-tooltip />
-            <el-table-column prop="type" label="类型" width="80">
+            <el-table-column prop="name" label="名称" width="100" />
+            <el-table-column prop="description" label="描述" min-width="120" show-overflow-tooltip />
+            <el-table-column prop="type" label="类型" width="70">
               <template #default="{ row }">
                 <el-tag :type="row.type === 'stdio' ? 'primary' : 'success'">
                   {{ row.type }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="command" label="命令" width="120" show-overflow-tooltip />
-            <el-table-column prop="policy" label="策略" width="100">
+            <el-table-column prop="command" label="命令" min-width="100" show-overflow-tooltip />
+            <el-table-column prop="policy" label="策略" width="90">
               <template #default="{ row }">
                 <el-tag :type="row.policy === 'on_start' ? 'warning' : 'info'">
                   {{ row.policy }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="160" fixed="right">
+            <el-table-column label="操作" width="140">
               <template #default="{ $index }">
                 <div class="flex gap-2">
                   <el-button size="small" type="primary" plain @click="editServer($index)">
@@ -798,10 +798,10 @@ onMounted(async () => {
           </div>
 
           <el-table :data="configForm.routers" stripe style="width: 100%">
-            <el-table-column prop="prefix" label="前缀" width="150" />
-            <el-table-column prop="server" label="服务器" width="150" />
-            <el-table-column prop="sse_prefix" label="SSE前缀" width="150" />
-            <el-table-column label="操作" width="160" fixed="right">
+            <el-table-column prop="prefix" label="前缀" min-width="120" />
+            <el-table-column prop="server" label="服务器" min-width="120" />
+            <el-table-column prop="sse_prefix" label="SSE前缀" min-width="120" />
+            <el-table-column label="操作" width="140">
               <template #default="{ $index }">
                 <div class="flex gap-2">
                   <el-button size="small" type="primary" plain @click="editRouter($index)">
@@ -828,17 +828,17 @@ onMounted(async () => {
           </div>
 
           <el-table :data="configForm.tools" stripe style="width: 100%">
-            <el-table-column prop="name" label="名称" width="120" />
-            <el-table-column prop="description" label="描述" width="150" show-overflow-tooltip />
-            <el-table-column prop="method" label="方法" width="80">
+            <el-table-column prop="name" label="名称" width="100" />
+            <el-table-column prop="description" label="描述" min-width="120" show-overflow-tooltip />
+            <el-table-column prop="method" label="方法" width="70">
               <template #default="{ row }">
                 <el-tag :type="row.method === 'GET' ? 'success' : row.method === 'POST' ? 'primary' : 'warning'">
                   {{ row.method }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="path" label="路径" width="150" show-overflow-tooltip />
-            <el-table-column label="操作" width="160" fixed="right">
+            <el-table-column prop="path" label="路径" min-width="120" show-overflow-tooltip />
+            <el-table-column label="操作" width="140">
               <template #default="{ $index }">
                 <div class="flex gap-2">
                   <el-button size="small" type="primary" plain @click="editTool($index)">
@@ -865,15 +865,15 @@ onMounted(async () => {
           </div>
 
           <el-table :data="configForm.http_servers" stripe style="width: 100%">
-            <el-table-column prop="name" label="名称" width="150" />
-            <el-table-column prop="description" label="描述" width="200" show-overflow-tooltip />
-            <el-table-column prop="url" label="URL" width="200" show-overflow-tooltip />
-            <el-table-column label="工具数量" width="100">
+            <el-table-column prop="name" label="名称" width="120" />
+            <el-table-column prop="description" label="描述" min-width="150" show-overflow-tooltip />
+            <el-table-column prop="url" label="URL" min-width="180" show-overflow-tooltip />
+            <el-table-column label="工具数量" width="90">
               <template #default="{ row }">
                 <el-tag>{{ row.tools?.length || 0 }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="160" fixed="right">
+            <el-table-column label="操作" width="140">
               <template #default="{ $index }">
                 <div class="flex gap-2">
                   <el-button size="small" type="primary" plain @click="editHttpServer($index)">
@@ -1151,6 +1151,126 @@ html.dark .add-item-btn:hover {
   background-color: rgba(64, 158, 255, 0.1);
 }
 
+/* 编辑按钮特殊高亮样式 */
+.el-table .el-button {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 编辑按钮字体高亮 */
+.el-table .el-button--primary.is-plain {
+  color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
+  background: linear-gradient(135deg, var(--el-color-primary-light-9) 0%, rgba(64, 158, 255, 0.05) 100%);
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(64, 158, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.el-table .el-button--primary.is-plain:hover {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--el-color-primary) 0%, var(--el-color-primary-dark-2) 100%);
+  border-color: var(--el-color-primary);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.4);
+}
+
+/* 暗色模式下的编辑按钮 */
+html.dark .el-table .el-button--primary.is-plain {
+  background: linear-gradient(135deg, rgba(64, 158, 255, 0.15) 0%, rgba(64, 158, 255, 0.05) 100%);
+  color: var(--el-color-primary-light-3);
+  text-shadow: 0 1px 2px rgba(64, 158, 255, 0.4);
+}
+
+html.dark .el-table .el-button--primary.is-plain:hover {
+  background: linear-gradient(135deg, var(--el-color-primary) 0%, var(--el-color-primary-dark-2) 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+}
+
+/* 危险按钮高亮 */
+.el-table .el-button--danger.is-plain {
+  color: var(--el-color-danger);
+  border-color: var(--el-color-danger);
+  background: linear-gradient(135deg, var(--el-color-danger-light-9) 0%, rgba(245, 108, 108, 0.05) 100%);
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(245, 108, 108, 0.2);
+}
+
+.el-table .el-button--danger.is-plain:hover {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--el-color-danger) 0%, #c45656 100%);
+  border-color: var(--el-color-danger);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 108, 108, 0.4);
+}
+
+/* 暗色模式下的危险按钮 */
+html.dark .el-table .el-button--danger.is-plain {
+  background: linear-gradient(135deg, rgba(245, 108, 108, 0.15) 0%, rgba(245, 108, 108, 0.05) 100%);
+  color: var(--el-color-danger-light-3);
+  text-shadow: 0 1px 2px rgba(245, 108, 108, 0.4);
+}
+
+html.dark .el-table .el-button--danger.is-plain:hover {
+  background: linear-gradient(135deg, var(--el-color-danger) 0%, #c45656 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 12px rgba(245, 108, 108, 0.3);
+}
+
+/* 主操作区域编辑按钮增强 */
+.el-table-column .el-button:not(.is-plain) {
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.el-table-column .el-button:not(.is-plain):hover {
+  transform: translateY(-1px);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* 暗色模式下的主操作按钮 */
+html.dark .el-table-column .el-button:not(.is-plain) {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+html.dark .el-table-column .el-button:not(.is-plain):hover {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* 按钮图标增强 */
+.el-button .el-icon {
+  transition: all 0.3s ease;
+}
+
+.el-button:hover .el-icon {
+  transform: scale(1.1);
+}
+
+/* 添加微妙的文字动画效果 */
+@keyframes textGlow {
+  0%,
+  100% {
+    text-shadow: 0 1px 2px rgba(64, 158, 255, 0.2);
+  }
+  50% {
+    text-shadow:
+      0 1px 4px rgba(64, 158, 255, 0.4),
+      0 0 8px rgba(64, 158, 255, 0.2);
+  }
+}
+
+.el-table .el-button--primary.is-plain:focus {
+  animation: textGlow 1.5s ease-in-out infinite;
+}
+
 /* 移动端响应式 */
 @media (max-width: 768px) {
   .mb-6 {
@@ -1165,6 +1285,12 @@ html.dark .add-item-btn:hover {
   .flex.gap-2 .el-button {
     width: 100%;
     margin: 0;
+  }
+
+  /* 移动端按钮字体调整 */
+  .el-table .el-button {
+    font-size: 12px;
+    letter-spacing: 0.2px;
   }
 }
 </style>
