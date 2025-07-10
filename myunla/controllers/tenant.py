@@ -11,6 +11,7 @@ from myunla.schema.tenant_schema import (
     TenantUpdate,
 )
 from myunla.utils import get_logger
+from myunla.utils.i18n import get_i18n_message
 
 from .auth_utils import current_user
 
@@ -32,14 +33,20 @@ async def create_tenant(
         # 检查租户名称是否已存在
         if await async_db_ops.check_tenant_name_exists(data.name):
             logger.warning(f"创建失败 - 租户名称已存在: {data.name}")
-            raise HTTPException(status_code=400, detail="租户名称已存在")
+            raise HTTPException(
+                status_code=400,
+                detail=get_i18n_message("tenant.name_exists", request),
+            )
 
         # 检查租户前缀是否已存在（如果提供了前缀）
         if data.prefix and await async_db_ops.check_tenant_prefix_exists(
             data.prefix
         ):
             logger.warning(f"创建失败 - 租户前缀已存在: {data.prefix}")
-            raise HTTPException(status_code=400, detail="租户前缀已存在")
+            raise HTTPException(
+                status_code=400,
+                detail=get_i18n_message("tenant.prefix_exists", request),
+            )
 
         # 创建租户
         tenant = Tenant(
@@ -57,7 +64,9 @@ async def create_tenant(
         raise
     except Exception as e:
         logger.error(f"创建租户失败: {data.name} - {e}")
-        raise HTTPException(status_code=500, detail=f"创建失败: {e!s}")
+        raise HTTPException(
+            status_code=500, detail=get_i18n_message("create_failed", request)
+        )
 
 
 @router.get("/tenants", response_model=TenantList)
@@ -85,7 +94,9 @@ async def list_tenants(
 
     except Exception as e:
         logger.error(f"获取租户列表失败: {e}")
-        raise HTTPException(status_code=500, detail=f"获取失败: {e!s}")
+        raise HTTPException(
+            status_code=500, detail=get_i18n_message("get_failed", request)
+        )
 
 
 @router.get("/tenants/{tenant_id}", response_model=TenantModel)
@@ -101,7 +112,10 @@ async def get_tenant(
         tenant = await async_db_ops.query_tenant_by_id(tenant_id)
         if not tenant:
             logger.warning(f"租户不存在: {tenant_id}")
-            raise HTTPException(status_code=404, detail="租户不存在")
+            raise HTTPException(
+                status_code=404,
+                detail=get_i18n_message("tenant.not_found", request),
+            )
 
         logger.debug(f"返回租户信息: {tenant.name}")
         return TenantModel.from_orm(tenant)
@@ -110,7 +124,9 @@ async def get_tenant(
         raise
     except Exception as e:
         logger.error(f"获取租户信息失败: {tenant_id} - {e}")
-        raise HTTPException(status_code=500, detail=f"获取失败: {e!s}")
+        raise HTTPException(
+            status_code=500, detail=get_i18n_message("get_failed", request)
+        )
 
 
 @router.put("/tenants/{tenant_id}", response_model=TenantModel)
@@ -129,21 +145,30 @@ async def update_tenant(
         tenant = await async_db_ops.query_tenant_by_id(tenant_id)
         if not tenant:
             logger.warning(f"更新失败 - 租户不存在: {tenant_id}")
-            raise HTTPException(status_code=404, detail="租户不存在")
+            raise HTTPException(
+                status_code=404,
+                detail=get_i18n_message("tenant.not_found", request),
+            )
 
         # 检查租户名称是否与其他租户冲突
         if data.name and await async_db_ops.check_tenant_name_exists(
             data.name, exclude_id=tenant_id
         ):
             logger.warning(f"更新失败 - 租户名称已存在: {data.name}")
-            raise HTTPException(status_code=400, detail="租户名称已存在")
+            raise HTTPException(
+                status_code=400,
+                detail=get_i18n_message("tenant.name_exists", request),
+            )
 
         # 检查租户前缀是否与其他租户冲突
         if data.prefix and await async_db_ops.check_tenant_prefix_exists(
             data.prefix, exclude_id=tenant_id
         ):
             logger.warning(f"更新失败 - 租户前缀已存在: {data.prefix}")
-            raise HTTPException(status_code=400, detail="租户前缀已存在")
+            raise HTTPException(
+                status_code=400,
+                detail=get_i18n_message("tenant.prefix_exists", request),
+            )
 
         # 更新租户信息
         if data.name is not None:
@@ -163,7 +188,9 @@ async def update_tenant(
         raise
     except Exception as e:
         logger.error(f"更新租户失败: {tenant_id} - {e}")
-        raise HTTPException(status_code=500, detail=f"更新失败: {e!s}")
+        raise HTTPException(
+            status_code=500, detail=get_i18n_message("update_failed", request)
+        )
 
 
 @router.patch("/tenants/{tenant_id}/status", response_model=TenantModel)
@@ -184,7 +211,10 @@ async def update_tenant_status(
         tenant = await async_db_ops.query_tenant_by_id(tenant_id)
         if not tenant:
             logger.warning(f"状态更新失败 - 租户不存在: {tenant_id}")
-            raise HTTPException(status_code=404, detail="租户不存在")
+            raise HTTPException(
+                status_code=404,
+                detail=get_i18n_message("tenant.not_found", request),
+            )
 
         # 更新状态
         tenant.is_active = data.is_active
@@ -198,7 +228,10 @@ async def update_tenant_status(
         raise
     except Exception as e:
         logger.error(f"更新租户状态失败: {tenant_id} - {e}")
-        raise HTTPException(status_code=500, detail=f"状态更新失败: {e!s}")
+        raise HTTPException(
+            status_code=500,
+            detail=get_i18n_message("status_update_failed", request),
+        )
 
 
 @router.delete("/tenants/{tenant_id}")
@@ -216,7 +249,10 @@ async def delete_tenant(
         tenant = await async_db_ops.query_tenant_by_id(tenant_id)
         if not tenant:
             logger.warning(f"删除失败 - 租户不存在: {tenant_id}")
-            raise HTTPException(status_code=404, detail="租户不存在")
+            raise HTTPException(
+                status_code=404,
+                detail=get_i18n_message("tenant.not_found", request),
+            )
 
         # TODO: 检查租户是否有关联的数据（如MCP配置、用户等）
         # 暂时不做强制关联检查，由业务逻辑决定是否允许删除
@@ -224,13 +260,15 @@ async def delete_tenant(
         # 删除租户
         await async_db_ops.delete_tenant(tenant_id)
         logger.info(f"租户删除成功: {tenant.name}")
-        return {"message": f"租户 {tenant.name} 删除成功"}
+        return {"message": get_i18n_message("tenant.deleted", request)}
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"删除租户失败: {tenant_id} - {e}")
-        raise HTTPException(status_code=500, detail=f"删除失败: {e!s}")
+        raise HTTPException(
+            status_code=500, detail=get_i18n_message("delete_failed", request)
+        )
 
 
 @router.get("/tenants/name/{tenant_name}", response_model=TenantModel)

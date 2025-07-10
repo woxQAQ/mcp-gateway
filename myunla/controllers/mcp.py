@@ -13,6 +13,7 @@ from myunla.schema.mcp import (
     McpConfigName,
 )
 from myunla.utils import get_logger
+from myunla.utils.i18n import get_i18n_message
 
 from .auth_utils import current_user
 from .mcp_utils import check_mcp_tenant_permission
@@ -92,7 +93,10 @@ async def active_mcp_config(
     )
     if not config:
         logger.warning(f"激活失败 - 配置不存在: {tenant_name}/{name}")
-        raise HTTPException(status_code=404, detail="MCP config not found")
+        raise HTTPException(
+            status_code=404,
+            detail=get_i18n_message("mcp.config_not_found", request),
+        )
 
     # 将McpConfig转换为Mcp对象进行权限检查
     mcp_data = _convert_mcp_config_to_mcp(config)
@@ -102,11 +106,12 @@ async def active_mcp_config(
     # 目前只记录激活操作
 
     logger.info(f"MCP配置激活成功: {tenant_name}/{name}")
-    return {"message": f"MCP config {name} activated successfully"}
+    return {"message": get_i18n_message("mcp.config_activated", request)}
 
 
 @router.post("/configs", response_model=McpConfigModel)
 async def create_mcp_config(
+    request: Request,
     data: Mcp,
     session: AsyncSessionDependency,
     user: User = Depends(current_user),
@@ -123,13 +128,16 @@ async def create_mcp_config(
             logger.warning(f"创建失败 - 配置已存在: {data.name}")
             raise HTTPException(
                 status_code=400,
-                detail="MCP config with this name already exists",
+                detail=get_i18n_message("mcp.config_exists", request),
             )
 
         tenant = await async_db_ops.query_tenant_by_name(data.tenant_name)
         if not tenant:
             logger.warning(f"创建失败 - 租户不存在: {data.tenant_name}")
-            raise HTTPException(status_code=400, detail="Tenant not found")
+            raise HTTPException(
+                status_code=400,
+                detail=get_i18n_message("tenant.not_found", request),
+            )
 
         await check_mcp_tenant_permission(data, data.tenant_name, user)
 
@@ -152,7 +160,9 @@ async def create_mcp_config(
         raise
     except Exception as e:
         logger.error(f"创建MCP配置失败: {data.name} - {e}")
-        raise HTTPException(status_code=500, detail=f"创建失败: {e}")
+        raise HTTPException(
+            status_code=500, detail=get_i18n_message("create_failed", request)
+        )
 
 
 @router.get("/configs", response_model=list[McpConfigModel])
@@ -176,6 +186,7 @@ async def list_mcp_configs(
 
 @router.put("/configs", response_model=McpConfigModel)
 async def update_mcp_config(
+    request: Request,
     data: Mcp,
     session: AsyncSessionDependency,
     user: User = Depends(current_user),
@@ -189,12 +200,16 @@ async def update_mcp_config(
         )
         if not old:
             logger.warning(f"更新失败 - 配置不存在: {data.name}")
-            raise HTTPException(status_code=404, detail="MCP config not found")
+            raise HTTPException(
+                status_code=404,
+                detail=get_i18n_message("mcp.config_not_found", request),
+            )
 
         if old.name != data.name:
             logger.warning(f"更新失败 - 配置名称不能修改: {data.name}")
             raise HTTPException(
-                status_code=400, detail="MCP config name cannot be changed"
+                status_code=400,
+                detail=get_i18n_message("mcp.config_name_immutable", request),
             )
 
         await check_mcp_tenant_permission(data, data.tenant_name, user)

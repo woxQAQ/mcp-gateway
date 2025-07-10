@@ -1,6 +1,8 @@
 """Utils package - 工具函数和类集合."""
 
 # 日志相关
+# 国际化
+from .i18n import I18nHelper, Language, get_i18n_message
 from .logger import get_logger
 
 # Redis工具
@@ -14,4 +16,8 @@ __all__ = [
     # Redis
     "split_by_multiple_delimiters",
     "utc_now",
+    # I18n
+    "get_i18n_message",
+    "I18nHelper",
+    "Language",
 ]
