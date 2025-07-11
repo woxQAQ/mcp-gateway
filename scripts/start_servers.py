@@ -75,8 +75,9 @@ def start_gateway_server(
 
 def signal_handler(signum, frame):
     """信号处理器，用于优雅地关闭服务器"""
-    print("\n⚠️  收到终止信号，正在关闭服务器...")
-    sys.exit(0)
+    print(f"\n⚠️  收到信号 {signum}，正在关闭服务器...")
+    # 不直接退出，让主进程处理清理逻辑
+    raise KeyboardInterrupt
 
 
 def main():
@@ -100,6 +101,9 @@ def main():
     print(f"🔄 热重载模式: {'启用' if reload_mode else '禁用'}")
     print("=" * 60)
 
+    api_process = None
+    gateway_process = None
+
     try:
         # 创建并启动进程
         api_process = multiprocessing.Process(
@@ -115,32 +119,41 @@ def main():
         )
 
         # 启动进程
+        print("🔄 正在启动API服务器...")
         api_process.start()
-        time.sleep(1)  # 稍微延迟启动gateway
+        time.sleep(2)  # 等待API服务器启动
+
+        print("🔄 正在启动Gateway服务器...")
         gateway_process.start()
+        time.sleep(1)  # 等待Gateway服务器启动
 
         print("✅ 所有服务器已启动!")
         print("📋 使用 Ctrl+C 来停止所有服务器")
         print()
 
         # 等待进程完成
-        api_process.join()
-        gateway_process.join()
+        while (api_process and api_process.is_alive()) or (
+            gateway_process and gateway_process.is_alive()
+        ):
+            time.sleep(0.1)
 
     except KeyboardInterrupt:
         print("\n⚠️  收到中断信号，正在关闭服务器...")
     except Exception as e:
         print(f"❌ 启动失败: {e}")
+        import traceback
+
+        traceback.print_exc()
     finally:
         # 确保进程被清理
-        if 'api_process' in locals() and api_process.is_alive():
+        if api_process and api_process.is_alive():
             print("🔄 正在停止API服务器...")
             api_process.terminate()
             api_process.join(timeout=5)
             if api_process.is_alive():
                 api_process.kill()
 
-        if 'gateway_process' in locals() and gateway_process.is_alive():
+        if gateway_process and gateway_process.is_alive():
             print("🔄 正在停止Gateway服务器...")
             gateway_process.terminate()
             gateway_process.join(timeout=5)
