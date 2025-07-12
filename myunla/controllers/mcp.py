@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -9,8 +10,10 @@ from myunla.gateway.notifier import Notifier, NotifierError, NotifierFactory
 from myunla.models.user import McpConfig, User
 from myunla.repos import async_db_ops
 from myunla.schema.mcp import (
+    McpConfigCreate,
     McpConfigModel,
     McpConfigName,
+    McpConfigUpdate,
 )
 from myunla.utils import get_logger
 from myunla.utils.i18n import get_i18n_message
@@ -112,7 +115,7 @@ async def active_mcp_config(
 @router.post("/configs", response_model=McpConfigModel)
 async def create_mcp_config(
     request: Request,
-    data: Mcp,
+    data: McpConfigCreate,
     session: AsyncSessionDependency,
     user: User = Depends(current_user),
 ):
@@ -139,7 +142,20 @@ async def create_mcp_config(
                 detail=get_i18n_message("tenant.not_found", request),
             )
 
-        await check_mcp_tenant_permission(data, data.tenant_name, user)
+        # Convert McpConfigCreate to Mcp for permission check
+        now = datetime.now()
+        mcp_for_check = Mcp(
+            name=data.name,
+            tenant_name=data.tenant_name,
+            updated_at=now,
+            created_at=now,
+            deleted_at=None,
+            servers=data.servers,
+            routers=data.routers,
+            tools=data.tools,
+            http_servers=data.http_servers,
+        )
+        await check_mcp_tenant_permission(mcp_for_check, data.tenant_name, user)
 
         config = McpConfig(
             name=data.name,
@@ -150,11 +166,9 @@ async def create_mcp_config(
             http_servers=[server.model_dump() for server in data.http_servers],
         )
 
-        await async_db_ops.create_config(config)
+        created_config = await async_db_ops.create_config(config)
         logger.info(f"MCP配置创建成功: {data.name} (租户: {data.tenant_name})")
-        return {
-            "status": "success",
-        }
+        return McpConfigModel.from_orm(created_config)
 
     except HTTPException:
         raise
@@ -186,10 +200,10 @@ async def list_mcp_configs(
     return [McpConfigModel.from_orm(config) for config in configs]
 
 
-@router.put("/configs", response_model=McpConfigModel)
+@router.put("/configs")
 async def update_mcp_config(
     request: Request,
-    data: Mcp,
+    data: McpConfigUpdate,
     session: AsyncSessionDependency,
     user: User = Depends(current_user),
 ):
@@ -214,19 +228,39 @@ async def update_mcp_config(
                 detail=get_i18n_message("mcp.config_name_immutable", request),
             )
 
-        await check_mcp_tenant_permission(data, data.tenant_name, user)
-        await async_db_ops.update_config(McpConfig.from_mcp(data))
+        # Convert McpConfigUpdate to Mcp for permission check
+        now = datetime.now()
+        mcp_for_check = Mcp(
+            name=data.name,
+            tenant_name=data.tenant_name,
+            updated_at=now,
+            created_at=now,
+            deleted_at=None,
+            servers=data.servers,
+            routers=data.routers,
+            tools=data.tools,
+            http_servers=data.http_servers,
+        )
+        await check_mcp_tenant_permission(mcp_for_check, data.tenant_name, user)
+
+        # Update the existing config
+        old.routers = [router.model_dump() for router in data.routers]
+        old.servers = [server.model_dump() for server in data.servers]
+        old.tools = [tool.model_dump() for tool in data.tools]
+        old.http_servers = [server.model_dump() for server in data.http_servers]
+
+        updated_config = await async_db_ops.update_config(old)
 
         logger.info(f"MCP配置更新成功: {data.name}")
-        return {
-            "status": "success",
-        }
+        return McpConfigModel.from_orm(updated_config)
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"更新MCP配置失败: {data.name} - {e}")
-        raise HTTPException(status_code=500, detail=f"更新失败: {e}")
+        raise HTTPException(
+            status_code=500, detail=get_i18n_message("update_failed", request)
+        )
 
 
 @router.delete("/configs/{tenant_name}/{name}")
@@ -267,7 +301,9 @@ async def delete_mcp_config(
         raise
     except Exception as e:
         logger.error(f"删除MCP配置失败: {tenant_name}/{name} - {e}")
-        raise HTTPException(status_code=500, detail=f"删除失败: {e}")
+        raise HTTPException(
+            status_code=500, detail=get_i18n_message("delete_failed", request)
+        )
 
 
 @router.post("/configs/{config_id}/sync")
@@ -298,7 +334,11 @@ async def sync_mcp_config(
 
     except NotifierError as e:
         logger.error(f"同步失败 - 通知器错误: {config_id} - {e}")
-        raise HTTPException(status_code=500, detail=f"同步失败: {e}")
+        raise HTTPException(
+            status_code=500, detail=get_i18n_message("sync_failed", request)
+        )
     except Exception as e:
         logger.error(f"同步MCP配置失败: {config_id} - {e}")
-        raise HTTPException(status_code=500, detail=f"同步失败: {e}")
+        raise HTTPException(
+            status_code=500, detail=get_i18n_message("sync_failed", request)
+        )

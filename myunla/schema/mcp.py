@@ -3,16 +3,26 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
-from api.mcp import HttpServer, Mcp, McpServer, Router, Tool
+from api.mcp import HttpServer, McpServer, Router, Tool
 from myunla.models.user import McpConfig
 
 
-class McpConfigCreate(Mcp):
-    pass
+class McpConfigCreate(BaseModel):
+    name: str
+    tenant_name: str
+    servers: list[McpServer]
+    routers: list[Router]
+    tools: list[Tool]
+    http_servers: list[HttpServer]
 
 
 class McpConfigUpdate(BaseModel):
-    mcp: Mcp
+    name: str
+    tenant_name: str
+    servers: list[McpServer]
+    routers: list[Router]
+    tools: list[Tool]
+    http_servers: list[HttpServer]
 
 
 class McpConfigModel(BaseModel):

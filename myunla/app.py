@@ -28,6 +28,13 @@ async def lifespan(app: FastAPI):
         logger.error(f"默认数据初始化失败: {e}")
         # 不影响应用启动，只记录错误
 
+    # 初始化网关服务器状态
+    try:
+        await gateway_server.initialize_state()
+    except Exception as e:
+        logger.error(f"网关服务器状态初始化失败: {e}")
+        # 不影响应用启动，只记录错误
+
     logger.info("API 服务器启动完成")
     yield
     # 关闭时的清理

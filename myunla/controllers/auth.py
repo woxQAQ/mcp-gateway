@@ -51,9 +51,17 @@ async def login(
             detail=get_i18n_message("auth.invalid_credentials", request),
         )
 
-    result = await session.execute(
-        select(User).where(User.username == data.username)
-    )
+    try:
+        result = await session.execute(
+            select(User).where(User.username == data.username)
+        )
+    except Exception as e:
+        logger.error(f"登录失败 - 没有这个用户: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=get_i18n_message("auth.user_not_found", request),
+        )
+
     user = result.scalar()
     if not user:
         logger.warning(f"登录失败 - 用户不存在: {data.username}")

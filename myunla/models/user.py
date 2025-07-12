@@ -14,7 +14,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
-from api.mcp import Mcp
+from api.mcp import HttpServer, Mcp, McpServer, Router, Tool
 from myunla.models.base import Base, EnumColumn, random_id
 from myunla.utils import utc_now
 
@@ -153,10 +153,10 @@ class McpConfig(Base):
     )
     name: Mapped[str] = mapped_column(String(256), nullable=True)
     tenant_name: Mapped[str] = mapped_column(String(24), nullable=False)
-    routers: Mapped[dict] = mapped_column(JSON, nullable=False)
-    servers: Mapped[dict] = mapped_column(JSON, nullable=False)
-    tools: Mapped[dict] = mapped_column(JSON, nullable=False)
-    http_servers: Mapped[dict] = mapped_column(JSON, nullable=False)
+    routers: Mapped[list] = mapped_column(JSON, nullable=False)
+    servers: Mapped[list] = mapped_column(JSON, nullable=False)
+    tools: Mapped[list] = mapped_column(JSON, nullable=False)
+    http_servers: Mapped[list] = mapped_column(JSON, nullable=False)
     gmt_created: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utc_now, nullable=False
     )
@@ -185,6 +185,19 @@ class McpConfig(Base):
             http_servers=[server.model_dump() for server in obj.http_servers],
             gmt_created=utc_now(),
             gmt_updated=utc_now(),
+        )
+
+    def to_mcp(self) -> Mcp:
+        return Mcp(
+            name=self.name,
+            tenant_name=self.tenant_name,
+            routers=[Router(**router) for router in self.routers],
+            servers=[McpServer(**server) for server in self.servers],
+            tools=[Tool(**tool) for tool in self.tools],
+            http_servers=[HttpServer(**server) for server in self.http_servers],
+            created_at=self.gmt_created,
+            updated_at=self.gmt_updated,
+            deleted_at=self.gmt_deleted,
         )
 
 

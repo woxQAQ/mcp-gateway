@@ -30,7 +30,8 @@ from myunla.gateway.session import (
     RequestInfo,
 )
 from myunla.gateway.session.session import Connection
-from myunla.gateway.state import BackendProto, State
+from myunla.gateway.state import State
+from myunla.gateway.state_loader import state_loader
 from myunla.templates.context import RequestWrapper
 from myunla.utils import get_logger
 
@@ -51,6 +52,7 @@ class GatewayServer:
         self.state = state
         self.app = FastAPI()
         self.last_update_time: Optional[datetime] = None
+        self._initialized = False
 
         # 初始化会话存储
         if session_config is None:
@@ -66,6 +68,33 @@ class GatewayServer:
             raise ValueError(f"不支持的会话存储类型: {session_config.store}")
 
         self.setup_routes()
+
+    async def initialize_state(self) -> None:
+        """从数据库初始化网关状态"""
+        try:
+            logger.info("开始初始化网关服务器状态...")
+
+            # 从数据库加载并构建新状态
+            new_state = await state_loader.initialize_gateway_state(self.state)
+
+            # 更新状态
+            self.state = new_state
+            self.last_update_time = datetime.now()
+            self._initialized = True
+
+            logger.info("网关服务器状态初始化完成")
+            logger.warning(
+                f"Gateway initialized with prefixes: {list(self.state.runtime.keys())}"
+            )
+
+        except Exception as e:
+            logger.error(f"网关服务器状态初始化失败: {e}")
+            # 使用初始状态继续运行
+            self._initialized = True
+
+    def is_initialized(self) -> bool:
+        """检查网关状态是否已初始化"""
+        return self._initialized
 
     def setup_routes(self):
         """设置路由"""
@@ -101,16 +130,9 @@ class GatewayServer:
         endpoint = parts[-1]
         prefix = "/" + "/".join(parts[:-1])
 
-        logger.debug(
-            "routing request",
-            extra={
-                "path": full_path,
-                "prefix": prefix,
-                "endpoint": endpoint,
-                "remote_addr": (
-                    request.client.host if request.client else "unknown"
-                ),
-            },
+        logger.warning(
+            f"routing request - path: {full_path}, prefix: {prefix}, endpoint: {endpoint}, "
+            f"available_prefixes: {list(self.state.runtime.keys())}"
         )
 
         # 检查认证配置
@@ -175,6 +197,13 @@ class GatewayServer:
         """获取协议类型 (对应Go代码中的GetProtoType)"""
         runtime = self.state.runtime.get(prefix)
         if not runtime:
+            logger.debug(
+                "runtime not found for prefix",
+                extra={
+                    "prefix": prefix,
+                    "available_prefixes": list(self.state.runtime.keys()),
+                },
+            )
             return None
 
         # 返回协议类型字符串
@@ -211,13 +240,13 @@ class GatewayServer:
 
     async def handle_sse(self, request: Request, prefix: str) -> Response:
         """处理SSE端点"""
-        runtime = self.state.get_runtime(prefix)
-        if runtime.backend_proto != BackendProto.SSE:
-            return await self.send_protocol_error(
-                "SSE not supported for this prefix",
-                status.HTTP_400_BAD_REQUEST,
-                "InvalidRequest",
-            )
+        # runtime = self.state.get_runtime(prefix)
+        # if runtime.backend_proto != BackendProto.SSE:
+        #     return await self.send_protocol_error(
+        #         "SSE not supported for this prefix",
+        #         status.HTTP_400_BAD_REQUEST,
+        #         "InvalidRequest",
+        #     )
 
         # 设置SSE响应头
         headers = {
