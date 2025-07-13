@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Any, Optional
 
 from fastapi import FastAPI, Request, Response, status
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 from mcp import (
     InitializeResult,
     JSONRPCRequest,
@@ -838,13 +838,13 @@ class GatewayServer:
 
     async def send_accepted_response(self) -> Response:
         """发送接受响应"""
-        return JSONResponse(
-            content={"status": "accepted"}, status_code=status.HTTP_202_ACCEPTED
+        return PlainTextResponse(
+            content="Accepted", status_code=status.HTTP_202_ACCEPTED
         )
 
     async def send_success_response(
         self,
-        conn,
+        conn: Connection,
         jsonrpc_req: JSONRPCRequest,
         result: Any,
         send_via_sse: bool = False,
@@ -870,15 +870,31 @@ class GatewayServer:
                 from myunla.gateway.session import Message
 
                 message = Message(
-                    event="jsonrpc_response",
+                    event="message",
                     data=json.dumps(response_data).encode('utf-8'),
                 )
                 await conn.send(message)
+                return PlainTextResponse(
+                    content="Accepted", status_code=status.HTTP_202_ACCEPTED
+                )
             except Exception as e:
                 logger.error(f"通过SSE发送响应失败: {e}")
+                return await self.send_protocol_error_with_id(
+                    "Failed to send response via SSE",
+                    status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    "InternalError",
+                    jsonrpc_req.id,
+                )
 
-        return JSONResponse(
-            content=response_data, status_code=status.HTTP_200_OK
+        return PlainTextResponse(
+            headers={
+                "Content-Type": "application/json",
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "Mcp-Session-Id": conn.meta().id,
+            },
+            status_code=status.HTTP_200_OK,
+            content=f'event: message\ndata: {json.dumps(response_data)}\n\n',
         )
 
     async def send_tool_execution_error(
