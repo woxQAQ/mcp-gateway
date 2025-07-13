@@ -312,110 +312,10 @@ class GatewayServer:
                 },
             )
 
-            async def event_generator():
-                try:
-                    # 发送初始endpoint事件
-                    yield f"event: endpoint\ndata: {endpoint_url}\n\n"
-
-                    logger.info(
-                        "SSE连接就绪",
-                        extra={
-                            "session_id": session_id,
-                            "prefix": prefix,
-                            "remote_addr": (
-                                request.client.host
-                                if request.client
-                                else "unknown"
-                            ),
-                        },
-                    )
-
-                    # 主事件循环
-                    while True:
-                        try:
-                            # 等待事件或检测连接断开
-                            event_queue = conn.event_queue()
-
-                            # 使用超时来定期检查连接状态
-                            try:
-                                event = await asyncio.wait_for(
-                                    event_queue.get(),
-                                    timeout=25.0,  # 减少到25秒
-                                )
-                            except TimeoutError:
-                                # 发送心跳事件
-                                logger.debug(
-                                    "发送SSE心跳包",
-                                    extra={"session_id": session_id},
-                                )
-                                yield "event: heartbeat\ndata: ping\n\n"
-                                continue
-
-                            if event is None:
-                                logger.warning(
-                                    "收到空事件",
-                                    extra={"session_id": session_id},
-                                )
-                                continue
-
-                            logger.debug(
-                                "发送事件到SSE客户端",
-                                extra={
-                                    "session_id": session_id,
-                                    "event_type": event.event,
-                                    "data_size": len(event.data),
-                                },
-                            )
-
-                            if event.event == "message":
-                                yield f"event: message\ndata: {event.data.decode('utf-8')}\n\n"
-                            else:
-                                yield f"event: {event.event}\ndata: {event.data.decode('utf-8')}\n\n"
-
-                        except Exception as e:
-                            logger.error(
-                                "处理SSE事件时发生错误",
-                                extra={
-                                    "error": str(e),
-                                    "session_id": session_id,
-                                },
-                            )
-                            break
-
-                except asyncio.CancelledError:
-                    logger.info(
-                        "SSE客户端断开连接",
-                        extra={"session_id": session_id},
-                    )
-                    raise
-                except Exception as e:
-                    logger.error(
-                        "SSE连接发生错误",
-                        extra={
-                            "error": str(e),
-                            "session_id": session_id,
-                        },
-                    )
-                    raise
-                finally:
-                    # 清理会话
-                    try:
-                        await self.sessions.unregister(session_id)
-                        logger.info(
-                            "SSE会话已清理",
-                            extra={"session_id": session_id},
-                        )
-                    except Exception as e:
-                        logger.error(
-                            "清理SSE会话时发生错误",
-                            extra={
-                                "error": str(e),
-                                "session_id": session_id,
-                            },
-                        )
-
             return StreamingResponse(
-                event_generator(),
+                self._sse_event_generator(
+                    session_id, prefix, conn, endpoint_url, request
+                ),
                 media_type="text/event-stream",
                 headers=headers,
             )
@@ -437,6 +337,114 @@ class GatewayServer:
                 status.HTTP_500_INTERNAL_SERVER_ERROR,
                 "InternalError",
             )
+
+    async def _sse_event_generator(
+        self,
+        session_id: str,
+        prefix: str,
+        conn: Connection,
+        endpoint_url: str,
+        request: Request,
+    ):
+        """SSE事件生成器"""
+        try:
+            # 发送初始endpoint事件
+            yield f"event: endpoint\ndata: {endpoint_url}\n\n"
+
+            logger.info(
+                "SSE连接就绪",
+                extra={
+                    "session_id": session_id,
+                    "prefix": prefix,
+                    "remote_addr": (
+                        request.client.host if request.client else "unknown"
+                    ),
+                },
+            )
+
+            # 主事件循环
+            while True:
+                try:
+                    # 等待事件或检测连接断开
+                    event_queue = conn.event_queue()
+
+                    # 使用超时来定期检查连接状态
+                    try:
+                        event = await asyncio.wait_for(
+                            event_queue.get(),
+                            timeout=25.0,  # 减少到25秒
+                        )
+                    except TimeoutError:
+                        # 发送心跳事件
+                        logger.debug(
+                            "发送SSE心跳包",
+                            extra={"session_id": session_id},
+                        )
+                        yield "event: heartbeat\ndata: ping\n\n"
+                        continue
+
+                    if event is None:
+                        logger.warning(
+                            "收到空事件",
+                            extra={"session_id": session_id},
+                        )
+                        continue
+
+                    logger.debug(
+                        "发送事件到SSE客户端",
+                        extra={
+                            "session_id": session_id,
+                            "event_type": event.event,
+                            "data_size": len(event.data),
+                        },
+                    )
+
+                    if event.event == "message":
+                        yield f"event: message\ndata: {event.data.decode('utf-8')}\n\n"
+                    else:
+                        yield f"event: {event.event}\ndata: {event.data.decode('utf-8')}\n\n"
+
+                except Exception as e:
+                    logger.error(
+                        "处理SSE事件时发生错误",
+                        extra={
+                            "error": str(e),
+                            "session_id": session_id,
+                        },
+                    )
+                    break
+
+        except asyncio.CancelledError:
+            logger.info(
+                "SSE客户端断开连接",
+                extra={"session_id": session_id},
+            )
+            raise
+        except Exception as e:
+            logger.error(
+                "SSE连接发生错误",
+                extra={
+                    "error": str(e),
+                    "session_id": session_id,
+                },
+            )
+            raise
+        finally:
+            # 清理会话
+            try:
+                await self.sessions.unregister(session_id)
+                logger.info(
+                    "SSE会话已清理",
+                    extra={"session_id": session_id},
+                )
+            except Exception as e:
+                logger.error(
+                    "清理SSE会话时发生错误",
+                    extra={
+                        "error": str(e),
+                        "session_id": session_id,
+                    },
+                )
 
     async def handle_message(self, request: Request, prefix: str) -> Response:
         """处理消息端点 (对应Go代码中的handleMessage和handlePostMessage)"""
