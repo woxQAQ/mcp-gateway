@@ -572,9 +572,6 @@ class State(BaseModel):
             transport: 传输层实例
             keep_running: 是否保持运行状态
         """
-        if transport.is_running:
-            return
-
         try:
             await transport.start()
             if keep_running:

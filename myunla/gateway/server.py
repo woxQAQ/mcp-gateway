@@ -25,11 +25,10 @@ from mcp.types import (
 
 from myunla.config.session_config import SessionConfig
 from myunla.gateway.session import (
-    MemoryStore,
     Meta,
     RequestInfo,
 )
-from myunla.gateway.session.session import Connection
+from myunla.gateway.session.session import Connection, create_store
 from myunla.gateway.state import State
 from myunla.gateway.state_loader import state_loader
 from myunla.templates.context import RequestWrapper
@@ -57,25 +56,18 @@ class GatewayServer:
         # 初始化会话存储
         if session_config is None:
             session_config = SessionConfig()  # 使用默认配置
-
-        if session_config.store == "memory":
-            self.sessions = MemoryStore()
-        elif session_config.store == "redis":
-            from myunla.gateway.session import RedisStore
-
-            self.sessions = RedisStore(session_config.redis_config)
-        else:
-            raise ValueError(f"不支持的会话存储类型: {session_config.store}")
+        self.sessions = create_store(session_config)
+        self.initialize_state()
 
         self.setup_routes()
 
-    async def initialize_state(self) -> None:
+    def initialize_state(self) -> None:
         """从数据库初始化网关状态"""
         try:
             logger.info("开始初始化网关服务器状态...")
 
             # 从数据库加载并构建新状态
-            new_state = await state_loader.initialize_gateway_state(self.state)
+            new_state = state_loader.initialize_gateway_state(self.state)
 
             # 更新状态
             self.state = new_state
@@ -83,7 +75,7 @@ class GatewayServer:
             self._initialized = True
 
             logger.info("网关服务器状态初始化完成")
-            logger.warning(
+            logger.info(
                 f"Gateway initialized with prefixes: {list(self.state.runtime.keys())}"
             )
 
