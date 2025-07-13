@@ -1,0 +1,7 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+
+use ruff and black to format the code. check ruff result and fix the code.

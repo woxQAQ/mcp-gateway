@@ -14,7 +14,10 @@ import uvicorn
 
 
 def start_api_server(
-    host: str = "127.0.0.1", port: int = 8000, reload: bool = False
+    host: str = "127.0.0.1",
+    port: int = 8000,
+    reload: bool = False,
+    log_level: str = "info",
 ):
     """启动API服务器"""
     # 设置Python路径
@@ -29,7 +32,7 @@ def start_api_server(
         host=host,
         port=port,
         reload=reload,
-        log_level="info",
+        log_level=log_level,
         access_log=True,
     )
     server = uvicorn.Server(config)
@@ -37,7 +40,10 @@ def start_api_server(
 
 
 def start_gateway_server(
-    host: str = "127.0.0.1", port: int = 8001, reload: bool = False
+    host: str = "127.0.0.1",
+    port: int = 8001,
+    reload: bool = False,
+    log_level: str = "info",
 ):
     """启动Gateway服务器"""
     # 设置Python路径
@@ -75,7 +81,7 @@ def start_gateway_server(
         host=host,
         port=port,
         reload=reload,
-        log_level="info",
+        log_level=log_level,
         access_log=True,
     )
     server = uvicorn.Server(config)
@@ -101,6 +107,10 @@ def main():
     gateway_host = "127.0.0.1"
     gateway_port = 8001
     reload_mode = "--reload" in sys.argv or "-r" in sys.argv
+    dev_mode = "--dev" in sys.argv
+
+    # 设置日志级别
+    log_level = "debug" if dev_mode else "info"
 
     print("=" * 60)
     print("🎯 MyUnla 服务器启动器")
@@ -108,6 +118,8 @@ def main():
     print(f"📡 API服务器地址: http://{api_host}:{api_port}")
     print(f"🌐 Gateway服务器地址: http://{gateway_host}:{gateway_port}")
     print(f"🔄 热重载模式: {'启用' if reload_mode else '禁用'}")
+    print(f"🐛 开发模式: {'启用' if dev_mode else '禁用'}")
+    print(f"📝 日志级别: {log_level.upper()}")
     print("=" * 60)
 
     api_process = None
@@ -117,13 +129,13 @@ def main():
         # 创建并启动进程
         api_process = multiprocessing.Process(
             target=start_api_server,
-            args=(api_host, api_port, reload_mode),
+            args=(api_host, api_port, reload_mode, log_level),
             name="api-server",
         )
 
         gateway_process = multiprocessing.Process(
             target=start_gateway_server,
-            args=(gateway_host, gateway_port, reload_mode),
+            args=(gateway_host, gateway_port, reload_mode, log_level),
             name="gateway-server",
         )
 

@@ -46,7 +46,7 @@ precommit-clean:
 	@pre-commit clean
 
 # Server management targets
-.PHONY: start-servers start-servers-dev start-api start-gateway stop-servers
+.PHONY: start-servers start-servers-dev start-servers-debug start-api start-gateway stop-servers
 start-servers:
 	@echo "启动生产模式服务器..."
 	@./scripts/start_servers.sh
@@ -54,6 +54,10 @@ start-servers:
 start-servers-dev:
 	@echo "启动开发模式服务器（支持热重载）..."
 	@python scripts/start_servers.py --reload
+
+start-servers-debug:
+	@echo "启动调试模式服务器（支持热重载 + DEBUG日志）..."
+	@python scripts/start_servers.py --reload --dev
 
 start-api:
 	@echo "仅启动API服务器..."
