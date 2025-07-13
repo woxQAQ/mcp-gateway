@@ -67,6 +67,15 @@ def start_gateway_server(
         gateway_settings["session_config"],
     )
 
+    # 初始化网关状态
+    import asyncio
+
+    async def init_gateway_state():
+        await gateway_server.initialize_state()
+
+    # 运行初始化
+    asyncio.run(init_gateway_state())
+
     config = uvicorn.Config(
         gateway_server.app,
         host=host,
