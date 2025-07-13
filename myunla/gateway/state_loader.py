@@ -2,11 +2,10 @@
 Gateway State Loader - 负责从数据库加载MCP配置并初始化网关状态
 """
 
-import asyncio
 from typing import Optional
 
 from api.mcp import Mcp
-from myunla.gateway.state import Metrics, State
+from myunla.gateway.state import State
 from myunla.repos import async_db_ops
 from myunla.utils import get_logger
 
@@ -59,7 +58,7 @@ class GatewayStateLoader:
             logger.error(f"从数据库加载MCP配置失败: {e}")
             return []
 
-    def initialize_gateway_state(
+    async def initialize_gateway_state(
         self, old_state: Optional[State] = None
     ) -> State:
         """
@@ -75,10 +74,11 @@ class GatewayStateLoader:
             logger.info("开始初始化网关状态...")
 
             # 从数据库加载MCP配置
-            mcp_configs = asyncio.run(self.load_mcp_configs_from_db())
+            mcp_configs = await self.load_mcp_configs_from_db()
 
             if not mcp_configs:
                 logger.warning("没有可用的MCP配置，创建空状态")
+                from myunla.gateway.state import Metrics
 
                 return State(
                     mcps=[],
@@ -87,9 +87,7 @@ class GatewayStateLoader:
                 )
 
             # 使用State.build_from_mcp构建状态
-            new_state = asyncio.run(
-                State.build_from_mcp(mcp_configs, old_state)
-            )
+            new_state = await State.build_from_mcp(mcp_configs, old_state)
 
             logger.info(
                 f"网关状态初始化完成，共加载 {len(mcp_configs)} 个MCP配置"
@@ -101,6 +99,8 @@ class GatewayStateLoader:
         except Exception as e:
             logger.error(f"网关状态初始化失败: {e}")
             # 返回一个空状态而不是失败，确保服务可用
+            from myunla.gateway.state import Metrics
+
             return State(
                 mcps=[],
                 runtime={},
@@ -120,7 +120,7 @@ class GatewayStateLoader:
             State: 新的网关状态
         """
         logger.info("开始重新加载网关状态...")
-        return self.initialize_gateway_state(current_state)
+        return await self.initialize_gateway_state(current_state)
 
 
 # 全局状态加载器实例
