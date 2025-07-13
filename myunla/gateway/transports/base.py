@@ -13,12 +13,7 @@ from myunla.templates.context import Context, RequestWrapper
 class Transport(ABC):
     def __init__(self, server: McpServer):
         self.server = server
-        self._is_running = False
         self._lock = asyncio.Lock()
-
-    @property
-    def is_running(self) -> bool:
-        return self._is_running
 
     async def start(self, context: Optional[Context] = None):
         """
@@ -51,7 +46,7 @@ def transport_has_started(func: Callable[..., Any]) -> Callable[..., Any]:
     """装饰器：确保 transport 在调用前已启动"""
 
     async def wrapper(self, *args: Any, **kwargs: Any) -> Any:
-        if not self._is_running:
+        if not self._transport:
             await self.start()
 
         if not self._transport:

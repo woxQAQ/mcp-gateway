@@ -339,10 +339,15 @@ class GatewayServer:
                             # 使用超时来定期检查连接状态
                             try:
                                 event = await asyncio.wait_for(
-                                    event_queue.get(), timeout=30.0
+                                    event_queue.get(),
+                                    timeout=25.0,  # 减少到25秒
                                 )
                             except TimeoutError:
                                 # 发送心跳事件
+                                logger.debug(
+                                    "发送SSE心跳包",
+                                    extra={"session_id": session_id},
+                                )
                                 yield "event: heartbeat\ndata: ping\n\n"
                                 continue
 
@@ -1328,7 +1333,8 @@ class GatewayServer:
                         # 等待事件
                         event_queue = conn.event_queue()
                         event = await asyncio.wait_for(
-                            event_queue.get(), timeout=30.0
+                            event_queue.get(),
+                            timeout=25.0,  # 减少到25秒
                         )
 
                         if event is None:
@@ -1341,6 +1347,7 @@ class GatewayServer:
 
                     except TimeoutError:
                         # 发送心跳
+                        logger.debug("发送SSE心跳包（handle_get）")
                         yield "event: heartbeat\ndata: ping\n\n"
                         continue
                     except Exception as e:

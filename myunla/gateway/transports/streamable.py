@@ -4,6 +4,7 @@ Streamable Transport 实现
 支持流式工具调用和实时响应的 MCP 传输层
 """
 
+from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Optional
 
 from mcp import ClientSession, Tool
@@ -34,7 +35,7 @@ class StreamableTransport(Transport):
     async def start(self, context: Optional[Context] = None) -> None:
         """启动流式传输"""
         async with self._lock:
-            if self._is_running:
+            if self._transport:
                 logger.warning(
                     f"Streamable Transport for server {self.server.name} already running"
                 )
@@ -43,11 +44,14 @@ class StreamableTransport(Transport):
             try:
                 # 创建底层传输
                 await self._create_transport()
+                if not self._transport:
+                    raise ValueError("Transport not initialized")
 
-                self._is_running = True
                 logger.info(
                     f"Streamable Transport for server {self.server.name} started successfully"
                 )
+                async with self._transport as session:
+                    await session.initialize()
 
             except Exception as e:
                 logger.error(
@@ -59,26 +63,15 @@ class StreamableTransport(Transport):
     async def stop(self) -> None:
         """停止流式传输"""
         async with self._lock:
-            if not self._is_running:
+            if not self._transport:
                 return
 
             try:
                 # 清理底层传输
-                if self._transport and hasattr(self._transport, '__aexit__'):
-                    try:
-                        await self._transport.__aexit__(None, None, None)
-                        logger.info(
-                            f"Closed transport for server: {self.server.name}"
-                        )
-                    except Exception as e:
-                        logger.error(
-                            f"Error closing transport for {self.server.name}: {e}"
-                        )
-
+                await self._transport.__aexit__(None, None, None)
                 self._transport = None
                 self._tools_cache.clear()
 
-                self._is_running = False
                 logger.info(
                     f"Streamable Transport for server {self.server.name} stopped"
                 )
@@ -98,21 +91,16 @@ class StreamableTransport(Transport):
             async with self._transport as session:
                 tools_result = await session.list_tools()
                 tools = tools_result.tools
-
                 # 缓存工具列表
                 self._tools_cache = tools
-
-                logger.info(
-                    f"Fetched {len(tools)} tools from server: {self.server.name}"
-                )
-
-                return tools
-
+                await self.stop()
         except Exception as e:
             logger.error(
                 f"Failed to fetch tools from server {self.server.name}: {e}"
             )
             raise
+
+        return tools
 
     @transport_has_started
     async def call_tools(
@@ -144,7 +132,6 @@ class StreamableTransport(Transport):
                 logger.info(
                     f"Successfully called tool {tool_name} on server {self.server.name}"
                 )
-                await self.stop()
                 return result
 
         except Exception as e:
@@ -161,28 +148,44 @@ class StreamableTransport(Transport):
                 isError=True,
             )
 
+    @asynccontextmanager
+    async def _create_client_session(self):
+        """创建客户端会话的异步上下文管理器"""
+        headers = {
+            "mcp-protocol-version": "1.0",
+            "X-Streaming-Support": "true",  # 标识支持流式
+        }
+
+        # 基于服务器类型创建传输
+        if self.server.type.value == "sse":
+            # 使用 streamablehttp_client 获取读写流
+            async with streamablehttp_client(
+                url=self.server.url,
+                headers=headers,
+                timeout=30.0,
+            ) as streams:
+                # 解构 streamablehttp_client 返回的流和回调函数
+                read_stream, write_stream, *_ = streams
+
+                # 创建 ClientSession
+                session = ClientSession(read_stream, write_stream)
+                try:
+                    yield session
+                finally:
+                    # 会话清理会由 streamablehttp_client 上下文管理器处理
+                    pass
+        else:
+            # 其他类型的传输可以在这里添加
+            raise ValueError(
+                f"Unsupported server type for streaming: {self.server.type.value}"
+            )
+
     async def _create_transport(self) -> None:
         """创建底层传输"""
         try:
-            headers = {
-                "mcp-protocol-version": "1.0",
-                "X-Streaming-Support": "true",  # 标识支持流式
-            }
+            # 创建自定义的异步上下文管理器
+            self._transport = self._create_client_session()
 
-            # 基于服务器类型创建传输
-            if self.server.type.value == "sse":
-                transport = streamablehttp_client(
-                    url=self.server.url,
-                    headers=headers,
-                    timeout=30.0,
-                )
-            else:
-                # 其他类型的传输可以在这里添加
-                raise ValueError(
-                    f"Unsupported server type for streaming: {self.server.type.value}"
-                )
-
-            self._transport = transport
             logger.info(
                 f"Created streamable transport for server: {self.server.name}"
             )

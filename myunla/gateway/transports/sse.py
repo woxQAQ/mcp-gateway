@@ -1,8 +1,16 @@
+from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Optional
 
-from mcp import ClientSession, Tool
+from mcp import (
+    ClientSession,
+    Tool,
+)
 from mcp.client.sse import sse_client
-from mcp.types import CallToolRequestParams, CallToolResult, TextContent
+from mcp.types import (
+    CallToolRequestParams,
+    CallToolResult,
+    TextContent,
+)
 
 from api.mcp import McpServer
 from myunla.gateway.transports.base import Transport, transport_has_started
@@ -22,13 +30,13 @@ class SSETransport(Transport):
         super().__init__(server)
         self._transport: Optional[
             AbstractAsyncContextManager[ClientSession]
-        ] = None  # SSE transport
+        ] = None
         self._tools_cache: list[Tool] = []
 
     async def start(self, context: Optional[Context] = None) -> None:
         """启动SSE传输"""
         async with self._lock:
-            if self._is_running:
+            if self._transport:
                 logger.warning(
                     f"SSE Transport for server {self.server.name} already running"
                 )
@@ -37,11 +45,14 @@ class SSETransport(Transport):
             try:
                 # 创建SSE transport
                 await self._create_transport()
+                if not self._transport:
+                    raise ValueError("Transport not initialized")
 
-                self._is_running = True
                 logger.info(
                     f"SSE Transport for server {self.server.name} started successfully"
                 )
+                async with self._transport as session:
+                    await session.initialize()
 
             except Exception as e:
                 logger.error(
@@ -53,26 +64,15 @@ class SSETransport(Transport):
     async def stop(self) -> None:
         """停止SSE传输"""
         async with self._lock:
-            if not self._is_running:
+            if not self._transport:
                 return
 
             try:
                 # 清理transport
-                if self._transport and hasattr(self._transport, '__aexit__'):
-                    try:
-                        await self._transport.__aexit__(None, None, None)
-                        logger.info(
-                            f"Closed transport for server: {self.server.name}"
-                        )
-                    except Exception as e:
-                        logger.error(
-                            f"Error closing transport for {self.server.name}: {e}"
-                        )
-
+                await self._transport.__aexit__(None, None, None)
                 self._transport = None
                 self._tools_cache.clear()
 
-                self._is_running = False
                 logger.info(
                     f"SSE Transport for server {self.server.name} stopped"
                 )
@@ -93,21 +93,16 @@ class SSETransport(Transport):
             async with self._transport as session:  # session: ClientSession
                 tools_result = await session.list_tools()
                 tools = tools_result.tools
-
                 # 缓存工具列表
                 self._tools_cache = tools
-
-                logger.info(
-                    f"Fetched {len(tools)} tools from server: {self.server.name}"
-                )
-
-                return tools
-
+                await self.stop()
         except Exception as e:
             logger.error(
                 f"Failed to fetch tools from server {self.server.name}: {e}"
             )
             raise
+
+        return tools
 
     @transport_has_started
     async def call_tools(
@@ -142,7 +137,6 @@ class SSETransport(Transport):
                 logger.info(
                     f"Successfully called tool {tool_name} on server {self.server.name}"
                 )
-                await self.stop()
                 return result
 
         except Exception as e:
@@ -160,24 +154,32 @@ class SSETransport(Transport):
                 isError=True,
             )
 
+    @asynccontextmanager
+    async def _create_client_session(self):
+        """创建客户端会话的异步上下文管理器"""
+        # 准备请求头
+        headers = {
+            "mcp-protocol-version": "1.0",
+        }
+
+        # 使用 sse_client 获取读写流
+        async with sse_client(
+            url=self.server.url,
+            headers=headers,
+        ) as (read_stream, write_stream):
+            # 创建 ClientSession
+            session = ClientSession(read_stream, write_stream)
+            try:
+                yield session
+            finally:
+                # 会话清理会由 sse_client 上下文管理器处理
+                pass
+
     async def _create_transport(self) -> None:
         """为服务器创建transport"""
         try:
-            # 准备请求头
-            headers = {
-                "mcp-protocol-version": "1.0",
-            }
-
-            # 创建 SSE 客户端传输
-            transport = sse_client(
-                url=self.server.url,
-                headers=headers,
-                timeout=30.0,
-                sse_read_timeout=300.0,
-            )
-
-            # 存储transport
-            self._transport = transport
+            # 创建自定义的异步上下文管理器
+            self._transport = self._create_client_session()
 
             logger.info(f"Created SSE transport for server: {self.server.name}")
 
