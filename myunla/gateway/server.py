@@ -260,7 +260,6 @@ class GatewayServer:
             "Content-Type": "text/event-stream",
             "Cache-Control": "no-cache, no-transform",
             "Connection": "keep-alive",
-            "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Headers": "Cache-Control",
         }
 
@@ -410,7 +409,8 @@ class GatewayServer:
                     if event.event == "message":
                         yield f"event: message\ndata: {event.data.decode('utf-8')}\n\n"
                     else:
-                        yield f"event: {event.event}\ndata: {event.data.decode('utf-8')}\n\n"
+                        yield event.data.decode("utf-8")
+                        # yield f"event: {event.event}\ndata: {event.data.decode('utf-8')}\n\n"
 
                 except Exception as e:
                     logger.error(
@@ -532,20 +532,6 @@ class GatewayServer:
         self, request: Request, conn: Connection
     ) -> Response:
         """处理POST消息 (对应Go代码中的handlePostMessage)"""
-        if conn is None:
-            logger.error(
-                "空的SSE连接",
-                extra={
-                    "remote_addr": (
-                        request.client.host if request.client else "unknown"
-                    ),
-                },
-            )
-            return JSONResponse(
-                content={"error": "SSE connection not established"},
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
         # 验证Content-Type头
         content_type = request.headers.get("Content-Type", "")
         if "application/json" not in content_type:
