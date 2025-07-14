@@ -6,7 +6,6 @@
 
 import multiprocessing
 import os
-import signal
 import sys
 import time
 
@@ -27,16 +26,31 @@ def start_api_server(
     os.environ["CREATE_DEFAULT_DATA"] = "True"
 
     print(f"🚀 启动API服务器在 http://{host}:{port}")
-    config = uvicorn.Config(
-        "myunla.app:app",
-        host=host,
-        port=port,
-        reload=reload,
-        log_level=log_level,
-        access_log=True,
-    )
-    server = uvicorn.Server(config)
-    server.run()
+
+    try:
+        config = uvicorn.Config(
+            "myunla.app:app",
+            host=host,
+            port=port,
+            reload=reload,
+            log_level=log_level,
+            access_log=True,
+        )
+        server = uvicorn.Server(config)
+        server.run()
+
+    except (KeyboardInterrupt, SystemExit):
+        print("📡 API服务器正在关闭...")
+    except Exception as e:
+        # 捕获其他异常，包括 CancelledError 和导入错误
+        import asyncio
+
+        if isinstance(e, asyncio.CancelledError):
+            print("📡 API服务器任务已取消，正在关闭...")
+        else:
+            print(f"📡 API服务器启动或关闭时发生错误: {e}")
+    finally:
+        print("📡 API服务器已停止")
 
 
 def start_gateway_server(
@@ -53,53 +67,58 @@ def start_gateway_server(
 
     print(f"🚀 启动Gateway服务器在 http://{host}:{port}")
 
-    # 创建Gateway应用实例
-    from myunla.config import gateway_settings
-    from myunla.gateway.server import GatewayServer
-    from myunla.gateway.state import Metrics, State
+    try:
+        # 在受保护的块中导入模块，避免导入期间的键盘中断
+        from myunla.config import gateway_settings
+        from myunla.gateway.server import GatewayServer
+        from myunla.gateway.state import Metrics, State
 
-    gateway_server = GatewayServer(
-        State(
-            mcps=[],
-            runtime={},
-            metrics=Metrics(),
-        ),
-        gateway_settings["session_config"],
-    )
+        gateway_server = GatewayServer(
+            State(
+                mcps=[],
+                runtime={},
+                metrics=Metrics(),
+            ),
+            gateway_settings["session_config"],
+        )
 
-    # 初始化网关状态
-    import asyncio
+        # 初始化网关状态
+        import asyncio
 
-    async def init_gateway_state():
-        await gateway_server.initialize_state()
+        async def init_gateway_state():
+            await gateway_server.initialize_state()
 
-    # 运行初始化
-    asyncio.run(init_gateway_state())
+        # 运行初始化
+        asyncio.run(init_gateway_state())
 
-    config = uvicorn.Config(
-        gateway_server.app,
-        host=host,
-        port=port,
-        reload=reload,
-        log_level=log_level,
-        access_log=True,
-    )
-    server = uvicorn.Server(config)
-    server.run()
+        config = uvicorn.Config(
+            gateway_server.app,
+            host=host,
+            port=port,
+            reload=reload,
+            log_level=log_level,
+            access_log=True,
+        )
+        server = uvicorn.Server(config)
+        server.run()
 
+    except (KeyboardInterrupt, SystemExit):
+        print("🌐 Gateway服务器正在关闭...")
+    except Exception as e:
+        # 捕获其他异常，包括 CancelledError 和导入错误
+        import asyncio
 
-def signal_handler(signum, frame):
-    """信号处理器，用于优雅地关闭服务器"""
-    print(f"\n⚠️  收到信号 {signum}，正在关闭服务器...")
-    # 不直接退出，让主进程处理清理逻辑
-    raise KeyboardInterrupt
+        if isinstance(e, asyncio.CancelledError):
+            print("🌐 Gateway服务器任务已取消，正在关闭...")
+        else:
+            print(f"🌐 Gateway服务器启动或关闭时发生错误: {e}")
+    finally:
+        print("🌐 Gateway服务器已停止")
 
 
 def main():
     """主函数"""
-    # 注册信号处理器
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
+    # 不注册信号处理器，让子进程自己处理信号
 
     # 配置参数
     api_host = "127.0.0.1"
@@ -152,11 +171,15 @@ def main():
         print("📋 使用 Ctrl+C 来停止所有服务器")
         print()
 
-        # 等待进程完成
-        while (api_process and api_process.is_alive()) or (
-            gateway_process and gateway_process.is_alive()
-        ):
-            time.sleep(0.1)
+        # 等待进程完成，使用更长的睡眠间隔减少CPU使用
+        try:
+            while (api_process and api_process.is_alive()) or (
+                gateway_process and gateway_process.is_alive()
+            ):
+                time.sleep(1.0)  # 增加睡眠时间，减少CPU使用
+        except KeyboardInterrupt:
+            # 优雅地处理键盘中断
+            pass
 
     except KeyboardInterrupt:
         print("\n⚠️  收到中断信号，正在关闭服务器...")
@@ -166,20 +189,35 @@ def main():
 
         traceback.print_exc()
     finally:
-        # 确保进程被清理
-        if api_process and api_process.is_alive():
-            print("🔄 正在停止API服务器...")
-            api_process.terminate()
-            api_process.join(timeout=5)
-            if api_process.is_alive():
-                api_process.kill()
+        print("\n⚠️  正在关闭服务器...")
 
-        if gateway_process and gateway_process.is_alive():
-            print("🔄 正在停止Gateway服务器...")
-            gateway_process.terminate()
-            gateway_process.join(timeout=5)
-            if gateway_process.is_alive():
-                gateway_process.kill()
+        # 优雅地关闭进程
+        processes = [
+            (api_process, "API服务器"),
+            (gateway_process, "Gateway服务器"),
+        ]
+
+        for process, name in processes:
+            if process and process.is_alive():
+                print(f"🔄 正在停止{name}...")
+
+                # 首先尝试优雅关闭（发送SIGTERM）
+                process.terminate()
+
+                # 等待进程优雅退出
+                try:
+                    process.join(timeout=10)  # 增加超时时间到10秒
+                except Exception as e:
+                    print(f"⚠️  等待{name}退出时发生错误: {e}")
+
+                # 如果进程仍在运行，强制终止
+                if process.is_alive():
+                    print(f"⚠️  {name}未能优雅关闭，强制终止...")
+                    process.kill()
+                    try:
+                        process.join(timeout=2)
+                    except Exception as e:
+                        print(f"⚠️  强制终止{name}时发生错误: {e}")
 
         print("✅ 所有服务器已停止")
 
