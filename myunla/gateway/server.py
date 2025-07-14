@@ -15,7 +15,13 @@ from mcp import (
     ToolsCapability,
 )
 from mcp.types import (
+    CONNECTION_CLOSED,
+    INTERNAL_ERROR,
+    INVALID_PARAMS,
+    INVALID_REQUEST,
     LATEST_PROTOCOL_VERSION,
+    METHOD_NOT_FOUND,
+    PARSE_ERROR,
     CallToolRequestParams,
     CallToolResult,
     Implementation,
@@ -27,7 +33,6 @@ from myunla.config.session_config import SessionConfig
 from myunla.gateway.response_utils import (
     send_accepted_response,
     send_protocol_error,
-    send_protocol_error_with_id,
     send_success_response,
     send_tool_execution_error,
 )
@@ -50,6 +55,7 @@ MCP_METHOD_INITIALIZED = "notifications/initialized"
 MCP_METHOD_PING = "ping"
 MCP_METHOD_TOOLS_LIST = "tools/list"
 MCP_METHOD_TOOLS_CALL = "tools/call"
+REQUEST_TIMEOUT = -32001
 
 
 class GatewayServer:
@@ -130,8 +136,8 @@ class GatewayServer:
                     ),
                 },
             )
-            return await send_protocol_error(
-                "Invalid path", status.HTTP_400_BAD_REQUEST, "InvalidRequest"
+            return send_protocol_error(
+                "Invalid path", status.HTTP_400_BAD_REQUEST, INVALID_REQUEST
             )
 
         endpoint = parts[-1]
@@ -164,8 +170,8 @@ class GatewayServer:
                     ),
                 },
             )
-            return await send_protocol_error(
-                "Invalid prefix", status.HTTP_404_NOT_FOUND, "InvalidRequest"
+            return send_protocol_error(
+                "Invalid prefix", status.HTTP_404_NOT_FOUND, INVALID_REQUEST
             )
 
         # 根据端点路由
@@ -239,10 +245,10 @@ class GatewayServer:
                     ),
                 },
             )
-            return await send_protocol_error(
+            return send_protocol_error(
                 "Invalid endpoint",
                 status.HTTP_404_NOT_FOUND,
-                "InvalidRequest",
+                INVALID_REQUEST,
             )
 
     async def handle_sse(self, request: Request, prefix: str) -> Response:
@@ -338,10 +344,10 @@ class GatewayServer:
                     ),
                 },
             )
-            return await send_protocol_error(
+            return send_protocol_error(
                 "Failed to create SSE connection",
                 status.HTTP_500_INTERNAL_SERVER_ERROR,
-                "InternalError",
+                INTERNAL_ERROR,
             )
 
     async def _sse_event_generator(
@@ -479,10 +485,10 @@ class GatewayServer:
                     ),
                 },
             )
-            return await send_protocol_error_with_id(
+            return send_protocol_error(
                 "Missing sessionId parameter",
                 status.HTTP_400_BAD_REQUEST,
-                "InvalidRequest",
+                INVALID_REQUEST,
             )
 
         # 从会话存储中获取连接
@@ -654,10 +660,10 @@ class GatewayServer:
                         clientInfo=client_info,
                     )
                 except Exception as e:
-                    return await send_protocol_error_with_id(
+                    return send_protocol_error(
                         "Invalid initialize parameters",
                         status.HTTP_400_BAD_REQUEST,
-                        "InvalidParams",
+                        INVALID_PARAMS,
                         jsonrpc_req.id,
                     )
 
@@ -684,10 +690,10 @@ class GatewayServer:
             elif jsonrpc_req.method == MCP_METHOD_TOOLS_LIST:
                 proto_type = self.state.get_proto_type(conn.meta().prefix)
                 if not proto_type:
-                    return await send_protocol_error_with_id(
+                    return send_protocol_error(
                         "Server configuration not found",
                         status.HTTP_500_INTERNAL_SERVER_ERROR,
-                        "InternalError",
+                        INTERNAL_ERROR,
                         jsonrpc_req.id,
                     )
 
@@ -698,26 +704,26 @@ class GatewayServer:
                     elif proto_type in ["stdio", "sse", "streamable"]:
                         transport = self.state.get_transport(conn.meta().prefix)
                         if transport is None:
-                            return await send_protocol_error_with_id(
+                            return send_protocol_error(
                                 "Failed to fetch tools",
                                 status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                "InternalError",
+                                INTERNAL_ERROR,
                                 jsonrpc_req.id,
                             )
                         tools = await transport.fetch_tools()
                     else:
-                        return await send_protocol_error_with_id(
+                        return send_protocol_error(
                             "Unsupported protocol type",
                             status.HTTP_400_BAD_REQUEST,
-                            "InvalidParams",
+                            INVALID_PARAMS,
                             jsonrpc_req.id,
                         )
                 except Exception as e:
                     logger.error(f"获取工具列表失败: {e}")
-                    return await send_protocol_error_with_id(
+                    return send_protocol_error(
                         "Failed to fetch tools",
                         status.HTTP_500_INTERNAL_SERVER_ERROR,
-                        "InternalError",
+                        INTERNAL_ERROR,
                         jsonrpc_req.id,
                     )
 
@@ -740,10 +746,10 @@ class GatewayServer:
             elif jsonrpc_req.method == MCP_METHOD_TOOLS_CALL:
                 proto_type = self.state.get_proto_type(conn.meta().prefix)
                 if not proto_type:
-                    return await send_protocol_error_with_id(
+                    return send_protocol_error(
                         "Server configuration not found",
                         status.HTTP_500_INTERNAL_SERVER_ERROR,
-                        "InternalError",
+                        INTERNAL_ERROR,
                         jsonrpc_req.id,
                     )
 
@@ -757,10 +763,10 @@ class GatewayServer:
                     if not params.name:
                         raise ValueError("Missing tool name")
                 except Exception as e:
-                    return await send_protocol_error_with_id(
+                    return send_protocol_error(
                         "Invalid tool call parameters",
                         status.HTTP_400_BAD_REQUEST,
-                        "InvalidParams",
+                        INVALID_PARAMS,
                         jsonrpc_req.id,
                     )
 
@@ -774,10 +780,10 @@ class GatewayServer:
                     elif proto_type in ["stdio", "sse", "streamable"]:
                         transport = self.state.get_transport(conn.meta().prefix)
                         if transport is None:
-                            return await send_protocol_error_with_id(
+                            return send_protocol_error(
                                 "Server configuration not found",
                                 status.HTTP_404_NOT_FOUND,
-                                "MethodNotFound",
+                                METHOD_NOT_FOUND,
                                 jsonrpc_req.id,
                             )
 
@@ -794,10 +800,10 @@ class GatewayServer:
                             mcp_params, request_wrapper
                         )
                     else:
-                        return await send_protocol_error_with_id(
+                        return send_protocol_error(
                             "Unsupported protocol type",
                             status.HTTP_400_BAD_REQUEST,
-                            "InvalidParams",
+                            INVALID_PARAMS,
                             jsonrpc_req.id,
                         )
 
@@ -812,19 +818,19 @@ class GatewayServer:
                     )
 
             else:
-                return await send_protocol_error_with_id(
+                return send_protocol_error(
                     "Unknown method",
                     status.HTTP_404_NOT_FOUND,
-                    "MethodNotFound",
+                    METHOD_NOT_FOUND,
                     jsonrpc_req.id,
                 )
 
         except Exception as e:
             logger.error(f"处理JSON-RPC方法失败: {e}")
-            return await send_protocol_error_with_id(
+            return send_protocol_error(
                 "Internal server error",
                 status.HTTP_500_INTERNAL_SERVER_ERROR,
-                "InternalError",
+                INTERNAL_ERROR,
                 jsonrpc_req.id,
             )
 
@@ -1210,10 +1216,10 @@ class GatewayServer:
         elif method == "DELETE":
             return await self.handle_delete(request, prefix)
         else:
-            response = await send_protocol_error_with_id(
+            response = send_protocol_error(
                 "Method not allowed",
                 status.HTTP_405_METHOD_NOT_ALLOWED,
-                "ConnectionClosed",
+                CONNECTION_CLOSED,
             )
             response.headers["Allow"] = "GET, POST, DELETE"
             return response
@@ -1223,10 +1229,10 @@ class GatewayServer:
         # 检查Accept头是否包含text/event-stream
         accept_header = request.headers.get("Accept", "")
         if "text/event-stream" not in accept_header:
-            return await send_protocol_error_with_id(
+            return send_protocol_error(
                 "Not Acceptable: Client must accept text/event-stream",
                 status.HTTP_406_NOT_ACCEPTABLE,
-                "InvalidRequest",
+                INVALID_REQUEST,
             )
 
         conn = await self.get_session(request)
@@ -1296,19 +1302,19 @@ class GatewayServer:
             ("application/json" in accept or "*/*" in accept)
             and ("text/event-stream" in accept or "*/*" in accept)
         ):
-            return await send_protocol_error_with_id(
+            return send_protocol_error(
                 "Not Acceptable: Client must accept both application/json and text/event-stream",
                 status.HTTP_406_NOT_ACCEPTABLE,
-                "ConnectionClosed",
+                CONNECTION_CLOSED,
             )
 
         # 验证Content-Type头
         content_type = request.headers.get("Content-Type", "")
         if "application/json" not in content_type:
-            return await send_protocol_error_with_id(
+            return send_protocol_error(
                 "Unsupported Media Type: Content-Type must be application/json",
                 status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-                "ConnectionClosed",
+                CONNECTION_CLOSED,
             )
 
         # TODO: 支持批量消息
@@ -1324,10 +1330,10 @@ class GatewayServer:
                 id=request_id,
             )
         except (json.JSONDecodeError, KeyError) as e:
-            return await send_protocol_error_with_id(
+            return send_protocol_error(
                 "Invalid JSON-RPC request",
                 status.HTTP_400_BAD_REQUEST,
-                "ParseError",
+                PARSE_ERROR,
             )
 
         session_id = request.headers.get("Mcp-Session-Id", "")
@@ -1339,10 +1345,10 @@ class GatewayServer:
                 try:
                     conn = await self.sessions.get(session_id)
                     if conn is not None:
-                        return await send_protocol_error_with_id(
+                        return send_protocol_error(
                             "Invalid Request: Server already initialized",
                             status.HTTP_400_BAD_REQUEST,
-                            "InvalidRequest",
+                            INVALID_REQUEST,
                             jsonrpc_req.id,
                         )
                 except Exception as e:
@@ -1374,10 +1380,10 @@ class GatewayServer:
                 try:
                     conn = await self.sessions.register(meta)
                 except Exception as e:
-                    return await send_protocol_error_with_id(
+                    return send_protocol_error(
                         "Failed to create session",
                         status.HTTP_500_INTERNAL_SERVER_ERROR,
-                        "InternalError",
+                        INTERNAL_ERROR,
                         jsonrpc_req.id,
                     )
 
@@ -1387,26 +1393,26 @@ class GatewayServer:
             try:
                 conn = await self.sessions.get(session_id)
                 if conn is None:
-                    return await send_protocol_error_with_id(
+                    return send_protocol_error(
                         "Session not found",
                         status.HTTP_404_NOT_FOUND,
-                        "RequestTimeout",
+                        REQUEST_TIMEOUT,
                         jsonrpc_req.id,
                     )
             except Exception:
-                return await send_protocol_error_with_id(
+                return send_protocol_error(
                     "Session not found",
                     status.HTTP_404_NOT_FOUND,
-                    "RequestTimeout",
+                    REQUEST_TIMEOUT,
                     jsonrpc_req.id,
                 )
             headers = {}
 
         if conn is None:
-            return await send_protocol_error_with_id(
+            return send_protocol_error(
                 "Failed to get connection",
                 status.HTTP_500_INTERNAL_SERVER_ERROR,
-                "InternalError",
+                INTERNAL_ERROR,
                 jsonrpc_req.id,
             )
 
@@ -1432,10 +1438,10 @@ class GatewayServer:
             await self.sessions.unregister(conn.meta().id)
             return Response(status_code=status.HTTP_200_OK)
         except Exception as e:
-            return await send_protocol_error_with_id(
+            return send_protocol_error(
                 "Failed to terminate session",
                 status.HTTP_500_INTERNAL_SERVER_ERROR,
-                "InternalError",
+                INTERNAL_ERROR,
                 conn.meta().id,
             )
 
@@ -1463,10 +1469,10 @@ class GatewayServer:
                     conn, jsonrpc_req, result, False
                 )
             except Exception as e:
-                return await send_protocol_error_with_id(
+                return send_protocol_error(
                     f"Invalid initialize parameters: {e}",
                     status.HTTP_400_BAD_REQUEST,
-                    "InvalidParams",
+                    INVALID_PARAMS,
                     jsonrpc_req.id,
                 )
 
@@ -1476,10 +1482,10 @@ class GatewayServer:
         elif method == MCP_METHOD_TOOLS_LIST:
             proto_type = self.state.get_proto_type(conn.meta().prefix)
             if not proto_type:
-                return await send_protocol_error_with_id(
+                return send_protocol_error(
                     "Server configuration not found",
                     status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    "InternalError",
+                    INTERNAL_ERROR,
                     jsonrpc_req.id,
                 )
 
@@ -1491,18 +1497,18 @@ class GatewayServer:
                 elif proto_type in ["stdio", "sse", "streamable"]:
                     transport = self.state.get_transport(conn.meta().prefix)
                     if transport is None:
-                        return await send_protocol_error_with_id(
+                        return send_protocol_error(
                             "Failed to fetch tools",
                             status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            "InternalError",
+                            INTERNAL_ERROR,
                             jsonrpc_req.id,
                         )
                     tools = await transport.fetch_tools()
                 else:
-                    return await send_protocol_error_with_id(
+                    return send_protocol_error(
                         "Unsupported protocol type",
                         status.HTTP_400_BAD_REQUEST,
-                        "InvalidParams",
+                        INVALID_PARAMS,
                         jsonrpc_req.id,
                     )
 
@@ -1512,20 +1518,20 @@ class GatewayServer:
                 )
 
             except Exception as e:
-                return await send_protocol_error_with_id(
+                return send_protocol_error(
                     "Failed to fetch tools",
                     status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    "InternalError",
+                    INTERNAL_ERROR,
                     jsonrpc_req.id,
                 )
 
         elif method == MCP_METHOD_TOOLS_CALL:
             proto_type = self.state.get_proto_type(conn.meta().prefix)
             if not proto_type:
-                return await send_protocol_error_with_id(
+                return send_protocol_error(
                     "Server configuration not found",
                     status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    "InternalError",
+                    INTERNAL_ERROR,
                     jsonrpc_req.id,
                 )
 
@@ -1539,10 +1545,10 @@ class GatewayServer:
                 if not params.name:
                     raise ValueError("Missing tool name")
             except Exception as e:
-                return await send_protocol_error_with_id(
+                return send_protocol_error(
                     f"Invalid tool call parameters: {e}",
                     status.HTTP_400_BAD_REQUEST,
-                    "InvalidParams",
+                    INVALID_PARAMS,
                     jsonrpc_req.id,
                 )
 
@@ -1555,10 +1561,10 @@ class GatewayServer:
                 elif proto_type in ["stdio", "sse", "streamable"]:
                     transport = self.state.get_transport(conn.meta().prefix)
                     if transport is None:
-                        return await send_protocol_error_with_id(
+                        return send_protocol_error(
                             "Server configuration not found",
                             status.HTTP_404_NOT_FOUND,
-                            "MethodNotFound",
+                            METHOD_NOT_FOUND,
                             jsonrpc_req.id,
                         )
 
@@ -1567,10 +1573,10 @@ class GatewayServer:
                     )
                     result = await transport.call_tools(params, request_wrapper)
                 else:
-                    return await send_protocol_error_with_id(
+                    return send_protocol_error(
                         "Unsupported protocol type",
                         status.HTTP_400_BAD_REQUEST,
-                        "InvalidParams",
+                        INVALID_PARAMS,
                         jsonrpc_req.id,
                     )
 
@@ -1584,10 +1590,10 @@ class GatewayServer:
                 )
 
         else:
-            return await send_protocol_error_with_id(
+            return send_protocol_error(
                 "Method not found",
                 status.HTTP_404_NOT_FOUND,
-                "MethodNotFound",
+                METHOD_NOT_FOUND,
                 jsonrpc_req.id,
             )
 
