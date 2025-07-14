@@ -24,6 +24,8 @@ def start_api_server(
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
     os.environ["CREATE_DEFAULT_DATA"] = "True"
+    # 设置应用程序日志级别
+    os.environ["LOG_LEVEL"] = log_level.upper()
 
     print(f"🚀 启动API服务器在 http://{host}:{port}")
 
@@ -64,6 +66,8 @@ def start_gateway_server(
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
+    # 设置应用程序日志级别
+    os.environ["LOG_LEVEL"] = log_level.upper()
 
     print(f"🚀 启动Gateway服务器在 http://{host}:{port}")
 
@@ -130,6 +134,9 @@ def main():
 
     # 设置日志级别
     log_level = "debug" if dev_mode else "info"
+
+    # 设置应用程序日志级别环境变量
+    os.environ["LOG_LEVEL"] = log_level.upper()
 
     print("=" * 60)
     print("🎯 MyUnla 服务器启动器")

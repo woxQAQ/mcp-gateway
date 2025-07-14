@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 from typing import Optional
 
@@ -67,6 +68,30 @@ class ExtraInfoFormatter(logging.Formatter):
         return formatted
 
 
+def _get_log_level() -> int:
+    """从环境变量获取日志级别"""
+    # 优先检查 LOG_LEVEL 环境变量
+    log_level_str = os.getenv("LOG_LEVEL", "").upper()
+    if log_level_str:
+        level_mapping = {
+            "DEBUG": logging.DEBUG,
+            "INFO": logging.INFO,
+            "WARNING": logging.WARNING,
+            "ERROR": logging.ERROR,
+            "CRITICAL": logging.CRITICAL,
+        }
+        if log_level_str in level_mapping:
+            return level_mapping[log_level_str]
+
+    # 检查 DEBUG 环境变量
+    debug_env = os.getenv("DEBUG", "").lower()
+    if debug_env in ("1", "true", "yes"):
+        return logging.DEBUG
+
+    # 默认返回 INFO 级别
+    return logging.INFO
+
+
 def get_logger(name: Optional[str] = None) -> logging.Logger:
     """获取配置好的logger实例"""
     logger = logging.getLogger(name or __name__)
@@ -83,6 +108,9 @@ def get_logger(name: Optional[str] = None) -> logging.Logger:
 
         # 添加处理器到logger
         logger.addHandler(console_handler)
-        logger.setLevel(logging.INFO)
+
+        # 根据环境变量设置日志级别
+        log_level = _get_log_level()
+        logger.setLevel(log_level)
 
     return logger
