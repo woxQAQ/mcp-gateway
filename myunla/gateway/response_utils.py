@@ -33,9 +33,17 @@ async def send_response(
     """发送响应"""
     if send_via_sse:
         try:
+            # 处理Pydantic模型序列化
+            if hasattr(result, 'model_dump'):
+                result_data = result.model_dump()
+            elif hasattr(result, 'dict'):
+                result_data = result.dict()
+            else:
+                result_data = result
+
             message = Message(
                 event="message",
-                data=json.dumps(result).encode('utf-8'),
+                data=json.dumps(result_data).encode('utf-8'),
             )
             await conn.send(message)
             return await send_accepted_response()
@@ -47,6 +55,14 @@ async def send_response(
                 INTERNAL_ERROR,
                 jsonrpc_req.id,
             )
+    # 处理Pydantic模型序列化
+    if hasattr(result, 'model_dump'):
+        result_data = result.model_dump()
+    elif hasattr(result, 'dict'):
+        result_data = result.dict()
+    else:
+        result_data = result
+
     return PlainTextResponse(
         headers={
             "Content-Type": "text/event-stream",
@@ -55,7 +71,7 @@ async def send_response(
             "Mcp-Session-Id": conn.meta().id,
         },
         status_code=status.HTTP_200_OK,
-        content=f'event: message\ndata: {json.dumps(result)}\n\n',
+        content=f'event: message\ndata: {json.dumps(result_data)}\n\n',
     )
 
 
