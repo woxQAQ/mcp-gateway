@@ -37,11 +37,10 @@ from myunla.gateway.response_utils import (
     send_tool_execution_error,
 )
 from myunla.gateway.session import (
-    MemoryStore,
     Meta,
     RequestInfo,
 )
-from myunla.gateway.session.session import Connection
+from myunla.gateway.session.session import Connection, create_store
 from myunla.gateway.state import State
 from myunla.gateway.state_loader import state_loader
 from myunla.templates.context import RequestWrapper
@@ -70,16 +69,7 @@ class GatewayServer:
         # 初始化会话存储
         if session_config is None:
             session_config = SessionConfig()  # 使用默认配置
-
-        if session_config.store == "memory":
-            self.sessions = MemoryStore()
-        elif session_config.store == "redis":
-            from myunla.gateway.session import RedisStore
-
-            self.sessions = RedisStore(session_config.redis_config)
-        else:
-            raise ValueError(f"不支持的会话存储类型: {session_config.store}")
-
+        self.sessions = create_store(session_config)
         self.setup_routes()
 
     async def initialize_state(self) -> None:
