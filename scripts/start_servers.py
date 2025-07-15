@@ -7,7 +7,9 @@
 import argparse
 import multiprocessing
 import os
+import signal
 import sys
+import threading
 import time
 
 import uvicorn
@@ -200,8 +202,20 @@ def main():
     print(f"📝 日志级别: {log_level.upper()}")
     print("=" * 60)
 
+    # 用于跟踪进程和关闭状态的全局变量
     api_process = None
     gateway_process = None
+    shutdown_event = threading.Event()
+
+    def signal_handler(signum, _frame):
+        """处理SIGINT和SIGTERM信号的处理器"""
+        signal_name = 'SIGINT' if signum == signal.SIGINT else 'SIGTERM'
+        print(f"\n⚠️  收到{signal_name}信号，正在关闭服务器...")
+        shutdown_event.set()
+
+    # 注册信号处理器
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
 
     try:
         # 创建并启动进程
@@ -230,55 +244,64 @@ def main():
         print("📋 使用 Ctrl+C 来停止所有服务器")
         print()
 
-        # 等待进程完成，使用更长的睡眠间隔减少CPU使用
+        # 等待关闭信号
         try:
-            while (api_process and api_process.is_alive()) or (
-                gateway_process and gateway_process.is_alive()
-            ):
-                time.sleep(1.0)  # 增加睡眠时间，减少CPU使用
-        except KeyboardInterrupt:
-            # 优雅地处理键盘中断
-            pass
+            while not shutdown_event.is_set():
+                # 检查进程是否仍在运行
+                if api_process and not api_process.is_alive():
+                    print("⚠️  API服务器意外退出")
+                    break
+                if gateway_process and not gateway_process.is_alive():
+                    print("⚠️  Gateway服务器意外退出")
+                    break
+                time.sleep(1.0)
 
-    except KeyboardInterrupt:
-        print("\n⚠️  收到中断信号，正在关闭服务器...")
+        except KeyboardInterrupt:
+            # 额外的键盘中断处理（信号处理器会优先处理）
+            shutdown_event.set()
+
     except Exception as e:
         print(f"❌ 启动失败: {e}")
         import traceback
 
         traceback.print_exc()
     finally:
-        print("\n⚠️  正在关闭服务器...")
+        if (
+            shutdown_event.is_set()
+            or (api_process and api_process.is_alive())
+            or (gateway_process and gateway_process.is_alive())
+        ):
+            print("\n⚠️  正在关闭服务器...")
 
-        # 优雅地关闭进程
-        processes = [
-            (api_process, "API服务器"),
-            (gateway_process, "Gateway服务器"),
-        ]
+            # 优雅地关闭进程
+            processes = [
+                (api_process, "API服务器"),
+                (gateway_process, "Gateway服务器"),
+            ]
 
-        for process, name in processes:
-            if process and process.is_alive():
-                print(f"🔄 正在停止{name}...")
+            for process, name in processes:
+                if process and process.is_alive():
+                    print(f"🔄 正在停止{name}...")
 
-                # 首先尝试优雅关闭（发送SIGTERM）
-                process.terminate()
+                    # 首先尝试优雅关闭（发送SIGTERM）
+                    process.terminate()
 
-                # 等待进程优雅退出
-                try:
-                    process.join(timeout=10)  # 增加超时时间到10秒
-                except Exception as e:
-                    print(f"⚠️  等待{name}退出时发生错误: {e}")
-
-                # 如果进程仍在运行，强制终止
-                if process.is_alive():
-                    print(f"⚠️  {name}未能优雅关闭，强制终止...")
-                    process.kill()
+                    # 等待进程优雅退出
                     try:
-                        process.join(timeout=2)
+                        process.join(timeout=10)
                     except Exception as e:
-                        print(f"⚠️  强制终止{name}时发生错误: {e}")
+                        print(f"⚠️  等待{name}退出时发生错误: {e}")
 
-        print("✅ 所有服务器已停止")
+                    # 如果进程仍在运行，强制终止
+                    if process.is_alive():
+                        print(f"⚠️  {name}未能优雅关闭，强制终止...")
+                        process.kill()
+                        try:
+                            process.join(timeout=2)
+                        except Exception as e:
+                            print(f"⚠️  强制终止{name}时发生错误: {e}")
+
+            print("✅ 所有服务器已停止")
 
 
 if __name__ == "__main__":
