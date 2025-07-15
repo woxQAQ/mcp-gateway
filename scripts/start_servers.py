@@ -4,6 +4,7 @@
 使用uvicorn启动两个FastAPI应用
 """
 
+import argparse
 import multiprocessing
 import os
 import sys
@@ -122,18 +123,69 @@ def start_gateway_server(
 
 def main():
     """主函数"""
-    # 不注册信号处理器，让子进程自己处理信号
+    # 设置参数解析器
+    parser = argparse.ArgumentParser(
+        description="启动 MyUnla 的 Gateway 和 API 服务器",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+示例:
+  %(prog)s                    # 使用默认设置启动
+  %(prog)s --reload --dev     # 启用热重载和开发模式
+  %(prog)s --api-port 9000    # 自定义API端口
+  %(prog)s --gateway-host 0.0.0.0 --gateway-port 9001  # 自定义Gateway地址
+        """,
+    )
 
-    # 配置参数
-    api_host = "127.0.0.1"
-    api_port = 8000
-    gateway_host = "127.0.0.1"
-    gateway_port = 8001
-    reload_mode = "--reload" in sys.argv or "-r" in sys.argv
-    dev_mode = "--dev" in sys.argv
+    # API服务器配置
+    parser.add_argument(
+        "--api-host",
+        default="127.0.0.1",
+        help="API服务器主机地址 (默认: 127.0.0.1)",
+    )
+    parser.add_argument(
+        "--api-port", type=int, default=8000, help="API服务器端口 (默认: 8000)"
+    )
 
-    # 设置日志级别
-    log_level = "debug" if dev_mode else "info"
+    # Gateway服务器配置
+    parser.add_argument(
+        "--gateway-host",
+        default="127.0.0.1",
+        help="Gateway服务器主机地址 (默认: 127.0.0.1)",
+    )
+    parser.add_argument(
+        "--gateway-port",
+        type=int,
+        default=8001,
+        help="Gateway服务器端口 (默认: 8001)",
+    )
+
+    # 运行模式
+    parser.add_argument(
+        "-r", "--reload", action="store_true", help="启用热重载模式"
+    )
+    parser.add_argument(
+        "--dev", action="store_true", help="启用开发模式 (设置日志级别为debug)"
+    )
+
+    # 日志级别
+    parser.add_argument(
+        "--log-level",
+        choices=["debug", "info", "warning", "error", "critical"],
+        default="info",
+        help="设置日志级别 (默认: info)",
+    )
+
+    args = parser.parse_args()
+
+    # 使用解析的参数
+    api_host = args.api_host
+    api_port = args.api_port
+    gateway_host = args.gateway_host
+    gateway_port = args.gateway_port
+    reload_mode = args.reload
+
+    # 如果启用开发模式，强制使用debug日志级别
+    log_level = "debug" if args.dev else args.log_level
 
     # 设置应用程序日志级别环境变量
     os.environ["LOG_LEVEL"] = log_level.upper()
@@ -144,7 +196,7 @@ def main():
     print(f"📡 API服务器地址: http://{api_host}:{api_port}")
     print(f"🌐 Gateway服务器地址: http://{gateway_host}:{gateway_port}")
     print(f"🔄 热重载模式: {'启用' if reload_mode else '禁用'}")
-    print(f"🐛 开发模式: {'启用' if dev_mode else '禁用'}")
+    print(f"🐛 开发模式: {'启用' if args.dev else '禁用'}")
     print(f"📝 日志级别: {log_level.upper()}")
     print("=" * 60)
 
