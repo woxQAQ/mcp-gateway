@@ -1,11 +1,14 @@
 import datetime
 import json
+import os
+import sys
 import uuid
 from typing import Any, Optional
 
 import yaml
 from openapi_core import OpenAPI
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from api.mcp import Cors, HttpServer, Mcp, Router, Tool
 
 
@@ -184,7 +187,7 @@ class OpenAPIConverter:
                     path="{{config.url}}" + path,
                     headers={
                         "Content-Type": "application/json",
-                        "Authorization": "Bearer {{request.headers.Authorization}}",
+                        "Authorization": "{{request.headers.Authorization}}",
                     },
                     args=[],
                     request_body="",
