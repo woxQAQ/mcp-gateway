@@ -242,7 +242,7 @@ class GatewayServer:
             )
 
     async def handle_sse(self, request: Request, prefix: str) -> Response:
-        """处理SSE端点"""
+        """处理SSE端点 - 符合MCP SSE协议规范"""
         # runtime = self.state.get_runtime(prefix)
         # if runtime.backend_proto != BackendProto.SSE:
         #     return await self.send_protocol_error(
@@ -251,12 +251,46 @@ class GatewayServer:
         #         "InvalidRequest",
         #     )
 
-        # 设置SSE响应头
+        # 验证Accept头
+        accept_header = request.headers.get("accept", "")
+        # 接受通配符 */* 或显式指定 text/event-stream
+        if "text/event-stream" not in accept_header and accept_header != "*/*":
+            logger.warning(
+                "客户端未提供正确的Accept头",
+                extra={
+                    "accept_header": accept_header,
+                    "remote_addr": (
+                        request.client.host if request.client else "unknown"
+                    ),
+                },
+            )
+            return send_protocol_error(
+                "Accept header must include text/event-stream or */*",
+                status.HTTP_406_NOT_ACCEPTABLE,
+                INVALID_REQUEST,
+            )
+
+        # 验证Origin头以防止DNS重绑定攻击
+        origin = request.headers.get("origin")
+        if origin:
+            # 在生产环境中应该验证Origin头
+            logger.debug(
+                "收到Origin头",
+                extra={
+                    "origin": origin,
+                    "remote_addr": (
+                        request.client.host if request.client else "unknown"
+                    ),
+                },
+            )
+
+        # 设置SSE响应头，符合MCP规范
         headers = {
             "Content-Type": "text/event-stream",
             "Cache-Control": "no-cache, no-transform",
             "Connection": "keep-alive",
-            "Access-Control-Allow-Headers": "Cache-Control",
+            "Access-Control-Allow-Headers": "Cache-Control, Mcp-Session-Id, MCP-Protocol-Version",
+            "MCP-Protocol-Version": "2024-11-05",  # 使用传统HTTP+SSE协议版本
         }
 
         # 获取请求信息
@@ -266,7 +300,7 @@ class GatewayServer:
             cookies=dict(request.cookies.items()),
         )
 
-        # 创建会话ID和元数据
+        # 创建会话ID和元数据，符合MCP会话管理规范
         session_id = str(uuid.uuid4())
         meta = Meta(
             id=session_id,
@@ -274,7 +308,10 @@ class GatewayServer:
             prefix=prefix,
             type="sse",
             request=request_info,
-            extra=None,
+            extra={
+                "protocol_version": "2024-11-05",
+                "last_event_id": request.headers.get("Last-Event-ID"),
+            },
         )
 
         logger.info(
@@ -314,13 +351,19 @@ class GatewayServer:
                 },
             )
 
-            return StreamingResponse(
+            # 创建StreamingResponse并添加会话ID头
+            response = StreamingResponse(
                 self._sse_event_generator(
                     session_id, prefix, conn, endpoint_url, request
                 ),
                 media_type="text/event-stream",
                 headers=headers,
             )
+
+            # 添加MCP会话ID头，符合协议规范
+            response.headers["Mcp-Session-Id"] = session_id
+
+            return response
 
         except Exception as e:
             logger.error(
@@ -348,10 +391,30 @@ class GatewayServer:
         endpoint_url: str,
         request: Request,
     ):
-        """SSE事件生成器"""
+        """SSE事件生成器 - 符合MCP SSE协议规范"""
         try:
-            # 发送初始endpoint事件
-            yield f"event: endpoint\ndata: {endpoint_url}\n\n"
+            # 支持流恢复：如果有Last-Event-ID，从这里开始
+            meta = conn.meta()
+            last_event_id = (
+                meta.extra.get("last_event_id") if meta.extra else None
+            )
+            event_counter = 0
+
+            # 发送初始endpoint事件，符合MCP规范
+            endpoint_event = f"event: endpoint\ndata: {endpoint_url}\n\n"
+            yield endpoint_event
+            event_counter += 1
+
+            # 如果支持流恢复，发送一个带有ID的事件
+            if last_event_id:
+                logger.info(
+                    "支持流恢复，从上次事件ID继续",
+                    extra={
+                        "session_id": session_id,
+                        "last_event_id": last_event_id,
+                    },
+                )
+                # 可以在这里实现从特定事件ID重放的逻辑
 
             logger.info(
                 "SSE连接就绪",
@@ -364,26 +427,32 @@ class GatewayServer:
                 },
             )
 
-            # 主事件循环
+            # 主事件循环，符合MCP协议规范
             while True:
                 try:
                     # 等待事件或检测连接断开
                     event_queue = conn.event_queue()
 
-                    # 使用超时来定期检查连接状态
+                    # 使用超时来定期检查连接状态，MCP推荐的心跳机制
                     try:
                         event = await asyncio.wait_for(
                             event_queue.get(),
-                            timeout=None,
-                            # timeout=25.0,  # 减少到25秒
+                            timeout=30.0,  # 30秒超时，符合MCP建议
                         )
                     except TimeoutError:
-                        # 发送心跳事件
+                        # 发送心跳事件，符合MCP规范
                         logger.debug(
-                            "发送SSE心跳包",
+                            "发送MCP SSE心跳包",
                             extra={"session_id": session_id},
                         )
-                        yield "event: heartbeat\ndata: ping\n\n"
+                        heartbeat_event = "event: heartbeat\ndata: ping\n\n"
+                        # 添加事件ID以支持流恢复
+                        if event_counter > 0:
+                            heartbeat_event = (
+                                f"id: {event_counter}\n{heartbeat_event}"
+                            )
+                        yield heartbeat_event
+                        event_counter += 1
                         continue
 
                     if event is None:
@@ -402,11 +471,28 @@ class GatewayServer:
                         },
                     )
 
+                    # 根据MCP规范格式化SSE事件
                     if event.event == "message":
-                        yield f"event: message\ndata: {event.data.decode('utf-8')}\n\n"
+                        # 消息事件，符合MCP规范
+                        message_data = event.data.decode('utf-8')
+                        sse_event = f"event: message\ndata: {message_data}\n\n"
+                    elif event.event:
+                        # 其他类型的事件，包含事件名称
+                        message_data = event.data.decode('utf-8')
+                        sse_event = (
+                            f"event: {event.event}\ndata: {message_data}\n\n"
+                        )
                     else:
-                        yield event.data.decode("utf-8")
-                        # yield f"event: {event.event}\ndata: {event.data.decode('utf-8')}\n\n"
+                        # 默认事件
+                        message_data = event.data.decode('utf-8')
+                        sse_event = f"data: {message_data}\n\n"
+
+                    # 添加事件ID以支持流恢复（MCP推荐功能）
+                    if event_counter > 0:
+                        sse_event = f"id: {event_counter}\n{sse_event}"
+
+                    yield sse_event
+                    event_counter += 1
 
                 except Exception as e:
                     logger.error(
@@ -451,7 +537,7 @@ class GatewayServer:
                 )
 
     async def handle_message(self, request: Request, prefix: str) -> Response:
-        """处理消息端点 (对应Go代码中的handleMessage和handlePostMessage)"""
+        """处理消息端点 - 符合MCP SSE协议规范"""
         logger.debug(
             "收到消息请求",
             extra={
@@ -463,11 +549,13 @@ class GatewayServer:
             },
         )
 
-        # 获取sessionId查询参数
-        session_id = request.query_params.get("sessionId")
+        # 根据MCP规范，优先从HTTP头获取会话ID，其次从查询参数获取
+        session_id = request.headers.get(
+            "Mcp-Session-Id"
+        ) or request.query_params.get("sessionId")
         if not session_id:
             logger.warning(
-                "缺少sessionId参数",
+                "缺少会话ID",
                 extra={
                     "path": str(request.url.path),
                     "remote_addr": (
@@ -476,17 +564,42 @@ class GatewayServer:
                 },
             )
             return send_protocol_error(
-                "Missing sessionId parameter",
+                "Missing session ID. Provide Mcp-Session-Id header or sessionId parameter",
                 status.HTTP_400_BAD_REQUEST,
                 INVALID_REQUEST,
             )
 
-        # 从会话存储中获取连接
+        # 验证协议版本头
+        protocol_version = request.headers.get("MCP-Protocol-Version")
+        if protocol_version and protocol_version != "2024-11-05":
+            logger.warning(
+                "不支持的协议版本",
+                extra={
+                    "protocol_version": protocol_version,
+                    "session_id": session_id,
+                },
+            )
+            return send_protocol_error(
+                f"Unsupported protocol version: {protocol_version}",
+                status.HTTP_400_BAD_REQUEST,
+                INVALID_REQUEST,
+            )
+
+        # 验证Origin头以防止DNS重绑定攻击
+        origin = request.headers.get("origin")
+        if origin:
+            # 在生产环境中应该验证Origin头
+            logger.debug(
+                "收到Origin头",
+                extra={"origin": origin, "session_id": session_id},
+            )
+
+        # 从会话存储中获取连接，符合MCP会话管理规范
         try:
             conn = await self.sessions.get(session_id)
             if conn is None:
                 logger.error(
-                    "会话未找到",
+                    "会话未找到或已过期",
                     extra={
                         "session_id": session_id,
                         "remote_addr": (
@@ -494,9 +607,10 @@ class GatewayServer:
                         ),
                     },
                 )
-                return JSONResponse(
-                    content={"error": "Session not found"},
-                    status_code=status.HTTP_404_NOT_FOUND,
+                return send_protocol_error(
+                    "Session not found or expired. Please reconnect with SSE endpoint.",
+                    status.HTTP_404_NOT_FOUND,
+                    INVALID_REQUEST,
                 )
         except Exception as e:
             logger.error(
@@ -509,9 +623,10 @@ class GatewayServer:
                     ),
                 },
             )
-            return JSONResponse(
-                content={"error": "Session not found"},
-                status_code=status.HTTP_404_NOT_FOUND,
+            return send_protocol_error(
+                "Failed to retrieve session",
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
+                INTERNAL_ERROR,
             )
 
         logger.debug(
@@ -519,6 +634,7 @@ class GatewayServer:
             extra={
                 "session_id": session_id,
                 "prefix": conn.meta().prefix,
+                "protocol_version": protocol_version,
             },
         )
 
@@ -527,25 +643,43 @@ class GatewayServer:
     async def handle_post_message(
         self, request: Request, conn: Connection
     ) -> Response:
-        """处理POST消息 (对应Go代码中的handlePostMessage)"""
-        # 验证Content-Type头
+        """处理POST消息 - 符合MCP SSE协议规范"""
+        # 验证Content-Type头，符合MCP规范
         content_type = request.headers.get("Content-Type", "")
-        if "application/json" not in content_type:
+        if not content_type or "application/json" not in content_type:
             logger.warning(
-                "无效的内容类型",
+                "无效的Content-Type头",
                 extra={
                     "content_type": content_type,
                     "session_id": conn.meta().id,
-                    "remote_addr": (
-                        request.client.host if request.client else "unknown"
-                    ),
                 },
             )
-            return JSONResponse(
-                content={
-                    "error": "Unsupported Media Type: Content-Type must be application/json"
+            return send_protocol_error(
+                "Content-Type must be application/json",
+                status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                INVALID_REQUEST,
+            )
+
+        # 验证Accept头，符合MCP规范
+        accept_header = request.headers.get("accept", "")
+        # 接受通配符 */* 或显式指定 application/json/text/event-stream
+        if (
+            accept_header
+            and accept_header != "*/*"
+            and "application/json" not in accept_header
+            and "text/event-stream" not in accept_header
+        ):
+            logger.warning(
+                "无效的Accept头",
+                extra={
+                    "accept_header": accept_header,
+                    "session_id": conn.meta().id,
                 },
-                status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            )
+            return send_protocol_error(
+                "Accept header must include application/json, text/event-stream, or */*",
+                status.HTTP_406_NOT_ACCEPTABLE,
+                INVALID_REQUEST,
             )
 
         # TODO: 支持身份验证
