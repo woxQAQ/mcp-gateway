@@ -1,0 +1,364 @@
+🔍 Running mypy...
+myunla/middleware/rate_limit.py:15: error: Function is missing a type annotation  [no-untyped-def]
+myunla/middleware/rate_limit.py:88: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/middleware/rate_limit.py:88: note: Use "-> None" if function does not return a value
+myunla/middleware/rate_limit.py:105: error: Function is missing a type annotation for one or more arguments  [no-untyped-def]
+myunla/middleware/rate_limit.py:109: error: Need type annotation for "_ip_whitelist" (hint: "_ip_whitelist: set[<type>] = ...")  [var-annotated]
+myunla/middleware/rate_limit.py:115: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/middleware/rate_limit.py:115: error: Function is missing a type annotation for one or more arguments  [no-untyped-def]
+myunla/middleware/rate_limit.py:227: error: "int" object is not iterable  [misc]
+myunla/middleware/rate_limit.py:228: error: Cannot determine type of "window"  [has-type]
+myunla/middleware/rate_limit.py:228: error: Cannot determine type of "max_req"  [has-type]
+myunla/middleware/rate_limit.py:235: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/middleware/rate_limit.py:239: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/middleware/rate_limit.py:243: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/middleware/rate_limit.py:245: error: Incompatible types in assignment (expression has type "dict[str, tuple[int, int]]", target has type "dict[str, int]")  [assignment]
+myunla/middleware/rate_limit.py:247: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/middleware/rate_limit.py:247: note: Use "-> None" if function does not return a value
+myunla/middleware/rate_limit.py:261: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/middleware/rate_limit.py:261: note: Use "-> None" if function does not return a value
+myunla/middleware/rate_limit.py:322: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/middleware/auth.py:14: error: Function is missing a type annotation  [no-untyped-def]
+myunla/middleware/auth.py:53: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/middleware/auth.py:53: note: Use "-> None" if function does not return a value
+myunla/middleware/auth.py:185: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/middleware/auth.py:185: error: Incompatible default for argument "metadata" (default has type "None", argument has type "dict[str, Any]")  [assignment]
+myunla/middleware/auth.py:185: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+myunla/middleware/auth.py:185: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+myunla/middleware/auth.py:189: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/middleware/auth.py:189: error: Incompatible default for argument "metadata" (default has type "None", argument has type "dict[str, Any]")  [assignment]
+myunla/middleware/auth.py:189: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+myunla/middleware/auth.py:189: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+myunla/middleware/auth.py:193: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/middleware/auth.py:194: error: Incompatible default for argument "metadata" (default has type "None", argument has type "dict[str, Any]")  [assignment]
+myunla/middleware/auth.py:194: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+myunla/middleware/auth.py:194: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+myunla/middleware/auth.py:203: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/middleware/auth.py:203: note: Use "-> None" if function does not return a value
+myunla/middleware/auth.py:251: error: Returning Any from function declared to return "bool"  [no-any-return]
+myunla/middleware/auth.py:260: error: Returning Any from function declared to return "bool"  [no-any-return]
+myunla/middleware/auth.py:265: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/middleware/auth.py:277: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/middleware/auth.py:293: error: Function is missing a type annotation for one or more arguments  [no-untyped-def]
+myunla/middleware/auth.py:303: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/middleware/auth.py:303: error: Function is missing a type annotation for one or more arguments  [no-untyped-def]
+tests/unit/test_rate_limit.py:13: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:13: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:21: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:21: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:30: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:30: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:41: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:41: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:50: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:50: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:74: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:74: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:89: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:89: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:94: error: Argument 1 to "run" has incompatible type "Coroutine[Any, Any, bool]"; expected "Coroutine[Any, Any, deque[Any]]"  [arg-type]
+tests/unit/test_rate_limit.py:97: error: Incompatible types in assignment (expression has type "list[float]", target has type "deque[Any]")  [assignment]
+tests/unit/test_rate_limit.py:104: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:104: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:116: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:116: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:134: error: Invalid index type "str" for "str"; expected type "SupportsIndex | slice[Any, Any, Any]"  [index]
+tests/unit/test_rate_limit.py:137: error: Unsupported right operand type for in ("Mapping[str, str] | None")  [operator]
+tests/unit/test_rate_limit.py:138: error: Unsupported right operand type for in ("Mapping[str, str] | None")  [operator]
+tests/unit/test_rate_limit.py:139: error: Unsupported right operand type for in ("Mapping[str, str] | None")  [operator]
+tests/unit/test_rate_limit.py:141: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:141: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:159: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:159: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:181: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:181: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:198: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:198: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:213: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:213: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:234: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:234: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:240: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:240: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:249: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:249: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:259: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:259: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:271: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:271: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:288: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:288: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:306: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:306: note: Use "-> None" if function does not return a value
+tests/unit/test_rate_limit.py:314: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_rate_limit.py:314: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:14: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:14: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:19: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:19: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:26: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:26: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:36: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:36: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:47: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:47: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:58: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:58: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:70: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:70: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:87: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:87: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:97: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:97: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:107: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:107: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:117: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:117: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:123: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:123: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:129: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:129: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:137: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:137: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:143: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:143: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:149: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:149: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:156: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:156: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:163: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:163: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:171: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:171: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:182: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:182: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:196: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:196: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:221: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:221: note: Use "-> None" if function does not return a value
+tests/unit/test_auth.py:237: error: Function is missing a return type annotation  [no-untyped-def]
+tests/unit/test_auth.py:237: note: Use "-> None" if function does not return a value
+myunla/observability/tracing.py:19: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/observability/tracing.py:81: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/core/gateway.py:54: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/core/gateway.py:54: note: Use "-> None" if function does not return a value
+myunla/core/gateway.py:68: error: Argument 1 to "add_middleware" of "Starlette" has incompatible type "type[RateLimitMiddleware]"; expected "_MiddlewareFactory[[RateLimitConfig]]"  [arg-type]
+myunla/core/gateway.py:68: note: "RateLimitMiddleware" has constructor incompatible with "__call__" of "_MiddlewareFactory"
+myunla/core/gateway.py:68: note: Following member(s) of "RateLimitMiddleware" have conflicts:
+myunla/core/gateway.py:68: note:     Expected:
+myunla/core/gateway.py:68: note:         def __call__(self, Callable[[MutableMapping[str, Any], Callable[[], Awaitable[MutableMapping[str, Any]]], Callable[[MutableMapping[str, Any]], Awaitable[None]]], Awaitable[None]], /, config: RateLimitConfig) -> Callable[[MutableMapping[str, Any], Callable[[], Awaitable[MutableMapping[str, Any]]], Callable[[MutableMapping[str, Any]], Awaitable[None]]], Awaitable[None]]
+myunla/core/gateway.py:68: note:     Got:
+myunla/core/gateway.py:68: note:         def __init__(app: Any, config: RateLimitConfig) -> RateLimitMiddleware
+myunla/core/gateway.py:68: note: "_MiddlewareFactory[[RateLimitConfig]].__call__" has type "Callable[[Callable[[MutableMapping[str, Any], Callable[[], Awaitable[MutableMapping[str, Any]]], Callable[[MutableMapping[str, Any]], Awaitable[None]]], Awaitable[None]], Arg(RateLimitConfig, 'config')], Callable[[MutableMapping[str, Any], Callable[[], Awaitable[MutableMapping[str, Any]]], Callable[[MutableMapping[str, Any]], Awaitable[None]]], Awaitable[None]]]"
+myunla/core/gateway.py:72: error: Argument 1 to "add_middleware" of "Starlette" has incompatible type "type[AuthMiddleware]"; expected "_MiddlewareFactory[[AuthenticationManager, AuthorizationManager]]"  [arg-type]
+myunla/core/gateway.py:72: note: "AuthMiddleware" has constructor incompatible with "__call__" of "_MiddlewareFactory"
+myunla/core/gateway.py:72: note: Following member(s) of "AuthMiddleware" have conflicts:
+myunla/core/gateway.py:72: note:     Expected:
+myunla/core/gateway.py:72: note:         def __call__(self, Callable[[MutableMapping[str, Any], Callable[[], Awaitable[MutableMapping[str, Any]]], Callable[[MutableMapping[str, Any]], Awaitable[None]]], Awaitable[None]], /, auth_manager: AuthenticationManager, authz_manager: AuthorizationManager) -> Callable[[MutableMapping[str, Any], Callable[[], Awaitable[MutableMapping[str, Any]]], Callable[[MutableMapping[str, Any]], Awaitable[None]]], Awaitable[None]]
+myunla/core/gateway.py:72: note:     Got:
+myunla/core/gateway.py:72: note:         def __init__(app: Any, auth_manager: AuthenticationManager, authz_manager: AuthorizationManager) -> AuthMiddleware
+myunla/core/gateway.py:72: note: "_MiddlewareFactory[[AuthenticationManager, AuthorizationManager]].__call__" has type "Callable[[Callable[[MutableMapping[str, Any], Callable[[], Awaitable[MutableMapping[str, Any]]], Callable[[MutableMapping[str, Any]], Awaitable[None]]], Awaitable[None]], Arg(AuthenticationManager, 'auth_manager'), Arg(AuthorizationManager, 'authz_manager')], Callable[[MutableMapping[str, Any], Callable[[], Awaitable[MutableMapping[str, Any]]], Callable[[MutableMapping[str, Any]], Awaitable[None]]], Awaitable[None]]]"
+myunla/core/gateway.py:79: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/core/gateway.py:83: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/core/gateway.py:88: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/core/gateway.py:93: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/core/gateway.py:98: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/core/gateway.py:109: error: Statement is unreachable  [unreachable]
+myunla/core/gateway.py:140: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/core/gateway.py:151: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/core/gateway.py:254: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/core/gateway.py:254: note: Use "-> None" if function does not return a value
+myunla/core/gateway.py:263: error: Function is missing a type annotation  [no-untyped-def]
+myunla/core/gateway.py:276: error: Incompatible types in assignment (expression has type "Any | None", variable has type "AuthenticationConfig")  [assignment]
+myunla/core/gateway.py:280: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/core/gateway.py:280: note: Use "-> None" if function does not return a value
+myunla/core/gateway.py:317: error: Function is missing a return type annotation  [no-untyped-def]
+myunla/core/gateway.py:317: note: Use "-> None" if function does not return a value
+main.py:16: error: Function is missing a return type annotation  [no-untyped-def]
+main.py:16: note: Use "-> None" if function does not return a value
+tests/test_integration.py:16: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_integration.py:40: error: List item 0 has incompatible type "dict[str, object]"; expected "ParameterDefinition"  [list-item]
+tests/test_integration.py:55: error: List item 0 has incompatible type "dict[str, object]"; expected "ParameterDefinition"  [list-item]
+tests/test_integration.py:61: error: List item 1 has incompatible type "dict[str, object]"; expected "ParameterDefinition"  [list-item]
+tests/test_integration.py:67: error: List item 2 has incompatible type "dict[str, object]"; expected "ParameterDefinition"  [list-item]
+tests/test_integration.py:80: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_integration.py:89: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_integration.py:95: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_integration.py:112: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_integration.py:125: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_integration.py:132: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_integration.py:144: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_integration.py:156: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_integration.py:169: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_integration.py:187: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_integration.py:197: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_integration.py:206: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_integration.py:215: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_integration.py:226: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_integration.py:245: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_integration.py:264: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_integration.py:269: error: Argument "data" to "post" of "TestClient" has incompatible type "str"; expected "Mapping[str, str | Iterable[str] | bytes] | None"  [arg-type]
+tests/test_integration.py:272: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_integration.py:284: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_integration.py:305: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_gateway.py:17: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_gateway.py:40: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_gateway.py:49: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_gateway.py:54: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_gateway.py:75: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_gateway.py:95: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_gateway.py:105: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_gateway.py:125: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_gateway.py:151: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_gateway.py:164: error: List item 0 has incompatible type "dict[str, object]"; expected "ParameterDefinition"  [list-item]
+tests/test_gateway.py:180: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_gateway.py:193: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_gateway.py:193: note: Use "-> None" if function does not return a value
+tests/test_gateway.py:204: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_gateway.py:204: note: Use "-> None" if function does not return a value
+tests/test_gateway.py:217: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_gateway.py:217: note: Use "-> None" if function does not return a value
+tests/test_gateway.py:236: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_gateway.py:236: note: Use "-> None" if function does not return a value
+tests/test_gateway.py:248: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_gateway.py:248: note: Use "-> None" if function does not return a value
+tests/test_gateway.py:261: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_gateway.py:261: note: Use "-> None" if function does not return a value
+tests/test_gateway.py:266: error: "JSONRPCMessageHandler" has no attribute "_parse_request"; maybe "_handle_request"?  [attr-defined]
+tests/test_gateway.py:269: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_gateway.py:269: note: Use "-> None" if function does not return a value
+tests/test_gateway.py:276: error: "JSONRPCMessageHandler" has no attribute "_parse_request"; maybe "_handle_request"?  [attr-defined]
+tests/test_gateway.py:277: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_gateway.py:281: error: Function is missing a type annotation  [no-untyped-def]
+Found 149 errors in 9 files (checked 29 source files)
+❌ mypy failed
+🔍 Running flake8...
+./myunla/config/manager.py:6:1: F401 'typing.Any' imported but unused
+./myunla/config/manager.py:104:13: E306 expected 1 blank line before a nested definition, found 0
+./myunla/core/gateway.py:42:89: E501 line too long (89 > 88 characters)
+./myunla/core/jsonrpc.py:113:89: E501 line too long (108 > 88 characters)
+./myunla/core/jsonrpc.py:185:89: E501 line too long (89 > 88 characters)
+./myunla/core/jsonrpc.py:265:89: E501 line too long (106 > 88 characters)
+./myunla/middleware/auth.py:8:1: F401 'fastapi.middleware.Middleware' imported but unused
+./myunla/middleware/auth.py:11:1: E302 expected 2 blank lines, found 1
+./myunla/middleware/auth.py:13:1: W293 blank line contains whitespace
+./myunla/middleware/auth.py:17:1: E305 expected 2 blank lines after class or function definition, found 1
+./myunla/middleware/auth.py:17:1: E402 module level import not at top of file
+./myunla/middleware/auth.py:18:1: E402 module level import not at top of file
+./myunla/middleware/rate_limit.py:9:1: F401 'fastapi.middleware.Middleware' imported but unused
+./myunla/middleware/rate_limit.py:12:1: E302 expected 2 blank lines, found 1
+./myunla/middleware/rate_limit.py:14:1: W293 blank line contains whitespace
+./myunla/middleware/rate_limit.py:18:1: E305 expected 2 blank lines after class or function definition, found 1
+./myunla/middleware/rate_limit.py:18:1: E402 module level import not at top of file
+./myunla/middleware/rate_limit.py:19:1: E402 module level import not at top of file
+./myunla/models/config.py:90:89: E501 line too long (94 > 88 characters)
+./myunla/services/mapping.py:72:17: F841 local variable 'service_name' is assigned to but never used
+./myunla/services/mapping.py:255:89: E501 line too long (95 > 88 characters)
+./myunla/services/transformation.py:90:89: E501 line too long (89 > 88 characters)
+./myunla/services/transformation.py:256:1: W293 blank line contains whitespace
+./myunla/services/transformation.py:270:1: W293 blank line contains whitespace
+./myunla/utils/logger.py:17:89: E501 line too long (125 > 88 characters)
+./tests/__init__.py:2:22: W292 no newline at end of file
+./tests/conftest.py:9:1: E302 expected 2 blank lines, found 0
+./tests/conftest.py:15:1: E302 expected 2 blank lines, found 0
+./tests/conftest.py:21:1: E302 expected 2 blank lines, found 0
+./tests/conftest.py:25:1: E302 expected 2 blank lines, found 0
+./tests/conftest.py:64:1: E302 expected 2 blank lines, found 0
+./tests/conftest.py:86:1: E302 expected 2 blank lines, found 0
+./tests/conftest.py:104:1: E302 expected 2 blank lines, found 0
+./tests/conftest.py:119:1: E302 expected 2 blank lines, found 0
+./tests/conftest.py:127:24: W292 no newline at end of file
+./tests/integration/__init__.py:1:33: W292 no newline at end of file
+./tests/test_gateway.py:16:1: E302 expected 2 blank lines, found 0
+./tests/test_gateway.py:39:1: E302 expected 2 blank lines, found 0
+./tests/test_gateway.py:48:1: E302 expected 2 blank lines, found 0
+./tests/test_gateway.py:52:1: E302 expected 2 blank lines, found 0
+./tests/test_gateway.py:75:5: E301 expected 1 blank line, found 0
+./tests/test_gateway.py:93:1: E302 expected 2 blank lines, found 0
+./tests/test_gateway.py:105:5: E301 expected 1 blank line, found 0
+./tests/test_gateway.py:125:5: E301 expected 1 blank line, found 0
+./tests/test_gateway.py:148:1: E302 expected 2 blank lines, found 0
+./tests/test_gateway.py:179:5: E301 expected 1 blank line, found 0
+./tests/test_gateway.py:191:1: E302 expected 2 blank lines, found 0
+./tests/test_gateway.py:204:5: E301 expected 1 blank line, found 0
+./tests/test_gateway.py:217:5: E301 expected 1 blank line, found 0
+./tests/test_gateway.py:234:1: E302 expected 2 blank lines, found 0
+./tests/test_gateway.py:248:5: E301 expected 1 blank line, found 0
+./tests/test_gateway.py:259:1: E302 expected 2 blank lines, found 0
+./tests/test_gateway.py:269:5: E301 expected 1 blank line, found 0
+./tests/test_gateway.py:277:5: E301 expected 1 blank line, found 0
+./tests/test_gateway.py:281:9: E306 expected 1 blank line before a nested definition, found 0
+./tests/test_gateway.py:293:53: W292 no newline at end of file
+./tests/test_integration.py:15:1: E302 expected 2 blank lines, found 0
+./tests/test_integration.py:79:1: E302 expected 2 blank lines, found 0
+./tests/test_integration.py:88:1: E302 expected 2 blank lines, found 0
+./tests/test_integration.py:92:1: E302 expected 2 blank lines, found 0
+./tests/test_integration.py:111:5: E301 expected 1 blank line, found 0
+./tests/test_integration.py:124:5: E301 expected 1 blank line, found 0
+./tests/test_integration.py:131:5: E301 expected 1 blank line, found 0
+./tests/test_integration.py:143:5: E301 expected 1 blank line, found 0
+./tests/test_integration.py:155:5: E301 expected 1 blank line, found 0
+./tests/test_integration.py:168:5: E301 expected 1 blank line, found 0
+./tests/test_integration.py:184:1: E302 expected 2 blank lines, found 0
+./tests/test_integration.py:196:5: E301 expected 1 blank line, found 0
+./tests/test_integration.py:205:5: E301 expected 1 blank line, found 0
+./tests/test_integration.py:214:5: E301 expected 1 blank line, found 0
+./tests/test_integration.py:225:5: E301 expected 1 blank line, found 0
+./tests/test_integration.py:242:1: E302 expected 2 blank lines, found 0
+./tests/test_integration.py:261:1: E302 expected 2 blank lines, found 0
+./tests/test_integration.py:271:5: E301 expected 1 blank line, found 0
+./tests/test_integration.py:283:5: E301 expected 1 blank line, found 0
+./tests/test_integration.py:302:1: E302 expected 2 blank lines, found 0
+./tests/test_integration.py:333:43: W292 no newline at end of file
+./tests/unit/__init__.py:1:26: W292 no newline at end of file
+./tests/unit/test_auth.py:12:1: E302 expected 2 blank lines, found 0
+./tests/unit/test_auth.py:19:5: E301 expected 1 blank line, found 0
+./tests/unit/test_auth.py:26:5: E301 expected 1 blank line, found 0
+./tests/unit/test_auth.py:35:5: E301 expected 1 blank line, found 0
+./tests/unit/test_auth.py:46:5: E301 expected 1 blank line, found 0
+./tests/unit/test_auth.py:57:5: E301 expected 1 blank line, found 0
+./tests/unit/test_auth.py:69:5: E301 expected 1 blank line, found 0
+./tests/unit/test_auth.py:86:5: E301 expected 1 blank line, found 0
+./tests/unit/test_auth.py:96:5: E301 expected 1 blank line, found 0
+./tests/unit/test_auth.py:106:5: E301 expected 1 blank line, found 0
+./tests/unit/test_auth.py:117:5: E301 expected 1 blank line, found 0
+./tests/unit/test_auth.py:123:5: E301 expected 1 blank line, found 0
+./tests/unit/test_auth.py:129:5: E301 expected 1 blank line, found 0
+./tests/unit/test_auth.py:135:1: E302 expected 2 blank lines, found 0
+./tests/unit/test_auth.py:143:5: E301 expected 1 blank line, found 0
+./tests/unit/test_auth.py:149:5: E301 expected 1 blank line, found 0
+./tests/unit/test_auth.py:156:5: E301 expected 1 blank line, found 0
+./tests/unit/test_auth.py:163:5: E301 expected 1 blank line, found 0
+./tests/unit/test_auth.py:171:5: E301 expected 1 blank line, found 0
+./tests/unit/test_auth.py:179:1: E302 expected 2 blank lines, found 0
+./tests/unit/test_auth.py:191:9: F841 local variable 'response' is assigned to but never used
+./tests/unit/test_auth.py:195:5: E301 expected 1 blank line, found 0
+./tests/unit/test_auth.py:220:5: E301 expected 1 blank line, found 0
+./tests/unit/test_auth.py:236:5: E301 expected 1 blank line, found 0
+./tests/unit/test_auth.py:253:56: W292 no newline at end of file
+./tests/unit/test_rate_limit.py:11:1: E302 expected 2 blank lines, found 0
+./tests/unit/test_rate_limit.py:20:5: E301 expected 1 blank line, found 0
+./tests/unit/test_rate_limit.py:29:5: E301 expected 1 blank line, found 0
+./tests/unit/test_rate_limit.py:40:5: E301 expected 1 blank line, found 0
+./tests/unit/test_rate_limit.py:49:5: E301 expected 1 blank line, found 0
+./tests/unit/test_rate_limit.py:73:5: E301 expected 1 blank line, found 0
+./tests/unit/test_rate_limit.py:89:5: E301 expected 1 blank line, found 0
+./tests/unit/test_rate_limit.py:94:89: E501 line too long (96 > 88 characters)
+./tests/unit/test_rate_limit.py:101:1: E302 expected 2 blank lines, found 0
+./tests/unit/test_rate_limit.py:115:5: E301 expected 1 blank line, found 0
+./tests/unit/test_rate_limit.py:140:5: E301 expected 1 blank line, found 0
+./tests/unit/test_rate_limit.py:158:5: E301 expected 1 blank line, found 0
+./tests/unit/test_rate_limit.py:180:5: E301 expected 1 blank line, found 0
+./tests/unit/test_rate_limit.py:198:5: E301 expected 1 blank line, found 0
+./tests/unit/test_rate_limit.py:213:5: E301 expected 1 blank line, found 0
+./tests/unit/test_rate_limit.py:232:1: E302 expected 2 blank lines, found 0
+./tests/unit/test_rate_limit.py:240:5: E301 expected 1 blank line, found 0
+./tests/unit/test_rate_limit.py:249:5: E301 expected 1 blank line, found 0
+./tests/unit/test_rate_limit.py:259:5: E301 expected 1 blank line, found 0
+./tests/unit/test_rate_limit.py:271:5: E301 expected 1 blank line, found 0
+./tests/unit/test_rate_limit.py:288:5: E301 expected 1 blank line, found 0
+./tests/unit/test_rate_limit.py:306:5: E301 expected 1 blank line, found 0
+./tests/unit/test_rate_limit.py:314:5: E301 expected 1 blank line, found 0
+./tests/unit/test_rate_limit.py:322:37: W292 no newline at end of file
+❌ flake8 failed
+💥 Some lint checks failed - please fix the issues above

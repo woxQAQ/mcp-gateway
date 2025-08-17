@@ -1,0 +1,75 @@
+# Example configuration for MCP Gateway
+version: "1.0"
+services:
+  - name: "jsonplaceholder"
+    description: "JSONPlaceholder Test API"
+    base_url: "http://jsonplaceholder:1080"
+    auth:
+      type: "none"
+    endpoints:
+      - path: "/posts"
+        method: "GET"
+        mcp_type: "tool"
+        mcp_name: "list_posts"
+        description: "List all posts"
+        parameters:
+          - name: "limit"
+            type: "integer"
+            description: "Maximum number of posts to return"
+            required: false
+            location: "query"
+            default: 10
+      - path: "/posts/{postId}"
+        method: "GET"
+        mcp_type: "tool"
+        mcp_name: "get_post"
+        description: "Get post by ID"
+        parameters:
+          - name: "postId"
+            type: "integer"
+            description: "Post ID"
+            required: true
+            location: "path"
+      - path: "/posts"
+        method: "POST"
+        mcp_type: "tool"
+        mcp_name: "create_post"
+        description: "Create a new post"
+        parameters:
+          - name: "title"
+            type: "string"
+            description: "Post title"
+            required: true
+            location: "body"
+          - name: "body"
+            type: "string"
+            description: "Post body"
+            required: true
+            location: "body"
+          - name: "userId"
+            type: "integer"
+            description: "User ID"
+            required: true
+            location: "body"
+
+rate_limiting:
+  enabled: true
+  requests_per_minute: 60
+  requests_per_hour: 3600
+  burst_size: 10
+
+observability:
+  enabled: true
+  tracing_enabled: true
+  metrics_enabled: true
+  logging_enabled: true
+  service_name: "mcp-gateway"
+  log_level: "INFO"
+  jaeger_endpoint: "http://jaeger:14268/api/traces"
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 1
+  reload: false
+  access_log: true
