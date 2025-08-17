@@ -1,0 +1,66 @@
+version: "1.0"
+services:
+  - name: "test_service"
+    description: "Test service for unit tests"
+    base_url: "https://api.example.com"
+    auth:
+      type: "api_key"
+      api_key: "test_key"
+    endpoints:
+      - path: "/users"
+        method: "GET"
+        mcp_type: "tool"
+        mcp_name: "list_users"
+        description: "List all users"
+        parameters:
+          - name: "limit"
+            type: "integer"
+            description: "Maximum number of users to return"
+            required: false
+            location: "query"
+            default: 10
+      - path: "/users/{user_id}"
+        method: "GET"
+        mcp_type: "tool"
+        mcp_name: "get_user"
+        description: "Get user by ID"
+        parameters:
+          - name: "user_id"
+            type: "integer"
+            description: "User ID"
+            required: true
+            location: "path"
+      - path: "/users"
+        method: "POST"
+        mcp_type: "tool"
+        mcp_name: "create_user"
+        description: "Create a new user"
+        parameters:
+          - name: "name"
+            type: "string"
+            description: "User name"
+            required: true
+            location: "body"
+          - name: "email"
+            type: "string"
+            description: "User email"
+            required: true
+            location: "body"
+rate_limiting:
+  enabled: true
+  requests_per_minute: 60
+  requests_per_hour: 3600
+  burst_size: 10
+observability:
+  enabled: true
+  tracing_enabled: true
+  metrics_enabled: true
+  logging_enabled: true
+  service_name: "mcp-gateway-test"
+  log_level: "INFO"
+server:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 1
+  reload: false
+  access_log: true

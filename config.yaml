@@ -1,0 +1,121 @@
+# MCP Gateway Configuration
+
+version: "1.0"
+
+# Services configuration
+services:
+  - name: "weather-api"
+    description: "Weather information service"
+    base_url: "https://api.weatherapi.com/v1"
+    auth:
+      type: "api_key"
+      api_key: "your_weather_api_key"
+      api_key_header: "X-API-Key"
+    endpoints:
+      - path: "/current.json"
+        method: "GET"
+        mcp_type: "tool"
+        mcp_name: "get_current_weather"
+        description: "Get current weather information for a location"
+        parameters:
+          - name: "q"
+            type: "string"
+            description: "Location query (e.g., 'London', '51.5074,-0.1278')"
+            required: true
+            location: "query"
+          - name: "aqi"
+            type: "string"
+            description: "Include air quality data"
+            required: false
+            location: "query"
+            default: "no"
+      - path: "/forecast.json"
+        method: "GET"
+        mcp_type: "tool"
+        mcp_name: "get_weather_forecast"
+        description: "Get weather forecast for a location"
+        parameters:
+          - name: "q"
+            type: "string"
+            description: "Location query"
+            required: true
+            location: "query"
+          - name: "days"
+            type: "integer"
+            description: "Number of forecast days"
+            required: false
+            location: "query"
+            default: 3
+          - name: "alerts"
+            type: "string"
+            description: "Include weather alerts"
+            required: false
+            location: "query"
+            default: "no"
+
+  - name: "user-service"
+    description: "User management service"
+    base_url: "https://api.example.com/users"
+    auth:
+      type: "bearer_token"
+      bearer_token: "your_bearer_token"
+    endpoints:
+      - path: "/{user_id}"
+        method: "GET"
+        mcp_type: "resource"
+        mcp_name: "get_user"
+        description: "Get user details by ID"
+        parameters:
+          - name: "user_id"
+            type: "integer"
+            description: "User ID"
+            required: true
+            location: "path"
+      - path: "/"
+        method: "POST"
+        mcp_type: "tool"
+        mcp_name: "create_user"
+        description: "Create a new user"
+        parameters:
+          - name: "name"
+            type: "string"
+            description: "User name"
+            required: true
+            location: "body"
+          - name: "email"
+            type: "string"
+            description: "User email"
+            required: true
+            location: "body"
+          - name: "role"
+            type: "string"
+            description: "User role"
+            required: false
+            location: "body"
+            default: "user"
+
+# Rate limiting configuration
+rate_limiting:
+  enabled: true
+  requests_per_minute: 60
+  requests_per_hour: 3600
+  burst_size: 10
+
+# Observability configuration
+observability:
+  enabled: true
+  tracing_enabled: true
+  metrics_enabled: true
+  logging_enabled: true
+  service_name: "mcp-gateway"
+  jaeger_endpoint: "http://localhost:14268/api/traces"
+  otlp_endpoint: "http://localhost:4318"
+  log_level: "INFO"
+
+# Server configuration
+server:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 1
+  reload: false
+  access_log: true
